@@ -15,7 +15,9 @@ public class Floor implements Runnable{
 	}
 	
 	private void sendMessage(boolean goingUp) {
-		server.handleMessage(new Message(LocalTime.now(), this.floorNumber, goingUp));
+		synchronized (server) {
+			Scheduler.enqueueMessage(new Message(LocalTime.now(), this.floorNumber, goingUp));
+		}
 	}
 	
 	public void run() {
