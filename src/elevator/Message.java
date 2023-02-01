@@ -5,7 +5,7 @@ import java.time.LocalTime;
 public class Message {
 	private LocalTime time;
 	private int floor;
-	private boolean upButton;
+	private boolean upButton; // true: go up, false: go down
 	
 	public Message(LocalTime time, int floor, boolean up) {
 		this.time = time;
