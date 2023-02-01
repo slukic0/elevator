@@ -9,6 +9,10 @@ public class Scheduler implements Runnable{
 		this.elevators = elevators;
 	}
 	
+	public void handleMessage(Message message) {
+		// TODO: implement handleMessage
+	}
+	
 	public void run() {
 		return;
 	}
