@@ -20,11 +20,14 @@ public class Elevator implements Runnable {
 	}
 	
 	public void sendMessage(boolean goingUp) {
-		
 		synchronized (server) {
 			Scheduler.enqueueMessage(new Message(LocalTime.now(), this.currentFloor, goingUp));
+			notifyAll();
 		}
-		
+	}
+	
+	public int getCurrentFloor() {
+		return this.currentFloor;
 	}
 	
 	public void setCurrentFloor(int floor) {
