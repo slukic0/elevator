@@ -41,7 +41,7 @@ public class Elevator implements Runnable {
 		}
 		// Send a message back to the floor
 		synchronized (schedulerQueue) {
-			while(!schedulerQueue.isEmpty()) {
+			while (!schedulerQueue.isEmpty()) {
 				try {
 					schedulerQueue.wait();
 				} catch (InterruptedException e) {

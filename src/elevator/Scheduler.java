@@ -19,7 +19,7 @@ public class Scheduler implements Runnable {
 		this.floors = floors;
 		this.elevators = elevators;
 	}
-	
+
 	private void sendFloorMessage(Message message) {
 		synchronized (floorQueue) {
 			floorQueue.add(message);
@@ -27,7 +27,7 @@ public class Scheduler implements Runnable {
 			floorQueue.notifyAll();
 		}
 	}
-	
+
 	private void sendElevatorMessage(Message message) {
 		synchronized (elevatorQueue) {
 			elevatorQueue.add(message);
@@ -37,7 +37,7 @@ public class Scheduler implements Runnable {
 	}
 
 	public void run() {
-		while (true){
+		while (true) {
 			synchronized (recieveQueue) {
 				while (recieveQueue.isEmpty()) {
 					try {

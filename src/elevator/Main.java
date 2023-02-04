@@ -1,11 +1,14 @@
 package elevator;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import util.FileUtil;
+
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		System.out.println("Hello Elevator");
 
 		Queue<Message> schedulerQueue = new LinkedList<>();
@@ -20,6 +23,14 @@ public class Main {
 		Elevator[] elevators = new Elevator[] { elevator };
 
 		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorQueue, floors, elevators);
+
+		// Read input file and create floor messages
+		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
+		Message[] messages = FileUtil.parseStringInput(input);
+		for (Message m : messages) {
+			System.out.println("Adding message: " + m.toString());
+			floor.addMessage(m);
+		}
 
 		// Create & start the threads
 		Thread eThread = new Thread(elevator);
