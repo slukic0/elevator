@@ -5,12 +5,25 @@ import java.util.Queue;
 
 import elevator.Message.Sender;
 
+/** 
+ * Class to represent the floor subsystem
+ * 
+ * @author Group G5
+ *
+ */
 public class Floor implements Runnable {
 	private final int FLOOR_NUMBER;
 	private Queue<Message> recieveQueue;
 	private Queue<Message> schedulerQueue;
 	private ArrayList<Message> messages; // Iteration 1: file inputed messages
 
+	/** 
+	 * Creates a floor with shared synchronized message queues and the floor number
+	 *  
+	 * @param recieveQueue the synchronized message queue to recieve information from the Scheduler
+	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
+	 * @param floorNumber the floor's number
+	 */
 	public Floor(Queue<Message> recieveQueue, Queue<Message> schedulerQueue, int floorNumber) {
 		this.recieveQueue = recieveQueue;
 		this.schedulerQueue = schedulerQueue;
@@ -29,7 +42,11 @@ public class Floor implements Runnable {
 	public void addMessage(Message message) {
 		messages.add(message);
 	}
-
+	
+	
+	/** 
+	 *  Runs the floor's thread
+	 */
 	public void run() {
 		for (Message m : messages) {
 			synchronized (schedulerQueue) {
