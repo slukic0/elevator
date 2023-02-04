@@ -30,7 +30,6 @@ public class Elevator implements Runnable {
 			while (recieveQueue.isEmpty()) {
 				// wait for a message
 				try {
-					System.out.println("elevator wait");
 					recieveQueue.wait();
 				} catch (InterruptedException e) {
 					System.out.println("Error in Elevator thread");
@@ -39,13 +38,21 @@ public class Elevator implements Runnable {
 			}
 			Message recievedMessage = recieveQueue.poll();
 			System.out.println("Elevator recieved message: " + recievedMessage.toString());
-
-			// Send a message back to the floor
-			Message newMessage = new Message(Sender.ELEVATOR, currentFloor, !recievedMessage.getGoingUp());
+		}
+		// Send a message back to the floor
+		synchronized (schedulerQueue) {
+			while(!schedulerQueue.isEmpty()) {
+				try {
+					schedulerQueue.wait();
+				} catch (InterruptedException e) {
+					System.out.println("Error in Floor Thread");
+					e.printStackTrace();
+				}
+			}
+			Message newMessage = new Message(Sender.ELEVATOR, currentFloor, false);
 			schedulerQueue.add(newMessage);
-			System.out.println("Elevator send message: " + newMessage.toString());
-
-			notifyAll();
+			System.out.println("Elevator sent message: " + newMessage.toString());
+			schedulerQueue.notifyAll();
 		}
 	}
 }

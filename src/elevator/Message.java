@@ -3,7 +3,7 @@ package elevator;
 import java.time.LocalTime;
 
 public class Message {
-	enum Sender {
+	public enum Sender {
 		ELEVATOR, FLOOR
 	}
 
@@ -41,6 +41,6 @@ public class Message {
 
 	@Override
 	public String toString() {
-		return "Sender: " + sender + "Time: " + time.toString() + "Floor: " + floor + ", GoingUp: " + goingUp;
+		return "Sender: " + sender + ", Time: " + time.toString() + ", Floor: " + floor + ", GoingUp: " + goingUp;
 	}
 }

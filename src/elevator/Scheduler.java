@@ -19,39 +19,46 @@ public class Scheduler implements Runnable {
 		this.floors = floors;
 		this.elevators = elevators;
 	}
-
-	public Queue<Message> getMessages() {
-		return recieveQueue;
+	
+	private void sendFloorMessage(Message message) {
+		synchronized (floorQueue) {
+			floorQueue.add(message);
+			System.out.println("Scheduler forwarded message to floor");
+			floorQueue.notifyAll();
+		}
 	}
-
-	public void enqueueMessage(Message mesage) {
-		recieveQueue.add(mesage);
+	
+	private void sendElevatorMessage(Message message) {
+		synchronized (elevatorQueue) {
+			elevatorQueue.add(message);
+			System.out.println("Scheduler forwarded message to elevator");
+			elevatorQueue.notifyAll();
+		}
 	}
 
 	public void run() {
-		synchronized (recieveQueue) {
-			while (recieveQueue.isEmpty()) {
-				try {
-					System.out.println(recieveQueue.toString());
-					System.out.println("sched wait");
-					recieveQueue.wait();
-				} catch (InterruptedException e) {
-					System.out.println("Error in Scheduler Thread");
-					e.printStackTrace();
+		while (true){
+			synchronized (recieveQueue) {
+				while (recieveQueue.isEmpty()) {
+					try {
+						recieveQueue.wait();
+					} catch (InterruptedException e) {
+						System.out.println("Error in Scheduler Thread");
+						e.printStackTrace();
+					}
+				}
+				// get the message
+				Message message = recieveQueue.poll();
+				System.out.println("Scheduler got message: " + message.toString());
+				recieveQueue.notifyAll();
+
+				if (message.getSender() == Sender.FLOOR) {
+					sendElevatorMessage(message);
+				} else {
+					sendFloorMessage(message);
+
 				}
 			}
-			// get the message
-			Message message = recieveQueue.poll();
-			System.out.println("Scheduler got message: " + message.toString());
-
-			if (message.getSender() == Sender.FLOOR) {
-				floorQueue.add(message);
-			} else {
-				elevatorQueue.add(message);
-			}
-			System.out.println("Scheduler forwarded message tp" + message.getSender());
-
-			notifyAll();
 		}
 	}
 }

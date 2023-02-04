@@ -16,26 +16,36 @@ public class Floor implements Runnable {
 	}
 
 	public void run() {
+		synchronized (schedulerQueue) {
+			while(!schedulerQueue.isEmpty()) {
+				try {
+					schedulerQueue.wait();
+				} catch (InterruptedException e) {
+					System.out.println("Error in Floor Thread");
+					e.printStackTrace();
+				}
+			}
+			Message message = new Message(Sender.FLOOR, FLOOR_NUMBER, true);
+			System.out.println("Floor is sending message to Scheduler: "+message.toString());
+			schedulerQueue.add(message);
+			schedulerQueue.notifyAll();
+		}
+		
 		synchronized (recieveQueue) {
-			// press the button
-			System.out.println(": Floor is sending message to Scheduler");
-			schedulerQueue.add(new Message(Sender.FLOOR, FLOOR_NUMBER, true));
-
 			// wait for elevator response
 			while (recieveQueue.isEmpty()) {
 				try {
-					System.out.println("floor wait");
 					recieveQueue.wait();
 				} catch (InterruptedException e) {
-					System.out.println("Error in Elavtor Thread");
+					System.out.println("Error in Floor Thread");
 					e.printStackTrace();
 				}
 			}
 
 			Message message = recieveQueue.poll();
-			System.out.println(": Floor recieved message: " + message.toString());
+			System.out.println("Floor recieved message: " + message.toString());
 
-			notifyAll();
+			recieveQueue.notifyAll();
 		}
 	}
 }
