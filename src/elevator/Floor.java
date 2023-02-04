@@ -58,7 +58,11 @@ public class Floor implements Runnable {
 		return this.messages;
 	}
 	
-	
+	/**
+	 * Add message to messages list
+	 *
+	 * @param message	the message to be added to message list
+	 */
 	public void addMessage(Message message) {
 		messages.add(message);
 	}
