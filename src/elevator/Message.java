@@ -3,25 +3,44 @@ package elevator;
 import java.time.LocalTime;
 
 public class Message {
+	enum Sender {
+		ELEVATOR, FLOOR
+	}
+
+	private Sender sender;
 	private LocalTime time;
 	private int floor;
-	private boolean upButton; // true: go up, false: go down
-	
-	public Message(LocalTime time, int floor, boolean up) {
+	private boolean goingUp;
+
+	public Message(Sender sender, int floor, boolean goingUp, LocalTime time) {
+		this.sender = sender;
 		this.time = time;
 		this.floor = floor;
-		this.upButton = up;
+		this.goingUp = goingUp;
 	}
-	
+
+	public Message(Sender sender, int floor, boolean goingUp) {
+		this(sender, floor, goingUp, LocalTime.now());
+	}
+
+	public Sender getSender() {
+		return sender;
+	}
+
 	public LocalTime getTime() {
 		return time;
 	}
-	
+
 	public int getFloor() {
 		return floor;
 	}
-	
-	public boolean getUp() {
-		return upButton;
+
+	public boolean getGoingUp() {
+		return goingUp;
+	}
+
+	@Override
+	public String toString() {
+		return "Sender: " + sender + "Time: " + time.toString() + "Floor: " + floor + ", GoingUp: " + goingUp;
 	}
 }

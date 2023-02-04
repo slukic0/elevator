@@ -1,40 +1,51 @@
 package elevator;
 
-import elevator.*;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import java.util.Queue;
+
+import elevator.Message.Sender;
 
 public class Elevator implements Runnable {
-	private final ArrayList<Integer> FLOOR_NUMBERS;
 	private final int ELEVATOR_NUMBER;
 	private int currentFloor;
-	
-	public Elevator(int elevatorNumber, ArrayList<Integer> floorNums, int currentFloor) {
+	private Queue<Message> recieveQueue;
+	private Queue<Message> schedulerQueue;
+
+	public Elevator(Queue<Message> recieveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
+		this.recieveQueue = recieveQueue;
+		this.schedulerQueue = schedulerQueue;
 		this.ELEVATOR_NUMBER = elevatorNumber;
-		this.FLOOR_NUMBERS = floorNums;
 		this.currentFloor = currentFloor;
 	}
-	
-	public void sendMessage(boolean goingUp) {
-		synchronized (Scheduler.getMessages()) {
-			try {
-				Scheduler.enqueueMessage(new Message(LocalTime.now(), this.currentFloor, goingUp));
-				Scheduler.getMessages().wait();
-			} catch (InterruptedException e) {
-				System.out.println("Error in Elavtor thread");
-			}
-		}
-	}
-	
+
 	public int getCurrentFloor() {
 		return this.currentFloor;
 	}
-	
+
 	public void setCurrentFloor(int floor) {
 		this.currentFloor = floor;
 	}
-	
+
 	public void run() {
-		return;
+		synchronized (recieveQueue) {
+			while (recieveQueue.isEmpty()) {
+				// wait for a message
+				try {
+					System.out.println("elevator wait");
+					recieveQueue.wait();
+				} catch (InterruptedException e) {
+					System.out.println("Error in Elevator thread");
+					e.printStackTrace();
+				}
+			}
+			Message recievedMessage = recieveQueue.poll();
+			System.out.println("Elevator recieved message: " + recievedMessage.toString());
+
+			// Send a message back to the floor
+			Message newMessage = new Message(Sender.ELEVATOR, currentFloor, !recievedMessage.getGoingUp());
+			schedulerQueue.add(newMessage);
+			System.out.println("Elevator send message: " + newMessage.toString());
+
+			notifyAll();
+		}
 	}
 }
