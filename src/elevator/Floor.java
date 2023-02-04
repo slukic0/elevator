@@ -17,6 +17,14 @@ public class Floor implements Runnable {
 		this.FLOOR_NUMBER = floorNumber;
 		this.messages = new ArrayList<>();
 	}
+	
+	public Queue<Message> getRecieveQueue() {
+		return this.recieveQueue;
+	}
+	
+	public Queue<Message> getSchedulerQueue() {
+		return this.schedulerQueue;
+	}
 
 	public void addMessage(Message message) {
 		messages.add(message);

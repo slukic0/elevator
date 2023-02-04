@@ -24,6 +24,14 @@ public class Elevator implements Runnable {
 	public void setCurrentFloor(int floor) {
 		this.currentFloor = floor;
 	}
+	
+	public Queue<Message> getRecieveQueue() {
+		return this.recieveQueue;
+	}
+	
+	public Queue<Message> getSchedulerQueue() {
+		return this.schedulerQueue;
+	}
 
 	public void run() {
 		while (true) {

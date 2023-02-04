@@ -19,8 +19,12 @@ public class Scheduler implements Runnable {
 		this.floors = floors;
 		this.elevators = elevators;
 	}
+	
+	public Queue<Message> getRecieveQueue() {
+		return this.recieveQueue;
+	}
 
-	private void sendFloorMessage(Message message) {
+	public void sendFloorMessage(Message message) {
 		synchronized (floorQueue) {
 			floorQueue.add(message);
 			System.out.println("Scheduler forwarded message to floor");
@@ -28,7 +32,7 @@ public class Scheduler implements Runnable {
 		}
 	}
 
-	private void sendElevatorMessage(Message message) {
+	public void sendElevatorMessage(Message message) {
 		synchronized (elevatorQueue) {
 			elevatorQueue.add(message);
 			System.out.println("Scheduler forwarded message to elevator");
