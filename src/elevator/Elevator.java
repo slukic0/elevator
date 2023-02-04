@@ -26,33 +26,39 @@ public class Elevator implements Runnable {
 	}
 
 	public void run() {
-		synchronized (recieveQueue) {
-			while (recieveQueue.isEmpty()) {
-				// wait for a message
-				try {
-					recieveQueue.wait();
-				} catch (InterruptedException e) {
-					System.out.println("Error in Elevator thread");
-					e.printStackTrace();
+		while (true) {
+			Message recievedMessage;
+			synchronized (recieveQueue) {
+				while (recieveQueue.isEmpty()) {
+					// wait for a message
+					try {
+						recieveQueue.wait();
+					} catch (InterruptedException e) {
+						System.out.println("Error in Elevator thread");
+						e.printStackTrace();
+					}
 				}
+				recievedMessage = recieveQueue.poll();
+				System.out.println("Elevator recieved message: " + recievedMessage.toString());
 			}
-			Message recievedMessage = recieveQueue.poll();
-			System.out.println("Elevator recieved message: " + recievedMessage.toString());
-		}
-		// Send a message back to the floor
-		synchronized (schedulerQueue) {
-			while (!schedulerQueue.isEmpty()) {
-				try {
-					schedulerQueue.wait();
-				} catch (InterruptedException e) {
-					System.out.println("Error in Floor Thread");
-					e.printStackTrace();
+			// Send a message back to the floor
+			synchronized (schedulerQueue) {
+				while (!schedulerQueue.isEmpty()) {
+					try {
+						schedulerQueue.wait();
+					} catch (InterruptedException e) {
+						System.out.println("Error in Floor Thread");
+						e.printStackTrace();
+					}
 				}
+				// create a new message with the same info but sent from the elevator
+				Message newMessage = new Message(Sender.ELEVATOR, recievedMessage.getFloor(),
+						recievedMessage.getGoingUp(), recievedMessage.getTime());
+				schedulerQueue.add(newMessage);
+				System.out.println("Elevator sent message: " + newMessage.toString());
+				schedulerQueue.notifyAll();
 			}
-			Message newMessage = new Message(Sender.ELEVATOR, currentFloor, false);
-			schedulerQueue.add(newMessage);
-			System.out.println("Elevator sent message: " + newMessage.toString());
-			schedulerQueue.notifyAll();
+
 		}
 	}
 }
