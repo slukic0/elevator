@@ -19,9 +19,9 @@ src/util:
   FileUtil.java: Class for parsing input file
   
 src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, events.txt
-  SchedulerTests: Contains server class for scheduler
-  ElevatorTests: Contains client class for Elevator object
-  FloorTests: Contains client class for Floor object
+  SchedulerTests: Contains tests for Scheduler class
+  ElevatorTests: Contains tests for Elevator class
+  FloorTests: Contains tests for Floor class
   events: text file containing data log
 
 src/diagrams:
