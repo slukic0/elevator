@@ -50,7 +50,7 @@ public class SchedulerTest {
         
         scheduler.sendFloorMessage(message_f);
 
-        assertEquals(message_f, floor.getRecieveQueue().poll(), "Message was not sent/received properly");
+        assertEquals(message_f, floor.getreceiveQueue().poll(), "Message was not sent/received properly");
     }
 
 	/**
@@ -61,6 +61,6 @@ public class SchedulerTest {
         
         scheduler.sendElevatorMessage(message_e);
 
-        assertEquals(message_e, elevator.getRecieveQueue().poll(), "Message was not sent/received properly");
+        assertEquals(message_e, elevator.getreceiveQueue().poll(), "Message was not sent/received properly");
     }
 }

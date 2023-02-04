@@ -13,31 +13,31 @@ import elevator.Message.Sender;
  */
 public class Floor implements Runnable {
 	private final int FLOOR_NUMBER;
-	private Queue<Message> recieveQueue;
+	private Queue<Message> receiveQueue;
 	private Queue<Message> schedulerQueue;
 	private ArrayList<Message> messages; // Iteration 1: file inputed messages
 
 	/** 
 	 * Creates a floor with shared synchronized message queues and the floor number
 	 *  
-	 * @param recieveQueue the synchronized message queue to recieve information from the Scheduler
+	 * @param receiveQueue the synchronized message queue to receive information from the Scheduler
 	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
 	 * @param floorNumber the floor's number
 	 */
-	public Floor(Queue<Message> recieveQueue, Queue<Message> schedulerQueue, int floorNumber) {
-		this.recieveQueue = recieveQueue;
+	public Floor(Queue<Message> receiveQueue, Queue<Message> schedulerQueue, int floorNumber) {
+		this.receiveQueue = receiveQueue;
 		this.schedulerQueue = schedulerQueue;
 		this.FLOOR_NUMBER = floorNumber;
 		this.messages = new ArrayList<>();
 	}
 	
 	/**
-	 * Gets the floor's recieve queue
+	 * Gets the floor's receive queue
 	 * 
-	 * @return		Queue <Message>, floor's recieve queue
+	 * @return		Queue <Message>, floor's receive queue
 	 */
-	public Queue<Message> getRecieveQueue() {
-		return this.recieveQueue;
+	public Queue<Message> getreceiveQueue() {
+		return this.receiveQueue;
 	}
 	
 	/**
@@ -87,21 +87,21 @@ public class Floor implements Runnable {
 				schedulerQueue.notifyAll();
 			}
 
-			synchronized (recieveQueue) {
+			synchronized (receiveQueue) {
 				// wait for elevator response
-				while (recieveQueue.isEmpty()) {
+				while (receiveQueue.isEmpty()) {
 					try {
-						recieveQueue.wait();
+						receiveQueue.wait();
 					} catch (InterruptedException e) {
 						System.out.println("Error in Floor Thread");
 						e.printStackTrace();
 					}
 				}
 
-				Message message = recieveQueue.poll();
-				System.out.println("Floor recieved message: " + message.toString());
+				Message message = receiveQueue.poll();
+				System.out.println("Floor received message: " + message.toString());
 
-				recieveQueue.notifyAll();
+				receiveQueue.notifyAll();
 			}
 		}
 

@@ -13,19 +13,19 @@ import elevator.Message.Sender;
 public class Elevator implements Runnable {
 	private final int ELEVATOR_NUMBER;
 	private int currentFloor;
-	private Queue<Message> recieveQueue;
+	private Queue<Message> receiveQueue;
 	private Queue<Message> schedulerQueue;
 
 	/** 
 	 * Creates an elevator with shared synchronized message queues, the elevator number and its current floor
 	 * 
-	 * @param recieveQueue   the synchronized message queue to recieve information from the Scheduler
+	 * @param receiveQueue   the synchronized message queue to receive information from the Scheduler
 	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
 	 * @param elevatorNumber the elevator number
 	 * @param currentFloor   the elevator's current floor
 	 */
-	public Elevator(Queue<Message> recieveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
-		this.recieveQueue = recieveQueue;
+	public Elevator(Queue<Message> receiveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
+		this.receiveQueue = receiveQueue;
 		this.schedulerQueue = schedulerQueue;
 		this.ELEVATOR_NUMBER = elevatorNumber;
 		this.currentFloor = currentFloor;
@@ -48,12 +48,12 @@ public class Elevator implements Runnable {
 	}
 	
 	/**
-	 * Gets the elevator's recieve queue
+	 * Gets the elevator's receive queue
 	 * 
-	 * @return recieveQueue  elevator's recieve queue
+	 * @return receiveQueue  elevator's receive queue
 	 */
-	public Queue<Message> getRecieveQueue() {
-		return this.recieveQueue;
+	public Queue<Message> getreceiveQueue() {
+		return this.receiveQueue;
 	}
 	
 	/**
@@ -70,19 +70,19 @@ public class Elevator implements Runnable {
 	 */
 	public void run() {
 		while (true) {
-			Message recievedMessage;
-			synchronized (recieveQueue) {
-				while (recieveQueue.isEmpty()) {
+			Message receivedMessage;
+			synchronized (receiveQueue) {
+				while (receiveQueue.isEmpty()) {
 					// wait for a message
 					try {
-						recieveQueue.wait();
+						receiveQueue.wait();
 					} catch (InterruptedException e) {
 						System.out.println("Error in Elevator thread");
 						e.printStackTrace();
 					}
 				}
-				recievedMessage = recieveQueue.poll();
-				System.out.println("Elevator recieved message: " + recievedMessage.toString());
+				receivedMessage = receiveQueue.poll();
+				System.out.println("Elevator received message: " + receivedMessage.toString());
 			}
 			// Send a message back to the floor
 			synchronized (schedulerQueue) {
@@ -95,8 +95,8 @@ public class Elevator implements Runnable {
 					}
 				}
 				// create a new message with the same info but sent from the elevator
-				Message newMessage = new Message(Sender.ELEVATOR, recievedMessage.getFloor(),
-						recievedMessage.getGoingUp(), recievedMessage.getTime());
+				Message newMessage = new Message(Sender.ELEVATOR, receivedMessage.getFloor(),
+						receivedMessage.getGoingUp(), receivedMessage.getTime());
 				schedulerQueue.add(newMessage);
 				System.out.println("Elevator sent message: " + newMessage.toString());
 				schedulerQueue.notifyAll();

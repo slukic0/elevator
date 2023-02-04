@@ -13,22 +13,22 @@ import elevator.Message.Sender;
 public class Scheduler implements Runnable {
 	private Floor[] floors;
 	private Elevator[] elevators;
-	private Queue<Message> recieveQueue;
+	private Queue<Message> receiveQueue;
 	private Queue<Message> floorQueue;
 	private Queue<Message> elevatorQueue;
 
 	/**
 	 * Creates a scheduler with shared synchronized message queues, floors and elevators in the system
 	 * 
-	 * @param recieveQueue 
+	 * @param receiveQueue 
 	 * @param floorQueue
 	 * @param elevatorQueue
 	 * @param floors
 	 * @param elevators
 	 */
-	public Scheduler(Queue<Message> recieveQueue, Queue<Message> floorQueue, Queue<Message> elevatorQueue,
+	public Scheduler(Queue<Message> receiveQueue, Queue<Message> floorQueue, Queue<Message> elevatorQueue,
 			Floor[] floors, Elevator[] elevators) {
-		this.recieveQueue = recieveQueue;
+		this.receiveQueue = receiveQueue;
 		this.floorQueue = floorQueue;
 		this.elevatorQueue = elevatorQueue;
 		this.floors = floors;
@@ -36,12 +36,12 @@ public class Scheduler implements Runnable {
 	}
 
 	/**
-	 * Gets the scheduler's recieve queue
+	 * Gets the scheduler's receive queue
 	 * 
-	 * @return recieveQueue  scheduler's recieve queue
+	 * @return receiveQueue  scheduler's receive queue
 	 */
-	public Queue<Message> getRecieveQueue() {
-		return this.recieveQueue;
+	public Queue<Message> getreceiveQueue() {
+		return this.receiveQueue;
 	}
 
 	/**
@@ -75,19 +75,19 @@ public class Scheduler implements Runnable {
 	 */
 	public void run() {
 		while (true) {
-			synchronized (recieveQueue) {
-				while (recieveQueue.isEmpty()) {
+			synchronized (receiveQueue) {
+				while (receiveQueue.isEmpty()) {
 					try {
-						recieveQueue.wait();
+						receiveQueue.wait();
 					} catch (InterruptedException e) {
 						System.out.println("Error in Scheduler Thread");
 						e.printStackTrace();
 					}
 				}
 				// get the message
-				Message message = recieveQueue.poll();
+				Message message = receiveQueue.poll();
 				System.out.println("Scheduler got message: " + message.toString());
-				recieveQueue.notifyAll();
+				receiveQueue.notifyAll();
 
 				if (message.getSender() == Sender.FLOOR) {
 					sendElevatorMessage(message);

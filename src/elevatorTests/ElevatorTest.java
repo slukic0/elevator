@@ -48,7 +48,7 @@ public class ElevatorTest {
         
         elevator.getSchedulerQueue().add(message);
 
-        assertEquals(message, scheduler.getRecieveQueue().poll(), "Message was not sent/received properly");
+        assertEquals(message, scheduler.getreceiveQueue().poll(), "Message was not sent/received properly");
     }
 
 }
