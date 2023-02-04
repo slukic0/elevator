@@ -35,6 +35,11 @@ public class Scheduler implements Runnable {
 		this.elevators = elevators;
 	}
 
+	/**
+	 * Gets the scheduler's recieve queue
+	 * 
+	 * @return recieveQueue  scheduler's recieve queue
+	 */
 	public Queue<Message> getRecieveQueue() {
 		return this.recieveQueue;
 	}

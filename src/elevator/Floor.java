@@ -31,14 +31,34 @@ public class Floor implements Runnable {
 		this.messages = new ArrayList<>();
 	}
 	
+	/**
+	 * Gets the floor's recieve queue
+	 * 
+	 * @return		Queue <Message>, floor's recieve queue
+	 */
 	public Queue<Message> getRecieveQueue() {
 		return this.recieveQueue;
 	}
 	
+	/**
+	 * Gets the floor's scheduler queue
+	 * 
+	 * @return		Queue <Message>, floor's scheduler queue
+	 */
 	public Queue<Message> getSchedulerQueue() {
 		return this.schedulerQueue;
 	}
 
+	/**
+	 * Gets the floor's message list
+	 * 
+	 * @return		ArrayList <Message>, floor's message list
+	 */
+	public ArrayList<Message> getMessages() {
+		return this.messages;
+	}
+	
+	
 	public void addMessage(Message message) {
 		messages.add(message);
 	}

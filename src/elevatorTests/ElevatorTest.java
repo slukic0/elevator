@@ -11,7 +11,7 @@ import elevator.Message.Sender;
 /**
  * Class for testing the methods in the Elevator Class
  *
- * @author Nicolas Tanouchev
+ * @author Group G5
  * @version 1.0
  */
 public class ElevatorTest {

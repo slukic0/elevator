@@ -3,15 +3,17 @@ package elevatorTests;
 import elevator.*;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.LinkedList;
 import java.util.Queue;
 import elevator.Message.Sender;
+import util.FileUtil;
 
 
 /**
  * Class for testing the methods in the Floor Class
  *
- * @author Nicolas Tanouchev
+ * @author Group G5
  * @version 1.0
  */
 public class FloorTest {
@@ -38,6 +40,27 @@ public class FloorTest {
         elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);
         scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorQueue, floors, elevators);
         message = new Message(Sender.FLOOR, 0, true);
+    }
+
+    /**
+     * Method to test reading from an input file in Floor class
+     */
+	@Test
+    public void testReadInput(){
+		
+		// Read input file and create floor message
+		try {
+			String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
+			Message[] messages = FileUtil.parseStringInput(input);
+			floor.addMessage(messages[0]);
+		} catch (Exception e) {
+		}
+
+		assertEquals(Sender.FLOOR, floor.getMessages().get(0).getSender(), "Reading message from input failed");
+        assertEquals(0, floor.getMessages().get(0).getFloor(), "Reading message from input failed");
+        assertTrue(floor.getMessages().get(0).getGoingUp(),"Reading message from input failed");
+        assertEquals("13:34:46.438994900", floor.getMessages().get(0).getTime().toString(), "Reading message from input failed");
+        
     }
 	
 	/**

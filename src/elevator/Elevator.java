@@ -47,10 +47,20 @@ public class Elevator implements Runnable {
 		this.currentFloor = floor;
 	}
 	
+	/**
+	 * Gets the elevator's recieve queue
+	 * 
+	 * @return recieveQueue  elevator's recieve queue
+	 */
 	public Queue<Message> getRecieveQueue() {
 		return this.recieveQueue;
 	}
 	
+	/**
+	 * Gets the elevator's scheduler queue
+	 * 
+	 * @return schedulerQueue  elevator's scheduler queue
+	 */
 	public Queue<Message> getSchedulerQueue() {
 		return this.schedulerQueue;
 	}
