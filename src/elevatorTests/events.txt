@@ -1,0 +1,4 @@
+// Enter Events in the following format: time|floor|button
+// Example: 12:43:47.0|0|UP
+// Example: 12:43:47.0|1|DOWN
+13:34:46.438994900|0|UP
