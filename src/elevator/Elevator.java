@@ -1,5 +1,6 @@
 package elevator;
 
+import java.util.HashMap;
 import java.util.Queue;
 
 import elevator.Message.Sender;
@@ -13,8 +14,9 @@ import elevator.Message.Sender;
 public class Elevator implements Runnable {
 	private final int ELEVATOR_NUMBER;
 	private int currentFloor;
-	private Queue<Message> receiveQueue;
+	private Queue<Integer> receiveQueue; // Elevator now receives floor number from task
 	private Queue<Message> schedulerQueue;
+	HashMap<Elevator, Integer>Tasks = new HashMap<Elevator, Integer>();
 
 	/** 
 	 * Creates an elevator with shared synchronized message queues, the elevator number and its current floor
@@ -24,7 +26,7 @@ public class Elevator implements Runnable {
 	 * @param elevatorNumber the elevator number
 	 * @param currentFloor   the elevator's current floor
 	 */
-	public Elevator(Queue<Message> receiveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
+	public Elevator(Queue<Integer> receiveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
 		this.receiveQueue = receiveQueue;
 		this.schedulerQueue = schedulerQueue;
 		this.ELEVATOR_NUMBER = elevatorNumber;
@@ -52,7 +54,7 @@ public class Elevator implements Runnable {
 	 * 
 	 * @return receiveQueue  elevator's receive queue
 	 */
-	public Queue<Message> getreceiveQueue() {
+	public Queue<Integer> getreceiveQueue() {
 		return this.receiveQueue;
 	}
 	
@@ -70,7 +72,7 @@ public class Elevator implements Runnable {
 	 */
 	public void run() {
 		while (true) {
-			Message receivedMessage;
+			int receivedMessage;
 			synchronized (receiveQueue) {
 				while (receiveQueue.isEmpty()) {
 					// wait for a message
@@ -82,26 +84,26 @@ public class Elevator implements Runnable {
 					}
 				}
 				receivedMessage = receiveQueue.poll();
-				System.out.println("Elevator received message: " + receivedMessage.toString());
+				System.out.println("Elevator received message: " + receivedMessage);
 			}
+			//Change to send arrival floor number -------------------------
 			// Send a message back to the floor
-			synchronized (schedulerQueue) {
-				while (!schedulerQueue.isEmpty()) {
-					try {
-						schedulerQueue.wait();
-					} catch (InterruptedException e) {
-						System.out.println("Error in Floor Thread");
-						e.printStackTrace();
-					}
-				}
-				// create a new message with the same info but sent from the elevator
-				Message newMessage = new Message(Sender.ELEVATOR, receivedMessage.getFloor(),
-						receivedMessage.getGoingUp(), receivedMessage.getTime());
-				schedulerQueue.add(newMessage);
-				System.out.println("Elevator sent message: " + newMessage.toString());
-				schedulerQueue.notifyAll();
-			}
-
+//			synchronized (schedulerQueue) {
+//				while (!schedulerQueue.isEmpty()) {
+//					try {
+//						schedulerQueue.wait();
+//					} catch (InterruptedException e) {
+//						System.out.println("Error in Floor Thread");
+//						e.printStackTrace();
+//					}
+//				}
+//				// create a new message with the same info but sent from the elevator
+//				Message newMessage = new Message(Sender.ELEVATOR, receivedMessage);
+//				schedulerQueue.add(newMessage);
+//				System.out.println("Elevator sent message: " + newMessage.toString());
+//				schedulerQueue.notifyAll();
+//			}
+//
 		}
 	}
 }

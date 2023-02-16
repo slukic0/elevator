@@ -1,5 +1,6 @@
 package elevator;
 
+import java.util.HashMap;
 import java.util.Queue;
 
 import elevator.Message.Sender;
@@ -15,7 +16,7 @@ public class Scheduler implements Runnable {
 	private Elevator[] elevators;
 	private Queue<Message> receiveQueue;
 	private Queue<Message> floorQueue;
-	private Queue<Message> elevatorQueue;
+	private HashMap<Elevator, Integer> tasks; // Elevator, Floor
 
 	/**
 	 * Creates a scheduler with shared synchronized message queues, floors and elevators in the system
@@ -26,11 +27,10 @@ public class Scheduler implements Runnable {
 	 * @param floors
 	 * @param elevators
 	 */
-	public Scheduler(Queue<Message> receiveQueue, Queue<Message> floorQueue, Queue<Message> elevatorQueue,
+	public Scheduler(Queue<Message> receiveQueue, Queue<Message> floorQueue,
 			Floor[] floors, Elevator[] elevators) {
 		this.receiveQueue = receiveQueue;
 		this.floorQueue = floorQueue;
-		this.elevatorQueue = elevatorQueue;
 		this.floors = floors;
 		this.elevators = elevators;
 	}
@@ -62,13 +62,13 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param message  the message to send to the elevator
 	 */
-	public void sendElevatorMessage(Message message) {
-		synchronized (elevatorQueue) {
-			elevatorQueue.add(message);
-			System.out.println("Scheduler forwarded message to elevator");
-			elevatorQueue.notifyAll();
-		}
-	}
+//	public void sendElevatorMessage(Message message) {
+//		synchronized (elevatorQueue) {
+//			elevatorQueue.add(message);
+//			System.out.println("Scheduler forwarded message to elevator");
+//			elevatorQueue.notifyAll();
+//		}
+//	}
 
 	/** 
 	 *  Runs the scheduler's thread
@@ -90,7 +90,7 @@ public class Scheduler implements Runnable {
 				receiveQueue.notifyAll();
 
 				if (message.getSender() == Sender.FLOOR) {
-					sendElevatorMessage(message);
+					//sendElevatorMessage(message); // change to sendElevatorSubsytem
 				} else {
 					sendFloorMessage(message);
 

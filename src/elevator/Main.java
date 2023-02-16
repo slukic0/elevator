@@ -13,7 +13,7 @@ public class Main {
 
 		Queue<Message> schedulerQueue = new LinkedList<>();
 		Queue<Message> floorQueue = new LinkedList<>();
-		Queue<Message> elevatorQueue = new LinkedList<>();
+		Queue<Integer> elevatorQueue = new LinkedList<>();
 
 		// only 1 floor and 1 elevator for now...
 		Elevator elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);
@@ -22,7 +22,7 @@ public class Main {
 		Floor[] floors = new Floor[] { floor };
 		Elevator[] elevators = new Elevator[] { elevator };
 
-		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorQueue, floors, elevators);
+		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue,floors, elevators);
 
 		// Read input file and create floor messages
 		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
