@@ -15,8 +15,7 @@ public class Elevator implements Runnable {
 	private final int ELEVATOR_NUMBER;
 	private int currentFloor;
 	private int destFloor;
-	private Queue<FloorData> receiveQueue; // Elevator now receives floor number from task
-	private Queue<Object> subsystemQueue;
+	private ElevatorSubsystem elevatorSubsystem;
 	private ElevatorStates state;
 
 	/** 
@@ -27,11 +26,11 @@ public class Elevator implements Runnable {
 	 * @param elevatorNumber the elevator number
 	 * @param currentFloor   the elevator's current floor
 	 */
-	public Elevator(int elevatorNumber, Queue<FloorData> receiveQueue, Queue<Object> subsystemQueue, int currentFloor) {
+	public Elevator(ElevatorSubsystem elevatorSubsystem, int elevatorNumber,  int currentFloor) {
+		this.elevatorSubsystem = elevatorSubsystem;
 		this.ELEVATOR_NUMBER = elevatorNumber;
-		this.receiveQueue = receiveQueue;
-		this.subsystemQueue = subsystemQueue;
 		this.currentFloor = currentFloor;
+		this.destFloor = -1; // -1 When at IDLE
 	}
 	
 	public int getELEVATOR_NUMBER() {
@@ -52,24 +51,6 @@ public class Elevator implements Runnable {
 	 */
 	public void setCurrentFloor(int floor) {
 		this.currentFloor = floor;
-	}
-	
-	/**
-	 * Gets the elevator's receive queue
-	 * 
-	 * @return receiveQueue  elevator's receive queue
-	 */
-	public Queue<FloorData> getreceiveQueue() {
-		return this.receiveQueue;
-	}
-	
-	/**
-	 * Gets the elevator's scheduler queue
-	 * 
-	 * @return schedulerQueue  elevator's scheduler queue
-	 */
-	public Queue<Object> getSubsystemQueue() {
-		return subsystemQueue;
 	}
 	
 	

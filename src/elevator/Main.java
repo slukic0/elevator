@@ -16,6 +16,9 @@ public class Main {
 		Queue<Integer> elevatorSystemQueue = new LinkedList<>();
 
 		// only 1 floor and 1 elevator for now...
+		
+		
+	// Elevator will create subsystem
 		Elevator elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);
 		Floor floor = new Floor(floorQueue, schedulerQueue, 0);
 

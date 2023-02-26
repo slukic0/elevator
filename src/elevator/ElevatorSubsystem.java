@@ -6,12 +6,12 @@ import util.SendReceiveUtil;
 
 public class ElevatorSubsystem implements Runnable{
 	
-	private Elevator[] elevators;
+	private Elevator elevator;
 	private Queue<Object> receiveQueue;
 	private Queue<Object> schedulerReceiveQueue;
 	
-	public ElevatorSubsystem(Elevator[] elevators, Queue<Object> receiveQueue, Queue<Object>schedulerReceiveQueue){
-		this.elevators = elevators;
+	public ElevatorSubsystem( Queue<Object> receiveQueue, Queue<Object>schedulerReceiveQueue, int elevatorNumber, int currentFloor){
+		this.elevator = new Elevator(null, elevatorNumber, currentFloor);
 		this.receiveQueue = receiveQueue;
 		this.schedulerReceiveQueue = schedulerReceiveQueue;
 	}
@@ -24,7 +24,6 @@ public class ElevatorSubsystem implements Runnable{
 					try {
 						receiveQueue.wait();
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -32,7 +31,7 @@ public class ElevatorSubsystem implements Runnable{
 					Object data = receiveQueue.poll();
 					if (data instanceof FloorData) {
 						// tell the elevator to process the data (just 1 elevator for now)
-						elevators[0].processPacket((FloorData) data);
+						elevator.processPacket((FloorData) data);
 					} else if (data instanceof ElevatorData) {
 						// elevator sending data to scheduler
 						new Thread(() -> {
