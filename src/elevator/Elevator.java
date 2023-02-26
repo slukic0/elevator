@@ -32,6 +32,7 @@ public class Elevator implements Runnable {
 		this.ELEVATOR_NUMBER = elevatorNumber;
 		this.currentFloor = currentFloor;
 		this.destFloor = -1; // -1 When at IDLE
+		this.state = ElevatorStates.IDLE;
 	}
 	
 	public int getELEVATOR_NUMBER() {

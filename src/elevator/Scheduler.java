@@ -89,7 +89,7 @@ public class Scheduler implements Runnable {
 
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
-			if (floorUpButtonsMap.get(i)) {
+			if (floorUpButtonsMap.containsKey(i)) {
 				return i;
 			}
 		}
@@ -98,7 +98,7 @@ public class Scheduler implements Runnable {
 
 	private int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
-			if (floorDownButtonsMap.get(i)) {
+			if (floorDownButtonsMap.containsKey(i)) {
 				return i;
 			}
 		}
@@ -122,7 +122,7 @@ public class Scheduler implements Runnable {
 	 * @param message
 	 */
 	public void handleFloorRequest(FloorData message) {
-
+		System.out.println("Scheduler marking floor " + message.getFloor() + " as " + message.getGoingUp());
 		boolean goingUp = message.getGoingUp();
 		int destFloor = message.getFloor();
 
@@ -147,8 +147,13 @@ public class Scheduler implements Runnable {
 		int elevatorDestFloor;
 
 		if (checkIfButtonsPressed()) {
+			// no more work
 			state = SchedulerStates.IDLE;
+			floorUpButtonsMap.remove(elevatorCurrFloor);
+			floorDownButtonsMap.remove(elevatorCurrFloor);
 		} else {
+			System.out.println("Scheduler determining next floor for Elevator with state " + eSubsystem.getElevator().getState());
+
 			switch (eSubsystem.getElevator().getState()) {
 			case IDLE: {
 				elevatorDestFloor = findClosest(elevatorCurrFloor);
@@ -168,7 +173,14 @@ public class Scheduler implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + eSubsystem.getElevator().getState());
 			}
 			boolean isGoingUp = elevatorDestFloor > elevatorCurrFloor;
-			sendElevatorSystemMessage(new FloorData(elevatorDestFloor, isGoingUp));
+			if (isGoingUp) {
+				floorUpButtonsMap.remove(elevatorCurrFloor);
+			} else {
+				floorDownButtonsMap.remove(elevatorCurrFloor);
+			}
+			FloorData message = new FloorData(elevatorDestFloor, isGoingUp);
+			System.out.println("Scheduler sending message to Elevator subsys : "+ message);
+			sendElevatorSystemMessage(message);
 		}
 	}
 
