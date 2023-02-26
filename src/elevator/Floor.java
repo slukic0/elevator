@@ -26,7 +26,7 @@ public class Floor implements Runnable {
 	 *                       the Scheduler
 	 * @param floorNumber    the floor's number
 	 */
-	public Floor(Queue<Message> receiveQueue, Queue<Object> schedulerQueue, int floorNumber) {
+	public Floor(Queue<ElevatorData> receiveQueue, Queue<Object> schedulerQueue, int floorNumber) {
 		this.receiveQueue = receiveQueue;
 		this.schedulerQueue = schedulerQueue;
 		this.FLOOR_NUMBER = floorNumber;
@@ -37,7 +37,7 @@ public class Floor implements Runnable {
 	 * 
 	 * @return Queue <Message>, floor's receive queue
 	 */
-	public Queue<Message> getreceiveQueue() {
+	public Queue<ElevatorData> getreceiveQueue() {
 		return this.receiveQueue;
 	}
 
