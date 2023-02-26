@@ -79,6 +79,8 @@ public class Elevator implements Runnable {
 		switch (state) {
 		case IDLE: {
 			destFloor = data.getFloor();
+			// TODO tell the schduler something???
+			this.wake();
 			break;
 		}
 		case GOING_DOWN: {
@@ -103,6 +105,10 @@ public class Elevator implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private synchronized void wake() {
+		this.notify();
 	}
 
 	/** 
