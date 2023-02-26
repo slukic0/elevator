@@ -16,6 +16,9 @@ public class ElevatorSubsystem implements Runnable {
 		this.elevator = new Elevator(null, elevatorNumber, currentFloor);
 		this.receiveQueue = receiveQueue;
 		this.schedulerReceiveQueue = schedulerReceiveQueue;
+		
+		// Start the elevator
+		new Thread(this.elevator).start();
 	}
 
 	public Elevator getElevator() {
