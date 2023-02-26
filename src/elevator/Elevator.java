@@ -37,6 +37,11 @@ public class Elevator implements Runnable {
 		return ELEVATOR_NUMBER;
 	}
 	
+	
+	public ElevatorStates getState() {
+		return state;
+	}
+	
 	/** Gets the elevator's current floor
 	 * 
 	 * @return currentFloor  the elevator's current floor

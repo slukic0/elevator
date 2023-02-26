@@ -15,6 +15,10 @@ public class ElevatorSubsystem implements Runnable{
 		this.receiveQueue = receiveQueue;
 		this.schedulerReceiveQueue = schedulerReceiveQueue;
 	}
+	
+	public Elevator getElevator() {
+		return elevator;
+	}
 
 	@Override
 	public void run() {
