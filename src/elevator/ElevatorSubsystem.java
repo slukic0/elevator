@@ -13,7 +13,7 @@ public class ElevatorSubsystem implements Runnable {
 
 	public ElevatorSubsystem(Queue<FloorData> receiveQueue, Queue<Object> schedulerReceiveQueue, int elevatorNumber,
 			int currentFloor) {
-		this.elevator = new Elevator(null, elevatorNumber, currentFloor);
+		this.elevator = new Elevator(this, elevatorNumber, currentFloor);
 		this.receiveQueue = receiveQueue;
 		this.schedulerReceiveQueue = schedulerReceiveQueue;
 		
@@ -26,6 +26,7 @@ public class ElevatorSubsystem implements Runnable {
 	}
 
 	public void sendSchedulerMessage(ElevatorData message) {
+		System.out.println("Elevator subsystem sending message " + message);
 		new Thread(() -> {
 			SendReceiveUtil.sendData(schedulerReceiveQueue, message);
 		}).start();

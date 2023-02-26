@@ -105,15 +105,16 @@ public class Elevator implements Runnable {
 				System.out.println("Moving to floor " + destinationFloor);
 				int diff = Math.abs(destinationFloor - currentFloor);
 				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now().plusSeconds(1 * diff)));
+						new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now().plusSeconds(2 * diff)));
 
 				// wait for a bit
 				try {
-					Thread.sleep(1000 * diff);
+					Thread.sleep(2000 * diff);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				System.out.println("Elevator has arrived at floor " + destinationFloor);
 				currentFloor = destinationFloor;
 				state = ElevatorStates.IDLE;
 				// tell the scheduler we have arrived
