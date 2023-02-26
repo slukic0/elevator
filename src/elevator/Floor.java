@@ -50,7 +50,7 @@ public class Floor implements Runnable {
 		return this.schedulerQueue;
 	}
 
-	public void FloorData(FloorData data) {
+	public void sendMessage(FloorData data) {
 		System.out.println("Floor is sending message to Scheduler: " + data.toString());
 		new Thread(() -> {
 			SendReceiveUtil.sendData(schedulerQueue, data);

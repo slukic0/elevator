@@ -1,5 +1,6 @@
 package elevator;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Queue;
 
@@ -59,29 +60,10 @@ public class Elevator implements Runnable {
 	}
 	
 	
-	public void processPacket(FloorData data) {
-		// going up is not relevant at the moment since we only have 1 elevator
-		
-		switch (state) {
-		case IDLE: {
-			destFloor = data.getFloor();
-			// TODO tell the scheduler something???	
-			this.wake();
-			break;
-		}
-		case GOING_DOWN: {
-			
-			break;
-		}
-		
-		case GOING_UP: {
-			
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + state);
-		}
-				
+	public void processPacket(FloorData data) {		
+		destFloor = data.getFloor();
+		state = destFloor > currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+		this.wake();		
 	}
 	
 	private synchronized void pause() {
@@ -109,6 +91,21 @@ public class Elevator implements Runnable {
 		case GOING_DOWN:
 		case GOING_UP:
 			// TODO move the elevator
+			System.out.println("Moving to floor "+destFloor);
+			int diff = Math.abs(destFloor - currentFloor);
+			elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor, destFloor, LocalTime.now().plusSeconds(1*diff)));
+			
+			// wait for a bit
+			try {
+				Thread.sleep(1000* diff);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			currentFloor=destFloor;
+			state = ElevatorStates.IDLE;
+			// tell the scheduler we have arrived
+			elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor, destFloor, LocalTime.now()));
 			
 			break;
 		default:

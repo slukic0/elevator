@@ -23,9 +23,11 @@ public class Scheduler implements Runnable {
 
 	private HashMap<Integer, Boolean> floorUpButtonsMap;
 	private HashMap<Integer, Boolean> floorDownButtonsMap;
-	
-	private int NUMBER_OF_FLOORS;
-	private int STARTING_FLOOR;
+
+	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
+	private final int STARTING_FLOOR = Constants.STARTING_FLOOR;
+
+	private SchedulerStates state;
 
 	/**
 	 * Creates a scheduler with shared synchronized message queues, floors and
@@ -37,16 +39,17 @@ public class Scheduler implements Runnable {
 	 * @param floors
 	 * @param elevators
 	 */
-	public Scheduler(int NUMBER_OF_FLOORS, int STARTING_FLOOR, Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
-			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, Elevator[] elevators) {
-		this.NUMBER_OF_FLOORS = NUMBER_OF_FLOORS;
-		this.STARTING_FLOOR = STARTING_FLOOR;
+	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
+			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) {
 		this.receiveQueue = receiveQueue;
 		this.floorRecieveQueue = floorRecieveQueue;
 		this.elevatorRecieveQuque = elevatorRecieveQuque;
 		this.floors = floors;
+		this.elevatorSystems = elevatorSubsystems;
+		
 		this.floorUpButtonsMap = new HashMap<>();
 		this.floorDownButtonsMap = new HashMap<>();
+		this.state=SchedulerStates.IDLE;
 	}
 
 	/**
@@ -83,7 +86,7 @@ public class Scheduler implements Runnable {
 			elevatorRecieveQuque.notifyAll();
 		}
 	}
-	
+
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
 			if (floorUpButtonsMap.get(i)) {
@@ -92,76 +95,90 @@ public class Scheduler implements Runnable {
 		}
 		return Integer.MAX_VALUE;
 	}
-	
+
 	private int findClosestDown(int currFloor) {
-		for (int i = currFloor-1; i >= STARTING_FLOOR; i--) {
+		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
 			if (floorDownButtonsMap.get(i)) {
 				return i;
 			}
 		}
 		return Integer.MAX_VALUE;
 	}
-	
-	private boolean checkIfIdle() {
+
+	private boolean checkIfButtonsPressed() {
 		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
 	}
-	
+
 	private int findClosest(int currFloor) {
-		int closest =  Math.min(
-			findClosestDown(currFloor) - currFloor,
-			findClosestUp(currFloor) - currFloor
-		);
-		
+		int closest = Math.min(findClosestDown(currFloor) - currFloor, findClosestUp(currFloor) - currFloor);
+
 		return (closest > NUMBER_OF_FLOORS) ? Integer.MAX_VALUE : closest;
-		
+
 	}
-	
 
+	/**
+	 * Set the floor button as pressed in the HashMaps
+	 * 
+	 * @param message
+	 */
 	public void handleFloorRequest(FloorData message) {
-		// elevator sent the message
-
-		// TODO: for now we only have 1 elevator
-		// in the future we should choose the most efficient elevator
-		// and tell the elevator subsystem which elevator to move
-		// for (Elevator e : elevatorSystems) {
-		// elevatorNumber = e.getELEVATOR_NUMBER();
-		// }
-		// for now for will select the only subsystem that exists
-
-		ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
 
 		boolean goingUp = message.getGoingUp();
 		int destFloor = message.getFloor();
-		LocalTime time = message.getTime();
 
-		int elevatorCurrFloor = eSubsystem.getElevator().getCurrentFloor();
-		int elevatorDestFloor;
-		
 		if (goingUp) {
 			floorUpButtonsMap.put(destFloor, true);
 		} else {
 			floorDownButtonsMap.put(destFloor, true);
 		}
-		
-		switch (eSubsystem.getElevator().getState()) {
-		case IDLE: {
-			elevatorCurrFloor = checkIfIdle() ? destFloor : findClosest(elevatorCurrFloor);
-			break;
+		state = SchedulerStates.WOKRING;
+		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
+			sendElevatorCommand();
 		}
-		case GOING_UP: {
-			elevatorCurrFloor = findClosestUp(elevatorCurrFloor);
-			break;
-		}
-		case GOING_DOWN: {
-	
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + eSubsystem.getElevator().getState();
-		}
+	}
 
-		
-		sendElevatorSystemMessage(new FloorData(elevatorDestFloor, goingUp, time));
+	/**
+	 * Tell the elevator to move if needed
+	 */
+	public void sendElevatorCommand() {
+		ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
+
+		int elevatorCurrFloor = eSubsystem.getElevator().getCurrentFloor();
+		int elevatorDestFloor;
+
+		if (checkIfButtonsPressed()) {
+			state = SchedulerStates.IDLE;
+		} else {
+			switch (eSubsystem.getElevator().getState()) {
+			case IDLE: {
+				elevatorDestFloor = findClosest(elevatorCurrFloor);
+				break;
+			}
+			case GOING_UP: {
+				elevatorDestFloor = !floorUpButtonsMap.isEmpty() ? findClosestUp(elevatorCurrFloor)
+						: findClosestDown(elevatorCurrFloor);
+				break;
+			}
+			case GOING_DOWN: {
+				elevatorDestFloor = !floorDownButtonsMap.isEmpty() ? findClosestDown(elevatorCurrFloor)
+						: findClosestUp(elevatorCurrFloor);
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + eSubsystem.getElevator().getState());
+			}
+			boolean isGoingUp = elevatorDestFloor > elevatorCurrFloor;
+			sendElevatorSystemMessage(new FloorData(elevatorDestFloor, isGoingUp));
+		}
+	}
+
+	public void handleElevatorResponse(ElevatorData message) {
+		if (message.getState() == ElevatorStates.IDLE) {
+			// looking for work
+			sendElevatorCommand();
+		} else {
+			System.out.println("Scedhuler: Elevator moving ");
+		}
 	}
 
 	/**
@@ -189,8 +206,7 @@ public class Scheduler implements Runnable {
 
 					} else if (message instanceof ElevatorData) {
 						// one of the elevators sent us this message
-						// TODO
-						sendFloorSystemMessage((ElevatorData) message);
+						handleElevatorResponse((ElevatorData) message);
 					}
 				}
 

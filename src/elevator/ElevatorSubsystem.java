@@ -7,10 +7,10 @@ import util.SendReceiveUtil;
 public class ElevatorSubsystem implements Runnable{
 	
 	private Elevator elevator;
-	private Queue<Object> receiveQueue;
+	private Queue<FloorData> receiveQueue;
 	private Queue<Object> schedulerReceiveQueue;
 	
-	public ElevatorSubsystem( Queue<Object> receiveQueue, Queue<Object>schedulerReceiveQueue, int elevatorNumber, int currentFloor){
+	public ElevatorSubsystem( Queue<FloorData> receiveQueue, Queue<Object>schedulerReceiveQueue, int elevatorNumber, int currentFloor){
 		this.elevator = new Elevator(null, elevatorNumber, currentFloor);
 		this.receiveQueue = receiveQueue;
 		this.schedulerReceiveQueue = schedulerReceiveQueue;
@@ -18,6 +18,12 @@ public class ElevatorSubsystem implements Runnable{
 	
 	public Elevator getElevator() {
 		return elevator;
+	}
+	
+	public void sendSchedulerMessage(ElevatorData message) {
+		new Thread(()->{
+			SendReceiveUtil.sendData(schedulerReceiveQueue, message);
+		}).start();
 	}
 
 	@Override
@@ -32,17 +38,8 @@ public class ElevatorSubsystem implements Runnable{
 					}
 				}
 				for (int i=0; i<receiveQueue.size(); i++) {
-					Object data = receiveQueue.poll();
-					if (data instanceof FloorData) {
-						// tell the elevator to process the data (just 1 elevator for now)
-						elevator.processPacket((FloorData) data);
-					} else if (data instanceof ElevatorData) {
-						// elevator sending data to scheduler
-						new Thread(() -> {
-							SendReceiveUtil.sendData(schedulerReceiveQueue, data);
-						}).start();
-						
-					}
+					FloorData data = receiveQueue.poll();
+					elevator.processPacket(data);
 				}
 				
 			}
