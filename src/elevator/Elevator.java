@@ -79,7 +79,7 @@ public class Elevator implements Runnable {
 		switch (state) {
 		case IDLE: {
 			destFloor = data.getFloor();
-			// TODO tell the schduler something???
+			// TODO tell the scheduler something???	
 			this.wake();
 			break;
 		}

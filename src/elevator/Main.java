@@ -22,15 +22,7 @@ public class Main {
 		Floor[] floors = new Floor[] { floor };
 		Elevator[] elevators = new Elevator[] { elevator };
 
-		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue,floors, elevators);
-
-		// Read input file and create floor messages
-		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
-		Message[] messages = FileUtil.parseStringInput(input);
-		for (Message m : messages) {
-			System.out.println("Adding message: " + m.toString());
-			floor.addMessage(m);
-		}
+		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, floors);
 
 		// Create & start the threads
 		Thread eThread = new Thread(elevator);
@@ -40,6 +32,14 @@ public class Main {
 		eThread.start();
 		fThread.start();
 		sThread.start();
+
+		// Read input file and create floor messages
+		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
+		FloorData[] data = FileUtil.parseStringInput(input);
+		for (FloorData d : data) {
+			System.out.println("Adding FloorData: " + d.toString());
+			floor.sendMessage(d);
+		}
 
 	}
 

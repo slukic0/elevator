@@ -11,12 +11,12 @@ public class FloorData {
 
 	/**
 	 * 
-	 * @param startingFloor floor to start at
+	 * @param floor floor to start at
 	 * @param goingUp true if going up, false if down
 	 * @param time time of request
 	 */
-	public FloorData(int startingFloor, int destFloor, boolean goingUp, LocalTime time) {
-		this.floor = startingFloor;
+	public FloorData(int floor, boolean goingUp, LocalTime time) {
+		this.floor = floor;
 		this.goingUp = goingUp;
 		this.time = time;
 	}
@@ -24,8 +24,8 @@ public class FloorData {
 	/** 
 	 * Second Class constructor 
 	**/
-	public FloorData(int startingFloor, int destFloor, boolean goingUp) {
-		this(startingFloor, destFloor, goingUp, LocalTime.now());
+	public FloorData(int floor, boolean goingUp) {
+		this(floor, goingUp, LocalTime.now());
 	}
 
 	/**

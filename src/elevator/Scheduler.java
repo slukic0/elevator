@@ -14,7 +14,6 @@ import elevator.Message.Sender;
  */
 public class Scheduler implements Runnable {
 	private Floor[] floors;
-	private Elevator[] elevators;
 	private ArrayList<Elevator> idleElevators;
 	
 	private Queue<Object> receiveQueue;
@@ -36,7 +35,6 @@ public class Scheduler implements Runnable {
 		this.floorRecieveQueue = floorRecieveQueue;
 		this.elevatorRecieveQuque = elevatorRecieveQuque;
 		this.floors = floors;
-		this.elevators = elevators;
 	}
 
 	/**
