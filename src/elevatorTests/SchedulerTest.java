@@ -59,7 +59,7 @@ public class SchedulerTest {
 	@Test
     public void testSendElevatorMessage(){
         
-        scheduler.sendElevatorMessage(message_e);
+        scheduler.sendElevatorSystemMessage(message_e);
 
         assertEquals(message_e, elevator.getreceiveQueue().poll(), "Message was not sent/received properly");
     }

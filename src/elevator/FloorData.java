@@ -6,20 +6,17 @@ import elevator.Message.Sender;
 
 public class FloorData {
 	private LocalTime time;
-	private int startingFloor;
-	private int destFloor;
+	private int floor;
 	private boolean goingUp;
 
 	/**
 	 * 
 	 * @param startingFloor floor to start at
-	 * @param destFloor destination of the elevator
 	 * @param goingUp true if going up, false if down
 	 * @param time time of request
 	 */
 	public FloorData(int startingFloor, int destFloor, boolean goingUp, LocalTime time) {
-		this.startingFloor = startingFloor;
-		this.destFloor = destFloor;
+		this.floor = startingFloor;
 		this.goingUp = goingUp;
 		this.time = time;
 	}
@@ -41,25 +38,15 @@ public class FloorData {
 	}
 
 	/** 
-	 * Returns the attribute representing the starting floor number 
+	 * Returns the attribute representing the floor number 
 	 * 
 	 * @return floor  the floor number
 	 * 
 	 */
-	public int getStartingFloor() {
-		return startingFloor;
+	public int getFloor() {
+		return floor;
 	}
 	
-	/** 
-	 * Returns the attribute representing the destination floor number 
-	 * 
-	 * @return floor  the floor number
-	 * 
-	 */
-	public int getDestFloor() {
-		return destFloor;
-	}
-
 	/**
 	 * Returns a boolean value indicating whether the elevator is going up or not
 	 * 
@@ -74,6 +61,6 @@ public class FloorData {
 	 */
 	@Override
 	public String toString() {
-		return "StartFloor: " + startingFloor +", DestFloor: " + destFloor+ ", Time: " + time.toString() + ", GoingUp: " + goingUp;
+		return "Floor: " + floor + ", Time: " + time.toString() + ", GoingUp: " + goingUp;
 	}
 }

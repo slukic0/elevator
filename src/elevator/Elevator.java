@@ -14,23 +14,28 @@ import elevator.Message.Sender;
 public class Elevator implements Runnable {
 	private final int ELEVATOR_NUMBER;
 	private int currentFloor;
-	private Queue<Integer> receiveQueue; // Elevator now receives floor number from task
-	private Queue<Message> schedulerQueue;
-	HashMap<Elevator, Integer>Tasks = new HashMap<Elevator, Integer>();
+	private int destFloor;
+	private Queue<FloorData> receiveQueue; // Elevator now receives floor number from task
+	private Queue<Object> subsystemQueue;
+	private ElevatorStates state;
 
 	/** 
 	 * Creates an elevator with shared synchronized message queues, the elevator number and its current floor
 	 * 
 	 * @param receiveQueue   the synchronized message queue to receive information from the Scheduler
-	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
+	 * @param subsystemQueue the synchronized message queue to send information to the Scheduler
 	 * @param elevatorNumber the elevator number
 	 * @param currentFloor   the elevator's current floor
 	 */
-	public Elevator(Queue<Integer> receiveQueue, Queue<Message> schedulerQueue, int elevatorNumber, int currentFloor) {
-		this.receiveQueue = receiveQueue;
-		this.schedulerQueue = schedulerQueue;
+	public Elevator(int elevatorNumber, Queue<FloorData> receiveQueue, Queue<Object> subsystemQueue, int currentFloor) {
 		this.ELEVATOR_NUMBER = elevatorNumber;
+		this.receiveQueue = receiveQueue;
+		this.subsystemQueue = subsystemQueue;
 		this.currentFloor = currentFloor;
+	}
+	
+	public int getELEVATOR_NUMBER() {
+		return ELEVATOR_NUMBER;
 	}
 	
 	/** Gets the elevator's current floor
@@ -54,7 +59,7 @@ public class Elevator implements Runnable {
 	 * 
 	 * @return receiveQueue  elevator's receive queue
 	 */
-	public Queue<Integer> getreceiveQueue() {
+	public Queue<FloorData> getreceiveQueue() {
 		return this.receiveQueue;
 	}
 	
@@ -63,47 +68,59 @@ public class Elevator implements Runnable {
 	 * 
 	 * @return schedulerQueue  elevator's scheduler queue
 	 */
-	public Queue<Message> getSchedulerQueue() {
-		return this.schedulerQueue;
+	public Queue<Object> getSubsystemQueue() {
+		return subsystemQueue;
+	}
+	
+	
+	public void processPacket(FloorData data) {
+		// going up is not relevant at the moment since we only have 1 elevator
+		
+		switch (state) {
+		case IDLE: {
+			destFloor = data.getFloor();
+			break;
+		}
+		case GOING_DOWN: {
+			
+			break;
+		}
+		
+		case GOING_UP: {
+			
+			break;
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + state);
+		}
+				
+	}
+	
+	private synchronized void pause() {
+		try {
+			this.wait();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/** 
 	 *  Runs the elevator's thread
 	 */
 	public void run() {
-		while (true) {
-			int receivedMessage;
-			synchronized (receiveQueue) {
-				while (receiveQueue.isEmpty()) {
-					// wait for a message
-					try {
-						receiveQueue.wait();
-					} catch (InterruptedException e) {
-						System.out.println("Error in Elevator thread");
-						e.printStackTrace();
-					}
-				}
-				receivedMessage = receiveQueue.poll();
-				System.out.println("Elevator received message: " + receivedMessage);
-			}
-			//Change to send arrival floor number -------------------------
-			// Send a message back to the floor
-//			synchronized (schedulerQueue) {
-//				while (!schedulerQueue.isEmpty()) {
-//					try {
-//						schedulerQueue.wait();
-//					} catch (InterruptedException e) {
-//						System.out.println("Error in Floor Thread");
-//						e.printStackTrace();
-//					}
-//				}
-//				// create a new message with the same info but sent from the elevator
-//				Message newMessage = new Message(Sender.ELEVATOR, receivedMessage);
-//				schedulerQueue.add(newMessage);
-//				System.out.println("Elevator sent message: " + newMessage.toString());
-//				schedulerQueue.notifyAll();
-//			}
-//
+		switch (state) {
+		case IDLE: {
+			pause();
+			break;
+		}
+		case GOING_DOWN:
+		case GOING_UP:
+			// TODO move the elevator
+			
+			break;
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + state);
 		}
 	}
 }

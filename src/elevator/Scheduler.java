@@ -1,5 +1,6 @@
 package elevator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Queue;
 
@@ -14,9 +15,11 @@ import elevator.Message.Sender;
 public class Scheduler implements Runnable {
 	private Floor[] floors;
 	private Elevator[] elevators;
-	private Queue<Message> receiveQueue;
-	private Queue<Message> floorQueue;
-	private HashMap<Elevator, Integer> tasks; // Elevator, Floor
+	private ArrayList<Elevator> idleElevators;
+	
+	private Queue<Object> receiveQueue;
+	private Queue<FloorData> elevatorRecieveQuque;
+	private Queue<ElevatorData> floorRecieveQueue;
 
 	/**
 	 * Creates a scheduler with shared synchronized message queues, floors and elevators in the system
@@ -27,10 +30,11 @@ public class Scheduler implements Runnable {
 	 * @param floors
 	 * @param elevators
 	 */
-	public Scheduler(Queue<Message> receiveQueue, Queue<Message> floorQueue,
+	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue, Queue<FloorData> elevatorRecieveQuque,
 			Floor[] floors, Elevator[] elevators) {
 		this.receiveQueue = receiveQueue;
-		this.floorQueue = floorQueue;
+		this.floorRecieveQueue = floorRecieveQueue;
+		this.elevatorRecieveQuque = elevatorRecieveQuque;
 		this.floors = floors;
 		this.elevators = elevators;
 	}
@@ -40,7 +44,7 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @return receiveQueue  scheduler's receive queue
 	 */
-	public Queue<Message> getreceiveQueue() {
+	public Queue<Object> getreceiveQueue() {
 		return this.receiveQueue;
 	}
 
@@ -49,11 +53,11 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param message  the message to send to the floor
 	 */
-	public void sendFloorMessage(Message message) {
-		synchronized (floorQueue) {
-			floorQueue.add(message);
+	public void sendFloorSystemMessage(ElevatorData message) {
+		synchronized (floorRecieveQueue) {
+			floorRecieveQueue.add(message);
 			System.out.println("Scheduler forwarded message to floor");
-			floorQueue.notifyAll();
+			floorRecieveQueue.notifyAll();
 		}
 	}
 	
@@ -62,13 +66,13 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @param message  the message to send to the elevator
 	 */
-//	public void sendElevatorMessage(Message message) {
-//		synchronized (elevatorQueue) {
-//			elevatorQueue.add(message);
-//			System.out.println("Scheduler forwarded message to elevator");
-//			elevatorQueue.notifyAll();
-//		}
-//	}
+	public void sendElevatorSystemMessage(FloorData message) {
+		synchronized (elevatorRecieveQuque) {
+			elevatorRecieveQuque.add(message);
+			System.out.println("Scheduler forwarded message to elevator");
+			elevatorRecieveQuque.notifyAll();
+		}
+	}
 
 	/** 
 	 *  Runs the scheduler's thread
@@ -84,17 +88,35 @@ public class Scheduler implements Runnable {
 						e.printStackTrace();
 					}
 				}
-				// get the message
-				Message message = receiveQueue.poll();
-				System.out.println("Scheduler got message: " + message.toString());
-				receiveQueue.notifyAll();
-
-				if (message.getSender() == Sender.FLOOR) {
-					//sendElevatorMessage(message); // change to sendElevatorSubsytem
-				} else {
-					sendFloorMessage(message);
-
+				// get the message(s)
+				for (int i=0; i<receiveQueue.size(); i++) {
+					
+					Object message = receiveQueue.poll();
+					System.out.println("Scheduler got message: " + message.toString());
+					
+					if (message instanceof FloorData) {
+						// elevator sent the message
+						// check if any elevators are ready
+						if (idleElevators.isEmpty()) {
+							// TODO wait
+						} else {
+							// TODO: for now we only have 1 elevator
+//							// in the future we should choose the most efficient elevator
+//							// and tell the elevator subsystem which elevator to move
+//							for (Elevator e : idleElevators) {
+								// elevatorNumber = e.getELEVATOR_NUMBER();
+//							}
+							// for now we will simply tell the system just where to move
+							sendElevatorSystemMessage((FloorData)message);
+						}
+						
+					} else if (message instanceof ElevatorData) {
+						// one of the elevators sent us this message
+						sendFloorSystemMessage((ElevatorData) message);
+					}
 				}
+				
+				receiveQueue.notifyAll();
 			}
 		}
 	}

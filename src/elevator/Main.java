@@ -13,7 +13,7 @@ public class Main {
 
 		Queue<Message> schedulerQueue = new LinkedList<>();
 		Queue<Message> floorQueue = new LinkedList<>();
-		Queue<Integer> elevatorQueue = new LinkedList<>();
+		Queue<Integer> elevatorSystemQueue = new LinkedList<>();
 
 		// only 1 floor and 1 elevator for now...
 		Elevator elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);

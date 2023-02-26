@@ -5,7 +5,7 @@ import java.util.Queue;
 
 import elevator.Message.Sender;
 
-/** 
+/**
  * Class to represent the floor subsystem
  * 
  * @author Group G5
@@ -17,12 +17,14 @@ public class Floor implements Runnable {
 	private Queue<Message> schedulerQueue;
 	private ArrayList<Message> messages; // Iteration 1: file inputed messages
 
-	/** 
+	/**
 	 * Creates a floor with shared synchronized message queues and the floor number
-	 *  
-	 * @param receiveQueue the synchronized message queue to receive information from the Scheduler
-	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
-	 * @param floorNumber the floor's number
+	 * 
+	 * @param receiveQueue   the synchronized message queue to receive information
+	 *                       from the Scheduler
+	 * @param schedulerQueue the synchronized message queue to send information to
+	 *                       the Scheduler
+	 * @param floorNumber    the floor's number
 	 */
 	public Floor(Queue<Message> receiveQueue, Queue<Message> schedulerQueue, int floorNumber) {
 		this.receiveQueue = receiveQueue;
@@ -30,20 +32,20 @@ public class Floor implements Runnable {
 		this.FLOOR_NUMBER = floorNumber;
 		this.messages = new ArrayList<>();
 	}
-	
+
 	/**
 	 * Gets the floor's receive queue
 	 * 
-	 * @return		Queue <Message>, floor's receive queue
+	 * @return Queue <Message>, floor's receive queue
 	 */
 	public Queue<Message> getreceiveQueue() {
 		return this.receiveQueue;
 	}
-	
+
 	/**
 	 * Gets the floor's scheduler queue
 	 * 
-	 * @return		Queue <Message>, floor's scheduler queue
+	 * @return Queue <Message>, floor's scheduler queue
 	 */
 	public Queue<Message> getSchedulerQueue() {
 		return this.schedulerQueue;
@@ -52,24 +54,23 @@ public class Floor implements Runnable {
 	/**
 	 * Gets the floor's message list
 	 * 
-	 * @return		ArrayList <Message>, floor's message list
+	 * @return ArrayList <Message>, floor's message list
 	 */
 	public ArrayList<Message> getMessages() {
 		return this.messages;
 	}
-	
+
 	/**
 	 * Add message to messages list
 	 *
-	 * @param message	the message to be added to message list
+	 * @param message the message to be added to message list
 	 */
 	public void addMessage(Message message) {
 		messages.add(message);
 	}
-	
-	
-	/** 
-	 *  Runs the floor's thread
+
+	/**
+	 * Runs the floor's thread
 	 */
 	public void run() {
 		for (Message m : messages) {
