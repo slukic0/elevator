@@ -82,7 +82,7 @@ public class Scheduler implements Runnable {
 	public void sendElevatorSystemMessage(FloorData message) {
 		synchronized (elevatorRecieveQuque) {
 			elevatorRecieveQuque.add(message);
-			System.out.println("Scheduler forwarded message to elevator");
+			System.out.println("Scheduler sending message to Elevator subsys : "+ message);
 			elevatorRecieveQuque.notifyAll();
 		}
 	}
@@ -179,7 +179,6 @@ public class Scheduler implements Runnable {
 				floorDownButtonsMap.remove(elevatorCurrFloor);
 			}
 			FloorData message = new FloorData(elevatorDestFloor, isGoingUp);
-			System.out.println("Scheduler sending message to Elevator subsys : "+ message);
 			sendElevatorSystemMessage(message);
 		}
 	}

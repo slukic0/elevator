@@ -62,8 +62,11 @@ public class Elevator implements Runnable {
 	
 	
 	public void processPacket(FloorData data) {		
-		destFloor = data.getFloor();
-		state = destFloor > currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+		ElevatorStates newState = destFloor > currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);
+		
+		this.destFloor = data.getFloor();
+		this.state = newState;
 		this.wake();		
 	}
 	
@@ -86,6 +89,7 @@ public class Elevator implements Runnable {
 	public void run() {
 		switch (state) {
 		case IDLE: {
+			System.out.println("Elevator IDLE, going to nap...");
 			pause();
 			break;
 		}
