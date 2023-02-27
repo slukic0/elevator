@@ -87,6 +87,9 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	/*
+	 * @return the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 */
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
 			if (floorUpButtonsMap.containsKey(i)) {
@@ -96,6 +99,9 @@ public class Scheduler implements Runnable {
 		return 2*NUMBER_OF_FLOORS;
 	}
 
+	/*
+	 * @return the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 */
 	private int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
 			if (floorDownButtonsMap.containsKey(i)) {
@@ -109,11 +115,28 @@ public class Scheduler implements Runnable {
 		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
 	}
 
+	/**
+	 * A very hacky function to find the closest floor that needs an elevator
+	 * @param currFloor
+	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 */
 	private int findClosest(int currFloor) {
-		int closest = Math.min(findClosestDown(currFloor) - currFloor, findClosestUp(currFloor) - currFloor);
-
-		return (closest > NUMBER_OF_FLOORS) ? 2*NUMBER_OF_FLOORS : closest;
-
+		int closestDown = findClosestDown(currFloor);
+		int closestUp = findClosestUp(currFloor);
+		
+		if (closestDown == 2*NUMBER_OF_FLOORS &&  closestUp == 2*NUMBER_OF_FLOORS) {
+			return 2*NUMBER_OF_FLOORS;
+		} else if (closestUp == 2*NUMBER_OF_FLOORS){
+			return closestDown == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestDown;
+		} else if (closestDown == 2*NUMBER_OF_FLOORS) {
+			return closestUp == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestUp;
+		} else {
+			if (currFloor - closestDown < closestUp - currFloor){
+				return closestDown;
+			} else {
+				return closestUp;
+			}
+		}
 	}
 
 	/**
@@ -123,7 +146,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void handleFloorRequest(FloorData message) {
 		System.out.println("Scheduler got message " + message);
-		System.out.println("Scheduler marking floor " + message.getFloor() + " as " + message.getGoingUp());
+		System.out.println("Scheduler marking floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
 		boolean goingUp = message.getGoingUp();
 		int destFloor = message.getFloor();
 
