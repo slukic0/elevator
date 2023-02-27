@@ -1,10 +1,6 @@
 package elevator;
 
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Queue;
-
-import elevator.Message.Sender;
 
 /**
  * Class to represent the elevator subsystem

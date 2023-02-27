@@ -8,7 +8,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 
 import elevator.FloorData;
-import elevator.Message;
 import elevator.Message.Sender;
 
 public class FileUtil {

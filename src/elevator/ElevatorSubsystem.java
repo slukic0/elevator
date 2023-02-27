@@ -1,6 +1,5 @@
 package elevator;
 
-import java.util.HashMap;
 import java.util.Queue;
 
 import util.SendReceiveUtil;

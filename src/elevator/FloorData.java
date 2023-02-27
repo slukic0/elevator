@@ -2,8 +2,6 @@ package elevator;
 
 import java.time.LocalTime;
 
-import elevator.Message.Sender;
-
 public class FloorData {
 	private LocalTime time;
 	private int floor;

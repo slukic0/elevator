@@ -1,9 +1,7 @@
 package elevator;
 
-import java.util.ArrayList;
 import java.util.Queue;
 
-import elevator.Message.Sender;
 import util.SendReceiveUtil;
 
 /**

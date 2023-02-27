@@ -1,11 +1,8 @@
 package elevator;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Queue;
-
-import elevator.Message.Sender;
 
 /**
  * Represents the Scheduler in the system
@@ -14,7 +11,6 @@ import elevator.Message.Sender;
  *
  */
 public class Scheduler implements Runnable {
-	private Floor[] floors;
 	private ArrayList<ElevatorSubsystem> elevatorSystems;
 
 	private Queue<Object> receiveQueue;
@@ -44,7 +40,6 @@ public class Scheduler implements Runnable {
 		this.receiveQueue = receiveQueue;
 		this.floorRecieveQueue = floorRecieveQueue;
 		this.elevatorRecieveQuque = elevatorRecieveQuque;
-		this.floors = floors;
 		this.elevatorSystems = elevatorSubsystems;
 
 		this.floorUpButtonsMap = new HashMap<>();
@@ -109,10 +104,6 @@ public class Scheduler implements Runnable {
 			}
 		}
 		return 2*NUMBER_OF_FLOORS;
-	}
-
-	private boolean checkIfButtonsPressed() {
-		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
 	}
 
 	/**
