@@ -47,7 +47,7 @@ public class FloorTest {
 	        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
 	        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
 	        floorData = new FloorData(0, false);
-    }
+		}
 	
 	/**
      * Method to test sending a message in Floor class
