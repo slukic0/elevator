@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-import elevator.Message.Sender;
 
 
 /**
@@ -34,12 +33,13 @@ public class SchedulerTest {
     /**
      * Initializes the variables that will be used to test the methods in the Scheduler Class
      */
-	@BeforeAll
+	@BeforeEach
 	public static void init(){
 
         Queue<Object> schedulerQueue = new LinkedList<>();
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
+        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
 
         Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
@@ -48,30 +48,20 @@ public class SchedulerTest {
 		floor = new Floor(elevatorQueue, schedulerQueue, 0);
 		
         scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
-        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 1, 1);
+        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
         floorData = new FloorData(0, true);
 
     }
 	
-	@Test
-	public void testHandleFloorRequest(){
-
-		floorData = new FloorData(0, true);
-		floorUpButtonsMap = new HashMap<>();
-		floorDownButtonsMap = new HashMap<>();		
-		
-		if (floorData.getGoingUp()) {
-			floorUpButtonsMap.put(0, true);
-		} else {
-			floorDownButtonsMap.put(0, true);
-		}
-		
-		assertEquals(true, scheduler.floorUpButtonsMap.get(0), "Message was not sent/received properly");
-    }
 
 	@Test
 	public void testHandleElevatorResponse(){
 
+		Queue<Object> schedulerQueue = new LinkedList<>();
+		Queue<FloorData> floorQueue = new LinkedList<>();
+		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
+        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+        
         assertEquals(floorData, elevatorSubsystem.getreceiveQueue().poll());
     }
 

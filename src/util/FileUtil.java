@@ -8,7 +8,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 
 import elevator.FloorData;
-import elevator.Message.Sender;
 
 public class FileUtil {
 	public static String[] readFile(Class<?> myClass, String filePath) throws IOException {

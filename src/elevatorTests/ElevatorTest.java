@@ -10,7 +10,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
-import elevator.Message.Sender;
 
 
 /**
@@ -46,7 +45,7 @@ public class ElevatorTest {
         scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
         elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
         floorData = new FloorData(0, false);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 0, 1, LocalTime.now());
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
     }
 	
 	/**
@@ -56,9 +55,15 @@ public class ElevatorTest {
     public void testSendMessage(){
         
         elevatorSubsystem.sendSchedulerMessage(elevatorData);
-
+        
         boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
         assertTrue(value);
+        
     }
+	
+	public void testElevatorState() {
+		elevatorSubsystem.sendSchedulerMessage(elevatorData);
+		assertEquals(elevatorData.getState(), ElevatorStates.GOING_UP);
+	}
 
 }

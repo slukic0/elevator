@@ -11,7 +11,6 @@ import java.util.Queue;
 
 import javax.xml.crypto.Data;
 
-import elevator.Message.Sender;
 import util.FileUtil;
 
 
@@ -32,22 +31,22 @@ public class FloorTest {
 	    /**
 	     * Initializes the variables that will be used to test the methods in the Scheduler Class
 	     */
-		@BeforeAll
-		public static void init(){
+	@BeforeAll
+	public static void init(){
 
-	        Queue<Object> schedulerQueue = new LinkedList<>();
-			Queue<FloorData> floorQueue = new LinkedList<>();
-			Queue<ElevatorData> elevatorQueue = new LinkedList<>();
+        Queue<Object> schedulerQueue = new LinkedList<>();
+		Queue<FloorData> floorQueue = new LinkedList<>();
+		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
 
-	        Floor[] floors = new Floor[] { floor };
-			ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
-			elevatorSubsystems.add(elevatorSubsystem);
-			
-			floor = new Floor(elevatorQueue, schedulerQueue, 0);
-	        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
-	        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
-	        floorData = new FloorData(0, false);
-		}
+        Floor[] floors = new Floor[] { floor };
+		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
+		elevatorSubsystems.add(elevatorSubsystem);
+		
+		floor = new Floor(elevatorQueue, schedulerQueue, 0);
+        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
+        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+        floorData = new FloorData(0, false);
+	}
 	
 	/**
      * Method to test sending a message in Floor class
