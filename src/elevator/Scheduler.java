@@ -200,15 +200,24 @@ public class Scheduler implements Runnable {
 			floorUpButtonsMap.remove(elevatorCurrFloor);
 			floorDownButtonsMap.remove(elevatorCurrFloor);
 		} else {
-			boolean isGoingUp = elevatorDestFloor > elevatorCurrFloor;
-			if (isGoingUp) {
+			// tell the elevator where to go
+			
+			//clear the button the elevator is at
+			boolean isFutureStateGoingUp = elevatorDestFloor > elevatorCurrFloor;
+			if (isFutureStateGoingUp) {
+				if (eSubsystem.getElevator().getPrevState() == ElevatorStates.GOING_DOWN) {
+					floorDownButtonsMap.remove(elevatorCurrFloor);
+				}
 				floorUpButtonsMap.remove(elevatorCurrFloor);
 			} else {
+				if (eSubsystem.getElevator().getPrevState() == ElevatorStates.GOING_UP) {
+					floorUpButtonsMap.remove(elevatorCurrFloor);
+				}
 				floorDownButtonsMap.remove(elevatorCurrFloor);
 			}
 			System.out
-					.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: " + isGoingUp);
-			FloorData message = new FloorData(elevatorDestFloor, isGoingUp);
+					.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: " + isFutureStateGoingUp);
+			FloorData message = new FloorData(elevatorDestFloor, isFutureStateGoingUp);
 			sendElevatorSystemMessage(message);
 		}
 	}
