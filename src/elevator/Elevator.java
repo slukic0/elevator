@@ -18,7 +18,7 @@ public class Elevator implements Runnable {
 	private int destinationFloor;
 	private ElevatorSubsystem elevatorSubsystem;
 	private ElevatorStates state;
-	private ElevatorStates prevState;
+	private ElevatorStates prevDirection;
 
 	/**
 	 * Creates an elevator with shared synchronized message queues, the elevator
@@ -37,7 +37,7 @@ public class Elevator implements Runnable {
 		this.currentFloor = currentFloor;
 		this.destinationFloor = currentFloor;
 		this.state = ElevatorStates.IDLE;
-		this.prevState = ElevatorStates.IDLE;
+		this.prevDirection = ElevatorStates.IDLE;
 	}
 
 	public int getELEVATOR_NUMBER() {
@@ -48,8 +48,8 @@ public class Elevator implements Runnable {
 		return state;
 	}
 
-	public ElevatorStates getPrevState() {
-		return prevState;
+	public ElevatorStates getPrevDirection() {
+		return prevDirection;
 	}
 
 	/**
@@ -76,7 +76,9 @@ public class Elevator implements Runnable {
 		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);
 
 		this.destinationFloor = destFloor;
-		this.prevState = this.state;
+		if (this.state != ElevatorStates.IDLE) {
+			this.prevDirection = this.state;
+		}
 		this.state = newState;
 		this.wake();
 	}
@@ -109,10 +111,10 @@ public class Elevator implements Runnable {
 			case GOING_DOWN:
 			case GOING_UP:
 				// TODO move the elevator
-				System.out.println("Elevator current state: " + this.state + ", prevState: " + prevState);
+				System.out.println("Elevator current state: " + this.state + ", prevDirection: " + prevDirection);
 				System.out.println("Moving to floor " + destinationFloor);
 				int diff = Math.abs(destinationFloor - currentFloor);
-				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevState, currentFloor,
+				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * diff)));
 
 				// wait for a bit
@@ -127,7 +129,7 @@ public class Elevator implements Runnable {
 				state = ElevatorStates.IDLE;
 				// tell the scheduler we have arrived
 				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, prevState, currentFloor, destinationFloor, LocalTime.now()));
+						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now()));
 
 				break;
 			default:

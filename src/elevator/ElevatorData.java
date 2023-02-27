@@ -4,14 +4,14 @@ import java.time.LocalTime;
 
 public class ElevatorData {
 	private ElevatorStates state;
-	private ElevatorStates prevState;
+	private ElevatorStates prevDirection;
 	private int currentFloor;
 	private int movingToFloor;
 	private LocalTime arrivalTime;
 
-	public ElevatorData(ElevatorStates state, ElevatorStates prevState, int currentFloor, int movingToFloor, LocalTime arrivalTime) {
+	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor, LocalTime arrivalTime) {
 		this.state = state;
-		this.prevState = prevState;
+		this.prevDirection = prevDirection;
 		this.currentFloor = currentFloor;
 		this.movingToFloor = movingToFloor;
 		this.arrivalTime = arrivalTime;
@@ -21,8 +21,8 @@ public class ElevatorData {
 		return state;
 	}
 	
-	public ElevatorStates getPrevState() {
-		return prevState;
+	public ElevatorStates getPrevDirection() {
+		return prevDirection;
 	}
 
 	public int getCurrentFloor() {

@@ -205,12 +205,12 @@ public class Scheduler implements Runnable {
 			//clear the button the elevator is at
 			boolean isFutureStateGoingUp = elevatorDestFloor > elevatorCurrFloor;
 			if (isFutureStateGoingUp) {
-				if (eSubsystem.getElevator().getPrevState() == ElevatorStates.GOING_DOWN) {
+				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_DOWN) {
 					floorDownButtonsMap.remove(elevatorCurrFloor);
 				}
 				floorUpButtonsMap.remove(elevatorCurrFloor);
 			} else {
-				if (eSubsystem.getElevator().getPrevState() == ElevatorStates.GOING_UP) {
+				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_UP) {
 					floorUpButtonsMap.remove(elevatorCurrFloor);
 				}
 				floorDownButtonsMap.remove(elevatorCurrFloor);
