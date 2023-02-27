@@ -72,9 +72,6 @@ public class Elevator implements Runnable {
 		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);
 
 		this.destinationFloor = destFloor;
-		if (this.state != ElevatorStates.IDLE) {
-			this.prevDirection = this.state;
-		}
 		this.state = newState;
 		this.wake();
 	}
@@ -97,6 +94,7 @@ public class Elevator implements Runnable {
 	 * Runs the elevator's thread
 	 */
 	public void run() {
+		ElevatorStates currState = ElevatorStates.IDLE; // Use to store state before sending data
 		while (true) {
 			switch (state) {
 			case IDLE: {
@@ -122,10 +120,12 @@ public class Elevator implements Runnable {
 				}
 				System.out.println("Elevator has arrived at floor " + destinationFloor);
 				currentFloor = destinationFloor;
+				currState = state;
 				state = ElevatorStates.IDLE;
 				// tell the scheduler we have arrived
 				elevatorSubsystem.sendSchedulerMessage(
 						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now()));
+				prevDirection = currState;
 
 				break;
 			default:
