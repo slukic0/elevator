@@ -10,6 +10,13 @@ public class ElevatorSubsystem implements Runnable {
 	private Queue<FloorData> receiveQueue;
 	private Queue<Object> schedulerReceiveQueue;
 
+	/**
+	 * Creates Elevator Subsystem object
+	 * @param receiveQueue			Queue for information received from floor
+	 * @param schedulerReceiveQueue	Queue for message send to scheduler
+	 * @param elevatorNumber		Associated elevator number
+	 * @param currentFloor			Associated elevator's current floor
+	 */
 	public ElevatorSubsystem(Queue<FloorData> receiveQueue, Queue<Object> schedulerReceiveQueue, int elevatorNumber,
 			int currentFloor) {
 		this.elevator = new Elevator(this, elevatorNumber, currentFloor);
@@ -19,11 +26,19 @@ public class ElevatorSubsystem implements Runnable {
 		// Start the elevator
 		new Thread(this.elevator).start();
 	}
-
+	
+	/**
+	 * Getter to return elevator object
+	 * @return returns elevator of subsystem
+	 */
 	public Elevator getElevator() {
 		return elevator;
 	}
-
+	
+	/**
+	 * Sends message of elevator data to scheduler
+	 * @param message ElevatorData, message to send to scheduler
+	 */
 	public void sendSchedulerMessage(ElevatorData message) {
 		System.out.println("Elevator subsystem sending message " + message);
 		new Thread(() -> {
@@ -31,6 +46,9 @@ public class ElevatorSubsystem implements Runnable {
 		}).start();
 	}
 
+	/**
+	 * Runs subsystem's thread
+	 */
 	@Override
 	public void run() {
 		while (true) {

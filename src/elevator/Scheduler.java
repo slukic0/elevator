@@ -26,14 +26,12 @@ public class Scheduler implements Runnable {
 	private SchedulerStates state;
 
 	/**
-	 * Creates a scheduler with shared synchronized message queues, floors and
-	 * elevators in the system
-	 * 
-	 * @param receiveQueue
-	 * @param floorQueue
-	 * @param elevatorQueue
-	 * @param floors
-	 * @param elevators
+	 * Creates scheduler objects
+	 * @param receiveQueue			receive Queue from floor
+	 * @param floorRecieveQueue		Queue for floor to receive
+	 * @param elevatorRecieveQuque  Queue for elevator to receive
+	 * @param floors				list of floors
+	 * @param elevatorSubsystems	list of Elevator Subsystems
 	 */
 	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
 			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) {
@@ -83,7 +81,8 @@ public class Scheduler implements Runnable {
 	}
 
 	/*
-	 * @return the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * Returns the floor above current
+	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
@@ -95,7 +94,8 @@ public class Scheduler implements Runnable {
 	}
 
 	/*
-	 * @return the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * Returns the floor below current
+	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
@@ -105,10 +105,19 @@ public class Scheduler implements Runnable {
 		}
 		return 2*NUMBER_OF_FLOORS;
 	}
+	
+	/**
+	 * Checks button map if pressed
+	 * @return boolean, if buttons pressed true
+	 */
+	private boolean checkIfButtonsPressed() {
+		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
+	}
+
 
 	/**
 	 * A very hacky function to find the closest floor that needs an elevator
-	 * @param currFloor
+	 * @param currFloor int, floor the elevator is on
 	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosest(int currFloor) {
@@ -133,7 +142,7 @@ public class Scheduler implements Runnable {
 	/**
 	 * Set the floor button as pressed in the HashMaps
 	 * 
-	 * @param message
+	 * @param message FloorData, message received from floor
 	 */
 	public void handleFloorRequest(FloorData message) {
 		System.out.println("Scheduler got message " + message);

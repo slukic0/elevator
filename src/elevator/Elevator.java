@@ -36,14 +36,26 @@ public class Elevator implements Runnable {
 		this.prevDirection = ElevatorStates.IDLE;
 	}
 
+	/**
+	 * Returns elevator's own number
+	 * @return int, associated elevator number
+	 */
 	public int getELEVATOR_NUMBER() {
 		return ELEVATOR_NUMBER;
 	}
-
+	
+	/**
+	 * Getter Returns current state
+	 * @return ElevatorState, associated elevator state
+	 */
 	public ElevatorStates getState() {
 		return state;
 	}
-
+	
+	/**
+	 * Getter returns previous direction
+	 * @return ElevatorStates, previous direction of elevator
+	 */
 	public ElevatorStates getPrevDirection() {
 		return prevDirection;
 	}
@@ -65,7 +77,11 @@ public class Elevator implements Runnable {
 	public void setCurrentFloor(int floor) {
 		this.currentFloor = floor;
 	}
-
+	
+	/**
+	 * Process information from floor related to elevator
+	 * @param data FloorData, message from floor
+	 */
 	public void processPacket(FloorData data) {
 		int destFloor = data.getFloor();
 		ElevatorStates newState = destFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
@@ -75,7 +91,10 @@ public class Elevator implements Runnable {
 		this.state = newState;
 		this.wake();
 	}
-
+	
+	/**
+	 * Triggers synchronized wait function
+	 */
 	private synchronized void pause() {
 		try {
 			this.wait();
@@ -84,7 +103,11 @@ public class Elevator implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
+	
+	
+	/**
+	 * Triggers notify thread
+	 */
 	private synchronized void wake() {
 		System.out.println("Waking elevator");
 		this.notify();
