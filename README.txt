@@ -4,7 +4,7 @@ Stefan Lukic
 Nicolas Tanouchev
 Pranav Hari
 
-Milestone 1
+Milestone 2
 
 Files contained:
 src/elevator: Elevator.java, Floor.java, Scheduler.java, Message.java, Main.java
@@ -27,11 +27,15 @@ src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, eve
   SchedulerTests: Contains tests for Scheduler class
   ElevatorTests: Contains tests for Elevator class
   FloorTests: Contains tests for Floor class
+  ElevatorSubsystemTests: Contains tests for ElevatorSubsystem class
   events: text file containing data log
 
 src/diagrams:
   M1_sequence.png - Sequence diagram
   M1_class.png - class diagram
+  Iteration2UML.png - Iteration 2 class diagram
+  Iteration2Sequence.png - Iteration 2 sequence diagram
+  Iteration2State.png - Iteration 2 state diagram
 
 To run:
 Open elevator project in eclipse. Run with configuration.

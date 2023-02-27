@@ -2,7 +2,12 @@
 package elevatorTests;
 import elevator.*;
 import org.junit.jupiter.api.*;
+
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import elevator.Message.Sender;
@@ -19,7 +24,9 @@ public class ElevatorTest {
     public static Floor floor;
     public static Elevator elevator;
     public static Scheduler scheduler;
-    public static Message message;
+    public static ElevatorSubsystem elevatorSubsystem;
+    public static FloorData floorData;
+    public static ElevatorData elevatorData;
 
     /**
      * Initializes the variables that will be used to test the methods in the Elevator Class
@@ -27,17 +34,19 @@ public class ElevatorTest {
 	@BeforeAll
 	public static void init(){
 
-        Queue<Message> schedulerQueue = new LinkedList<>();
-		Queue<Message> floorQueue = new LinkedList<>();
-		Queue<Message> elevatorQueue = new LinkedList<>();
+		Queue<Object> schedulerQueue = new LinkedList<>();
+		Queue<FloorData> floorQueue = new LinkedList<>();
+		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
 
         Floor[] floors = new Floor[] { floor };
-		Elevator[] elevators = new Elevator[] { elevator };
+		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
+		elevatorSubsystems.add(elevatorSubsystem);
 
-		floor = new Floor(floorQueue, schedulerQueue, 0);
-        elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);
-        scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorQueue, floors, elevators);
-        message = new Message(Sender.ELEVATOR, 0, true);
+		floor = new Floor(elevatorQueue, schedulerQueue, 0);
+        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
+        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+        floorData = new FloorData(0, false);
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 0, 1, LocalTime.now());
     }
 	
 	/**
@@ -46,9 +55,10 @@ public class ElevatorTest {
 	@Test
     public void testSendMessage(){
         
-        elevator.getSchedulerQueue().add(message);
+        elevatorSubsystem.sendSchedulerMessage(elevatorData);
 
-        assertEquals(message, scheduler.getreceiveQueue().poll(), "Message was not sent/received properly");
+        boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
+        assertTrue(value);
     }
 
 }

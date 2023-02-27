@@ -17,8 +17,8 @@ public class Scheduler implements Runnable {
 	private Queue<FloorData> elevatorRecieveQuque;
 	private Queue<ElevatorData> floorRecieveQueue;
 
-	private HashMap<Integer, Boolean> floorUpButtonsMap;
-	private HashMap<Integer, Boolean> floorDownButtonsMap;
+	public HashMap<Integer, Boolean> floorUpButtonsMap;
+	public HashMap<Integer, Boolean> floorDownButtonsMap;
 
 	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
 	private final int STARTING_FLOOR = Constants.STARTING_FLOOR;

@@ -35,9 +35,28 @@ public class ElevatorSubsystem implements Runnable {
 		return elevator;
 	}
 	
+	/***
+	 * Gets the scheduler's receive queue
+	 * 
+	 * @return receiveQueue scheduler's receive queue
+	 */
+	public Queue<FloorData> getreceiveQueue() {
+		return this.receiveQueue;
+	}
+	
+	/***
+	 * Gets the scheduler's schedulerReceive queue
+	 * 
+	 * @return receiveQueue scheduler's receive queue
+	 */
+	public Queue<Object> getSchedulerReceiveQueue() {
+		return this.schedulerReceiveQueue;
+	}
+
 	/**
 	 * Sends message of elevator data to scheduler
 	 * @param message ElevatorData, message to send to scheduler
+	 *
 	 */
 	public void sendSchedulerMessage(ElevatorData message) {
 		System.out.println("Elevator subsystem sending message " + message);
