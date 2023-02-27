@@ -59,7 +59,10 @@ public class ElevatorSubsystemTest {
 		//elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
 		//elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
 		
+		elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
+		
 		assertNull(elevatorSubsystem);
+		assertEquals(elevatorData.getState(), ElevatorStates.GOING_UP);
 
         //assertEquals(elevatorData, scheduler.getreceiveQueue().poll(), "Message was not sent/received properly");
 	}
