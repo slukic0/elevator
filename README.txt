@@ -33,6 +33,9 @@ src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, eve
 src/diagrams:
   M1_sequence.png - Sequence diagram
   M1_class.png - class diagram
+  Iteration2UML.png - Iteration 2 class diagram
+  Iteration2Sequence.png - Iteration 2 sequence diagram
+  Iteration2State.png - Iteration 2 state diagram
 
 To run:
 Open elevator project in eclipse. Run with configuration.
