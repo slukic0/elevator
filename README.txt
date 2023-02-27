@@ -4,7 +4,7 @@ Stefan Lukic
 Nicolas Tanouchev
 Pranav Hari
 
-Milestone 1
+Milestone 2
 
 Files contained:
 src/elevator: Elevator.java, Floor.java, Scheduler.java, Message.java, Main.java
@@ -27,6 +27,7 @@ src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, eve
   SchedulerTests: Contains tests for Scheduler class
   ElevatorTests: Contains tests for Elevator class
   FloorTests: Contains tests for Floor class
+  ElevatorSubsystemTests: Contains tests for ElevatorSubsystem class
   events: text file containing data log
 
 src/diagrams:

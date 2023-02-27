@@ -1,5 +1,13 @@
+Iteration 1
 Christopher Semaan: Sequence diagram, class diagram, README, debugging
 Filip Lukic: Developed all files in src/elevator, debugging
 Stefan Lukic: Developed most files in src/elevator, debugging
 Nicolas Tanouchev: Developed all files in src/elevatorTests, debugging
 Pranav Hari: Developed most files in src/elevator, debugging
+
+Iteration 2
+Christopher Semaan: Developed ElevatorSubsystem Elevator Scheduler, README, debugging
+Filip Lukic: Developed all files in src/elevator, debugging
+Stefan Lukic: Developed all files in src/elevator, debugging
+Nicolas Tanouchev: Sequence diagram, class diagram, developed tests, debugging
+Pranav Hari: Developed all files in src/elevatorTests, debugging
