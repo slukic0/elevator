@@ -90,6 +90,11 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
+		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
+			if (floorUpButtonsMap.containsKey(i)) {
+				return i;
+			}
+		}
 		return 2*NUMBER_OF_FLOORS;
 	}
 
@@ -103,17 +108,13 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
+		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
+			if (floorDownButtonsMap.containsKey(i)) {
+				return i;
+			}
+		}
 		return 2*NUMBER_OF_FLOORS;
 	}
-	
-	/**
-	 * Checks button map if pressed
-	 * @return boolean, if buttons pressed true
-	 */
-	private boolean checkIfButtonsPressed() {
-		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
-	}
-
 
 	/**
 	 * A very hacky function to find the closest floor that needs an elevator
@@ -209,13 +210,17 @@ public class Scheduler implements Runnable {
 			boolean isFutureStateGoingUp = elevatorDestFloor > elevatorCurrFloor;
 			if (isFutureStateGoingUp) {
 				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_DOWN) {
+					System.out.println("Clearing floor " + elevatorCurrFloor + " DOWN");
 					floorDownButtonsMap.remove(elevatorCurrFloor);
 				}
+				System.out.println("Clearing floor " + elevatorCurrFloor + " UP");
 				floorUpButtonsMap.remove(elevatorCurrFloor);
 			} else {
 				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_UP) {
+					System.out.println("Clearing floor " + elevatorCurrFloor + " UP");
 					floorUpButtonsMap.remove(elevatorCurrFloor);
 				}
+				System.out.println("Clearing floor " + elevatorCurrFloor + " DOWN");
 				floorDownButtonsMap.remove(elevatorCurrFloor);
 			}
 			System.out
