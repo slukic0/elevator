@@ -121,9 +121,11 @@ public class Scheduler implements Runnable {
 	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosest(int currFloor) {
-		int closestDown = findClosestDown(currFloor);
-		int closestUp = findClosestUp(currFloor);
-		
+		int closestDown = findClosestDown(currFloor); // TODO only checks for down buttons below it
+		int closestUp = findClosestUp(currFloor); // TODO only checks for up buttons above it
+		// TODO 
+		// what if we are going down, and the only floor left is a 
+		// a floor below us that is going up ???
 		if (closestDown == 2*NUMBER_OF_FLOORS &&  closestUp == 2*NUMBER_OF_FLOORS) {
 			return 2*NUMBER_OF_FLOORS;
 		} else if (closestUp == 2*NUMBER_OF_FLOORS){
@@ -155,6 +157,7 @@ public class Scheduler implements Runnable {
 		} else {
 			floorDownButtonsMap.put(destFloor, true);
 		}
+		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
 		state = SchedulerStates.WOKRING;
 		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
 			sendElevatorCommand();
