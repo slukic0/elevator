@@ -23,7 +23,6 @@ public class ElevatorSubsystemTest {
 	
     public static Floor floor;
     public static Elevator elevator;
-    public static Scheduler scheduler;
     public static ElevatorSubsystem elevatorSubsystem;
     public static FloorData floorData;
     public static ElevatorData elevatorData;
@@ -37,6 +36,8 @@ public class ElevatorSubsystemTest {
 		Queue<Object> schedulerQueue = new LinkedList<>();
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
+		elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+		elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
 
         Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
@@ -44,7 +45,7 @@ public class ElevatorSubsystemTest {
 		elevatorSubsystems.add(elevatorSubsystem);
 
 		floor = new Floor(elevatorQueue, schedulerQueue, 0);
-        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
+        
         floorData = new FloorData(0, false);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
     }
@@ -56,15 +57,21 @@ public class ElevatorSubsystemTest {
 		Queue<Object> schedulerQueue = new LinkedList<>();
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-		//elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
-		//elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
+		elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+		elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
 		
+		Floor[] floors = new Floor[] { floor };
+		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
+		elevatorSubsystems.add(elevatorSubsystem);
+		
+		Scheduler scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
 		elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
+	
+		scheduler.getFloorReceiveQueue().add(elevatorData);
 		
-		assertNull(elevatorSubsystem);
 		assertEquals(elevatorData.getState(), ElevatorStates.GOING_UP);
 
-        //assertEquals(elevatorData, scheduler.getreceiveQueue().poll(), "Message was not sent/received properly");
+        assertEquals(elevatorData, scheduler.getFloorReceiveQueue().poll(), "Message was not sent/received properly");
 	}
 	
 }

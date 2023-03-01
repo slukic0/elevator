@@ -53,6 +53,16 @@ public class Scheduler implements Runnable {
 	public Queue<Object> getreceiveQueue() {
 		return this.receiveQueue;
 	}
+	
+	/**
+	 * Gets the scheduler's receive queue
+	 * 
+	 * @return receiveQueue scheduler's receive queue
+	 */
+	public Queue<ElevatorData> getFloorReceiveQueue() {
+		return this.floorRecieveQueue;
+	}
+	
 
 	/**
 	 * Sends a message to the floor subsystem
