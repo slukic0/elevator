@@ -53,7 +53,17 @@ public class Elevator implements Runnable {
 	}
 	
 	/**
+	 * Set the internal state
+	 * 
+	 * @param state ElevatorState, the state to set
+	 */
+	public void setState(ElevatorStates state) {
+		this.state = state;
+	}
+
+	/**
 	 * Getter returns previous direction
+	 * 
 	 * @return ElevatorStates, previous direction of elevator
 	 */
 	public ElevatorStates getPrevDirection() {
