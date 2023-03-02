@@ -27,11 +27,12 @@ public class Scheduler implements Runnable {
 
 	/**
 	 * Creates scheduler objects
-	 * @param receiveQueue			receive Queue from floor
-	 * @param floorRecieveQueue		Queue for floor to receive
-	 * @param elevatorRecieveQuque  Queue for elevator to receive
-	 * @param floors				list of floors
-	 * @param elevatorSubsystems	list of Elevator Subsystems
+	 * 
+	 * @param receiveQueue         receive Queue from floor
+	 * @param floorRecieveQueue    Queue for floor to receive
+	 * @param elevatorRecieveQuque Queue for elevator to receive
+	 * @param floors               list of floors
+	 * @param elevatorSubsystems   list of Elevator Subsystems
 	 */
 	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
 			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) {
@@ -82,7 +83,9 @@ public class Scheduler implements Runnable {
 
 	/*
 	 * Returns the floor above current
-	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * 
+	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no
+	 * floors exist.
 	 */
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
@@ -95,12 +98,14 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
-		return 2*NUMBER_OF_FLOORS;
+		return 2 * NUMBER_OF_FLOORS;
 	}
 
 	/*
 	 * Returns the floor below current
-	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * 
+	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no
+	 * floors exist.
 	 */
 	private int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
@@ -113,28 +118,29 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
-		return 2*NUMBER_OF_FLOORS;
+		return 2 * NUMBER_OF_FLOORS;
 	}
 
 	/**
 	 * A very hacky function to find the closest floor that needs an elevator
+	 * 
 	 * @param currFloor int, floor the elevator is on
 	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosest(int currFloor) {
 		int closestDown = findClosestDown(currFloor); // TODO only checks for down buttons below it
 		int closestUp = findClosestUp(currFloor); // TODO only checks for up buttons above it
-		// TODO 
-		// what if we are going down, and the only floor left is a 
+		// TODO
+		// what if we are going down, and the only floor left is a
 		// a floor below us that is going up ???
-		if (closestDown == 2*NUMBER_OF_FLOORS &&  closestUp == 2*NUMBER_OF_FLOORS) {
-			return 2*NUMBER_OF_FLOORS;
-		} else if (closestUp == 2*NUMBER_OF_FLOORS){
-			return closestDown == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestDown;
-		} else if (closestDown == 2*NUMBER_OF_FLOORS) {
-			return closestUp == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestUp;
+		if (closestDown == 2 * NUMBER_OF_FLOORS && closestUp == 2 * NUMBER_OF_FLOORS) {
+			return 2 * NUMBER_OF_FLOORS;
+		} else if (closestUp == 2 * NUMBER_OF_FLOORS) {
+			return closestDown == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestDown;
+		} else if (closestDown == 2 * NUMBER_OF_FLOORS) {
+			return closestUp == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestUp;
 		} else {
-			if (currFloor - closestDown < closestUp - currFloor){
+			if (currFloor - closestDown < closestUp - currFloor) {
 				return closestDown;
 			} else {
 				return closestUp;
@@ -161,6 +167,9 @@ public class Scheduler implements Runnable {
 		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
 		state = SchedulerStates.WOKRING;
 		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
+			// TODO if we send an elevator command, but then get another button press
+			// before the elevator sets itself to IDLE, we will send the elevator another
+			// command while it is already getting ready to move
 			sendElevatorCommand();
 		}
 	}
@@ -197,7 +206,7 @@ public class Scheduler implements Runnable {
 			throw new IllegalArgumentException("Unexpected value: " + eSubsystem.getElevator().getState());
 		}
 
-		if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+		if (elevatorDestFloor == 2 * NUMBER_OF_FLOORS) {
 			System.out.println("No work left to do!");
 			// no more work
 			state = SchedulerStates.IDLE;
@@ -205,8 +214,8 @@ public class Scheduler implements Runnable {
 			floorDownButtonsMap.remove(elevatorCurrFloor);
 		} else {
 			// tell the elevator where to go
-			
-			//clear the button the elevator is at
+
+			// clear the button the elevator is at
 			boolean isFutureStateGoingUp = elevatorDestFloor > elevatorCurrFloor;
 			if (isFutureStateGoingUp) {
 				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_DOWN) {
@@ -223,8 +232,8 @@ public class Scheduler implements Runnable {
 				System.out.println("Clearing floor " + elevatorCurrFloor + " DOWN");
 				floorDownButtonsMap.remove(elevatorCurrFloor);
 			}
-			System.out
-					.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: " + isFutureStateGoingUp);
+			System.out.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: "
+					+ isFutureStateGoingUp);
 			FloorData message = new FloorData(elevatorDestFloor, isFutureStateGoingUp);
 			sendElevatorSystemMessage(message);
 		}
