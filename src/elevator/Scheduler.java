@@ -27,11 +27,12 @@ public class Scheduler implements Runnable {
 
 	/**
 	 * Creates scheduler objects
-	 * @param receiveQueue			receive Queue from floor
-	 * @param floorRecieveQueue		Queue for floor to receive
-	 * @param elevatorRecieveQuque  Queue for elevator to receive
-	 * @param floors				list of floors
-	 * @param elevatorSubsystems	list of Elevator Subsystems
+	 * 
+	 * @param receiveQueue         receive Queue from floor
+	 * @param floorRecieveQueue    Queue for floor to receive
+	 * @param elevatorRecieveQuque Queue for elevator to receive
+	 * @param floors               list of floors
+	 * @param elevatorSubsystems   list of Elevator Subsystems
 	 */
 	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
 			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) {
@@ -92,7 +93,9 @@ public class Scheduler implements Runnable {
 
 	/*
 	 * Returns the floor above current
-	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * 
+	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no
+	 * floors exist.
 	 */
 	private int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
@@ -100,12 +103,19 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
-		return 2*NUMBER_OF_FLOORS;
+		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
+			if (floorUpButtonsMap.containsKey(i)) {
+				return i;
+			}
+		}
+		return 2 * NUMBER_OF_FLOORS;
 	}
 
 	/*
 	 * Returns the floor below current
-	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * 
+	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no
+	 * floors exist.
 	 */
 	private int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
@@ -113,35 +123,32 @@ public class Scheduler implements Runnable {
 				return i;
 			}
 		}
-		return 2*NUMBER_OF_FLOORS;
+		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
+			if (floorDownButtonsMap.containsKey(i)) {
+				return i;
+			}
+		}
+		return 2 * NUMBER_OF_FLOORS;
 	}
-	
-	/**
-	 * Checks button map if pressed
-	 * @return boolean, if buttons pressed true
-	 */
-	private boolean checkIfButtonsPressed() {
-		return floorDownButtonsMap.isEmpty() && floorUpButtonsMap.isEmpty();
-	}
-
 
 	/**
 	 * A very hacky function to find the closest floor that needs an elevator
+	 * 
 	 * @param currFloor int, floor the elevator is on
 	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
 	private int findClosest(int currFloor) {
 		int closestDown = findClosestDown(currFloor);
 		int closestUp = findClosestUp(currFloor);
-		
-		if (closestDown == 2*NUMBER_OF_FLOORS &&  closestUp == 2*NUMBER_OF_FLOORS) {
-			return 2*NUMBER_OF_FLOORS;
-		} else if (closestUp == 2*NUMBER_OF_FLOORS){
-			return closestDown == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestDown;
-		} else if (closestDown == 2*NUMBER_OF_FLOORS) {
-			return closestUp == 2*NUMBER_OF_FLOORS ? 2*NUMBER_OF_FLOORS : closestUp;
+
+		if (closestDown == 2 * NUMBER_OF_FLOORS && closestUp == 2 * NUMBER_OF_FLOORS) {
+			return 2 * NUMBER_OF_FLOORS;
+		} else if (closestUp == 2 * NUMBER_OF_FLOORS) {
+			return closestDown == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestDown;
+		} else if (closestDown == 2 * NUMBER_OF_FLOORS) {
+			return closestUp == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestUp;
 		} else {
-			if (currFloor - closestDown < closestUp - currFloor){
+			if (currFloor - closestDown < closestUp - currFloor) {
 				return closestDown;
 			} else {
 				return closestUp;
@@ -165,9 +172,11 @@ public class Scheduler implements Runnable {
 		} else {
 			floorDownButtonsMap.put(destFloor, true);
 		}
+		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
 		state = SchedulerStates.WOKRING;
 		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
 			sendElevatorCommand();
+			elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
 		}
 	}
 
@@ -178,55 +187,63 @@ public class Scheduler implements Runnable {
 		ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
 
 		int elevatorCurrFloor = eSubsystem.getElevator().getCurrentFloor();
-		int elevatorDestFloor;
+		int elevatorDestFloor = 2 * NUMBER_OF_FLOORS;
 
 		System.out.println("Scheduler determining next floor for Elevator with elevator state "
 				+ eSubsystem.getElevator().getState());
 
 		// figure out where to move
-		switch (eSubsystem.getElevator().getState()) {
-		case IDLE: {
+		boolean upButtonSet = floorUpButtonsMap.get(eSubsystem.getElevator().getCurrentFloor()) != null;
+		boolean downButtonSet = floorDownButtonsMap.get(eSubsystem.getElevator().getCurrentFloor()) != null;
+
+		if (upButtonSet && downButtonSet) {
+			System.out.println("Current floor button is UP&DOWN - find closest");
 			elevatorDestFloor = findClosest(elevatorCurrFloor);
-			break;
-		}
-		case GOING_UP: {
-			elevatorDestFloor = !floorUpButtonsMap.isEmpty() ? findClosestUp(elevatorCurrFloor)
-					: findClosestDown(elevatorCurrFloor);
-			break;
-		}
-		case GOING_DOWN: {
-			elevatorDestFloor = !floorDownButtonsMap.isEmpty() ? findClosestDown(elevatorCurrFloor)
-					: findClosestUp(elevatorCurrFloor);
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + eSubsystem.getElevator().getState());
+		} else if (upButtonSet) {
+			System.out.println("Current floor button is UP - find closest up or down if empty");
+			elevatorDestFloor = findClosestUp(elevatorCurrFloor);
+			if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+				elevatorDestFloor = findClosestDown(elevatorCurrFloor);
+			}
+		} else if (downButtonSet) {
+			System.out.println("Current floor button is DOWN - find closest down or up if empty");
+			elevatorDestFloor = findClosestDown(elevatorCurrFloor);
+			if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+				elevatorDestFloor = findClosestUp(elevatorCurrFloor);
+			}
+		} else {
+			// no buttons set
+			elevatorDestFloor = findClosest(elevatorCurrFloor);
 		}
 
-		if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+		if (elevatorDestFloor == 2 * NUMBER_OF_FLOORS) {
 			System.out.println("No work left to do!");
 			// no more work
-			state = SchedulerStates.IDLE;
+			this.state = SchedulerStates.IDLE;
 			floorUpButtonsMap.remove(elevatorCurrFloor);
 			floorDownButtonsMap.remove(elevatorCurrFloor);
 		} else {
 			// tell the elevator where to go
-			
-			//clear the button the elevator is at
+
+			// clear the button the elevator is at
 			boolean isFutureStateGoingUp = elevatorDestFloor > elevatorCurrFloor;
 			if (isFutureStateGoingUp) {
 				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_DOWN) {
+					System.out.println("Clearing floor " + elevatorCurrFloor + " DOWN");
 					floorDownButtonsMap.remove(elevatorCurrFloor);
 				}
+				System.out.println("Clearing floor " + elevatorCurrFloor + " UP");
 				floorUpButtonsMap.remove(elevatorCurrFloor);
 			} else {
 				if (eSubsystem.getElevator().getPrevDirection() == ElevatorStates.GOING_UP) {
+					System.out.println("Clearing floor " + elevatorCurrFloor + " UP");
 					floorUpButtonsMap.remove(elevatorCurrFloor);
 				}
+				System.out.println("Clearing floor " + elevatorCurrFloor + " DOWN");
 				floorDownButtonsMap.remove(elevatorCurrFloor);
 			}
-			System.out
-					.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: " + isFutureStateGoingUp);
+			System.out.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: "
+					+ isFutureStateGoingUp);
 			FloorData message = new FloorData(elevatorDestFloor, isFutureStateGoingUp);
 			sendElevatorSystemMessage(message);
 		}

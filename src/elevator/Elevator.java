@@ -53,7 +53,17 @@ public class Elevator implements Runnable {
 	}
 	
 	/**
+	 * Set the internal state
+	 * 
+	 * @param state ElevatorState, the state to set
+	 */
+	public void setState(ElevatorStates state) {
+		this.state = state;
+	}
+
+	/**
 	 * Getter returns previous direction
+	 * 
 	 * @return ElevatorStates, previous direction of elevator
 	 */
 	public ElevatorStates getPrevDirection() {
@@ -99,7 +109,6 @@ public class Elevator implements Runnable {
 		try {
 			this.wait();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -127,7 +136,7 @@ public class Elevator implements Runnable {
 			}
 			case GOING_DOWN:
 			case GOING_UP:
-				// TODO move the elevator
+				// Move the elevator
 				System.out.println("Elevator current state: " + this.state + ", prevDirection: " + prevDirection);
 				System.out.println("Moving to floor " + destinationFloor);
 				int diff = Math.abs(destinationFloor - currentFloor);
@@ -138,7 +147,6 @@ public class Elevator implements Runnable {
 				try {
 					Thread.sleep(2000 * diff);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				System.out.println("Elevator has arrived at floor " + destinationFloor);
