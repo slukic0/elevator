@@ -59,22 +59,28 @@ public class Floor implements Runnable {
 	 * Runs the floor's thread
 	 */
 	public void run() {
-		synchronized (receiveQueue) {
-			// wait for elevator response
-			while (receiveQueue.isEmpty()) {
-				try {
-					receiveQueue.wait();
-				} catch (InterruptedException e) {
-					System.out.println("Error in Floor Thread");
-					e.printStackTrace();
+		while (true) {
+			synchronized (receiveQueue) {
+				// wait for elevator response
+				while (receiveQueue.isEmpty()) {
+					try {
+						receiveQueue.wait();
+					} catch (InterruptedException e) {
+						System.out.println("Error in Floor Thread");
+						e.printStackTrace();
+					}
 				}
-			}
-			
-			for (int i=0; i<receiveQueue.size(); i++) {
-				ElevatorData message = receiveQueue.poll();
-				System.out.println("Floor received message: " + message.toString());
 
-				receiveQueue.notifyAll();
+				for (int i = 0; i < receiveQueue.size(); i++) {
+					ElevatorData message = receiveQueue.poll();
+					System.out.println("Floor received message: " + message.toString());
+					if (message.getCurrentFloor() == message.getMovingToFloor()
+							&& message.getState() == ElevatorStates.IDLE) {
+						System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
+					}
+
+					receiveQueue.notifyAll();
+				}
 			}
 		}
 	}

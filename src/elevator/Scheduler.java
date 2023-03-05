@@ -251,6 +251,9 @@ public class Scheduler implements Runnable {
 
 	public void handleElevatorResponse(ElevatorData message) {
 		if (message.getState() == ElevatorStates.IDLE) {
+			System.out.println("Scheduler forwarding floor elevator arrival");
+			sendFloorSystemMessage(message);
+
 			System.out.println("Scheduler got reply: Elevator looking for work");
 			sendElevatorCommand();
 		} else {
