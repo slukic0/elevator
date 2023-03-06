@@ -1,11 +1,10 @@
 package elevator;
 
-import java.util.ArrayList;
 import java.util.Queue;
 
-import elevator.Message.Sender;
+import util.SendReceiveUtil;
 
-/** 
+/**
  * Class to represent the floor subsystem
  * 
  * @author Group G5
@@ -13,80 +12,54 @@ import elevator.Message.Sender;
  */
 public class Floor implements Runnable {
 	private final int FLOOR_NUMBER;
-	private Queue<Message> receiveQueue;
-	private Queue<Message> schedulerQueue;
-	private ArrayList<Message> messages; // Iteration 1: file inputed messages
+	private Queue<ElevatorData> receiveQueue;
+	private Queue<Object> schedulerQueue;
 
-	/** 
+	/**
 	 * Creates a floor with shared synchronized message queues and the floor number
-	 *  
-	 * @param receiveQueue the synchronized message queue to receive information from the Scheduler
-	 * @param schedulerQueue the synchronized message queue to send information to the Scheduler
-	 * @param floorNumber the floor's number
+	 * 
+	 * @param receiveQueue   the synchronized message queue to receive information
+	 *                       from the Scheduler
+	 * @param schedulerQueue the synchronized message queue to send information to
+	 *                       the Scheduler
+	 * @param floorNumber    the floor's number
 	 */
-	public Floor(Queue<Message> receiveQueue, Queue<Message> schedulerQueue, int floorNumber) {
+	public Floor(Queue<ElevatorData> receiveQueue, Queue<Object> schedulerQueue, int floorNumber) {
 		this.receiveQueue = receiveQueue;
 		this.schedulerQueue = schedulerQueue;
 		this.FLOOR_NUMBER = floorNumber;
-		this.messages = new ArrayList<>();
 	}
-	
+
 	/**
 	 * Gets the floor's receive queue
 	 * 
-	 * @return		Queue <Message>, floor's receive queue
+	 * @return Queue <Message>, floor's receive queue
 	 */
-	public Queue<Message> getreceiveQueue() {
+	public Queue<ElevatorData> getreceiveQueue() {
 		return this.receiveQueue;
 	}
-	
+
 	/**
 	 * Gets the floor's scheduler queue
 	 * 
-	 * @return		Queue <Message>, floor's scheduler queue
+	 * @return Object <Message>, floor's scheduler queue
 	 */
-	public Queue<Message> getSchedulerQueue() {
+	public Queue<Object> getSchedulerQueue() {
 		return this.schedulerQueue;
 	}
 
-	/**
-	 * Gets the floor's message list
-	 * 
-	 * @return		ArrayList <Message>, floor's message list
-	 */
-	public ArrayList<Message> getMessages() {
-		return this.messages;
+	public void sendMessage(FloorData data) {
+		System.out.println("Floor is sending message to Scheduler: " + data.toString());
+		new Thread(() -> {
+			SendReceiveUtil.sendData(schedulerQueue, data);
+		}).start();
 	}
-	
+
 	/**
-	 * Add message to messages list
-	 *
-	 * @param message	the message to be added to message list
-	 */
-	public void addMessage(Message message) {
-		messages.add(message);
-	}
-	
-	
-	/** 
-	 *  Runs the floor's thread
+	 * Runs the floor's thread
 	 */
 	public void run() {
-		for (Message m : messages) {
-			synchronized (schedulerQueue) {
-				while (!schedulerQueue.isEmpty()) {
-					try {
-						schedulerQueue.wait();
-					} catch (InterruptedException e) {
-						System.out.println("Error in Floor Thread");
-						e.printStackTrace();
-					}
-				}
-				System.out.println("Floor is sending message to Scheduler: " + m.toString());
-				schedulerQueue.add(m);
-				schedulerQueue.notifyAll();
-			}
-
+		while (true) {
 			synchronized (receiveQueue) {
 				// wait for elevator response
 				while (receiveQueue.isEmpty()) {
@@ -98,12 +71,18 @@ public class Floor implements Runnable {
 					}
 				}
 
-				Message message = receiveQueue.poll();
-				System.out.println("Floor received message: " + message.toString());
+				for (int i = 0; i < receiveQueue.size(); i++) {
+					ElevatorData message = receiveQueue.poll();
+					System.out.println("Floor received message: " + message.toString());
+					if (message.getCurrentFloor() == message.getMovingToFloor()
+							&& message.getState() == ElevatorStates.IDLE) {
+						System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
+					}
 
-				receiveQueue.notifyAll();
+					receiveQueue.notifyAll();
+				}
 			}
 		}
-
 	}
+
 }

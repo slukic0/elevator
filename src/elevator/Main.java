@@ -1,6 +1,7 @@
 package elevator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -11,35 +12,38 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Hello Elevator");
 
-		Queue<Message> schedulerQueue = new LinkedList<>();
-		Queue<Message> floorQueue = new LinkedList<>();
-		Queue<Message> elevatorQueue = new LinkedList<>();
+		Queue<Object> schedulerQueue = new LinkedList<>();
+		Queue<ElevatorData> floorQueue = new LinkedList<>();
+		Queue<FloorData> elevatorSystemQueue = new LinkedList<>();
 
 		// only 1 floor and 1 elevator for now...
-		Elevator elevator = new Elevator(elevatorQueue, schedulerQueue, 0, 0);
-		Floor floor = new Floor(floorQueue, schedulerQueue, 0);
+		
+		
+		ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(elevatorSystemQueue, schedulerQueue, 1, Constants.STARTING_FLOOR);
+		Floor floor = new Floor(floorQueue, schedulerQueue, Constants.STARTING_FLOOR);
 
 		Floor[] floors = new Floor[] { floor };
-		Elevator[] elevators = new Elevator[] { elevator };
+		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<ElevatorSubsystem>();
+		elevatorSubsystems.add(elevatorSubsystem);
 
-		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorQueue, floors, elevators);
-
-		// Read input file and create floor messages
-		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
-		Message[] messages = FileUtil.parseStringInput(input);
-		for (Message m : messages) {
-			System.out.println("Adding message: " + m.toString());
-			floor.addMessage(m);
-		}
+		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorSystemQueue, floors, elevatorSubsystems);
 
 		// Create & start the threads
-		Thread eThread = new Thread(elevator);
+		Thread eThread = new Thread(elevatorSubsystem);
 		Thread fThread = new Thread(floor);
 		Thread sThread = new Thread(scheduler);
 
 		eThread.start();
 		fThread.start();
 		sThread.start();
+
+		// Read input file and create floor messages
+		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
+		FloorData[] data = FileUtil.parseStringInput(input);
+		for (FloorData d : data) {
+			System.out.println("Adding FloorData: " + d.toString());
+			floor.sendMessage(d);
+		}
 
 	}
 

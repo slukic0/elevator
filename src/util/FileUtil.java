@@ -7,8 +7,7 @@ import java.io.InputStreamReader;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import elevator.Message;
-import elevator.Message.Sender;
+import elevator.FloorData;
 
 public class FileUtil {
 	public static String[] readFile(Class<?> myClass, String filePath) throws IOException {
@@ -31,8 +30,8 @@ public class FileUtil {
 		return lines.toArray(new String[lines.size()]);
 	}
 
-	public static Message[] parseStringInput(String[] lines) {
-		ArrayList<Message> messages = new ArrayList<>();
+	public static FloorData[] parseStringInput(String[] lines) {
+		ArrayList<FloorData> data = new ArrayList<>();
 		for (String s : lines) {
 			// time|floor|button
 			// Example: 12:43:47.0|0|UP
@@ -42,9 +41,9 @@ public class FileUtil {
 			boolean up = event[2].equals("UP") ? true : false;
 			LocalTime time = LocalTime.parse(event[0]);
 
-			messages.add(new Message(Sender.FLOOR, floor, up, time));
+			data.add(new FloorData(floor, up, time));
 		}
 
-		return messages.toArray(new Message[messages.size()]);
+		return data.toArray(new FloorData[data.size()]);
 	}
 }
