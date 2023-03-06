@@ -123,6 +123,7 @@ public class Scheduler implements Runnable {
 	 * 
 	 * @return FloorData - the floor to move to or null if no work to do
 	 */
+	/*
 	public FloorData getElevatorMoveCommand() {
 		// ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
 		// TODO pick the BEST elevator
@@ -193,6 +194,12 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	*/
+	// TOOD UNCOMMENT
+	public FloorData getElevatorMoveCommand() {
+		return new FloorData(5, true, LocalTime.now());
+	}
+	
 	public void receiveElevator() throws IOException {
 		while (true) {
 			DatagramPacket elevatorPacket = NetworkUtils.receivePacket(schedulerElevatorSendReceiveSocket);
@@ -255,18 +262,11 @@ public class Scheduler implements Runnable {
 			System.out.println(
 					"Scheduler marked floor " + floorMessage.getFloor() + " as GoingUp: " + floorMessage.getGoingUp());
 			state = SchedulerStates.WOKRING;
-
-			if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
-				// tell elevator to move to floor
-				// TODO we cant do this, elevator is running on another machine
-				// need to keep track of all elevators and their corresponding ports
-				// Map<ElevaorNumber, port) - Maybe also add the status of the elevator here???
-				FloorData message = getElevatorMoveCommand();
-				elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
-				// TODO what elevator to send this to?
-				byte[] data = NetworkUtils.serializeObject(message);
-				NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, senderPort, senderAddress);
-			}
+			FloorData message = getElevatorMoveCommand();
+			// TODO what elevator to send this to?
+			// getElevatorMoveCommand should probably tell us this
+			byte[] data = NetworkUtils.serializeObject(message);
+			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, senderPort, senderAddress);
 		}
 	}
 
@@ -278,7 +278,6 @@ public class Scheduler implements Runnable {
 			try {
 				this.receiveElevator();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}).start();
@@ -286,7 +285,6 @@ public class Scheduler implements Runnable {
 			try {
 				this.receiveFloor();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}).start();
