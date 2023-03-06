@@ -10,6 +10,8 @@ public class Constants {
 	// Only Scheduler ports need to be known, Scheduler can just reply to messages
 	// from Floor and Elevator
 	public static final int SCHEDULER_FLOOR_RECEIVE_PORT = 1;
-	public static final int SCHEDULER_ELEVATOR_RECEIVE_PORT = 1;
+	public static final int SCHEDULER_ELEVATOR_RECEIVE_PORT = 2;
+	public static final int FLOOR_SYS_RECEIVE_PORT = 3;
+
 	// TODO Scheduler address
 }

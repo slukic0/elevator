@@ -144,7 +144,7 @@ public class Elevator implements Runnable {
 				System.out.println("Moving to floor " + destinationFloor);
 				int diff = Math.abs(destinationFloor - currentFloor);
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-						destinationFloor, LocalTime.now().plusSeconds(2 * diff)));
+						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
 
 				// wait for a bit
 				try {
@@ -158,7 +158,8 @@ public class Elevator implements Runnable {
 				state = ElevatorStates.IDLE;
 				// tell the scheduler we have arrived
 				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now()));
+						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+								ELEVATOR_NUMBER));
 				prevDirection = currState;
 
 				break;

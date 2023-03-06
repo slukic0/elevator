@@ -15,14 +15,16 @@ public class ElevatorData implements Serializable {
 	private int currentFloor;
 	private int movingToFloor;
 	private LocalTime arrivalTime;
+	private int ELEVATOR_NUMBER;
 
 	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor,
-			LocalTime arrivalTime) {
+			LocalTime arrivalTime, int elevatorNumber) {
 		this.state = state;
 		this.prevDirection = prevDirection;
 		this.currentFloor = currentFloor;
 		this.movingToFloor = movingToFloor;
 		this.arrivalTime = arrivalTime;
+		this.ELEVATOR_NUMBER = elevatorNumber;
 	}
 
 	public ElevatorStates getState() {
@@ -45,9 +47,14 @@ public class ElevatorData implements Serializable {
 		return arrivalTime;
 	}
 
+	public int getELEVATOR_NUMBER() {
+		return ELEVATOR_NUMBER;
+	}
+
 	@Override
 	public String toString() {
-		return "State: " + state + ", CurrentFloor: " + currentFloor + ", MovingToFloor: " + movingToFloor
+		return "Number: " + ELEVATOR_NUMBER + ", State: " + state + ", CurrentFloor: " + currentFloor
+				+ ", MovingToFloor: " + movingToFloor
 				+ ", ArrivalTime: " + arrivalTime.toString();
 	}
 }

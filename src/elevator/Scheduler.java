@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,21 +20,14 @@ import util.NetworkUtils;
  *
  */
 public class Scheduler implements Runnable {
-	private ArrayList<ElevatorSubsystem> elevatorSystems;
-
-//	private Queue<Object> receiveQueue;
-//	private Queue<FloorData> elevatorRecieveQuque;
-//	private Queue<ElevatorData> floorRecieveQueue;
-	// replace queues with one socket for FloorData, one socket for ElevatorData
-	// don't need to know floor/elevator port, just respond using the packet port
-	// and address
-
-	private DatagramSocket schedulerFloorReceiveSocket;
-	private DatagramSocket schedulerElevatorReceiveSocket;
-
+	private DatagramSocket schedulerFloorSendReceiveSocket;
+	private DatagramSocket schedulerElevatorSendReceiveSocket;
 
 	public HashMap<Integer, Boolean> floorUpButtonsMap;
 	public HashMap<Integer, Boolean> floorDownButtonsMap;
+	
+	
+	public HashMap<Integer, ElevatorStatus> elevatorMap; // all the elevators in our system
 
 	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
 	private final int STARTING_FLOOR = Constants.STARTING_FLOOR;
@@ -51,9 +45,8 @@ public class Scheduler implements Runnable {
 	 * @throws SocketException thrown if sockets cannot be created
 	 */
 	public Scheduler(Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) throws SocketException {
-		this.schedulerElevatorReceiveSocket = new DatagramSocket(Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
-		this.schedulerFloorReceiveSocket = new DatagramSocket(Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
-		this.elevatorSystems = elevatorSubsystems;
+		this.schedulerElevatorSendReceiveSocket = new DatagramSocket(Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
+		this.schedulerFloorSendReceiveSocket = new DatagramSocket(Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
 
 		this.floorUpButtonsMap = new HashMap<>();
 		this.floorDownButtonsMap = new HashMap<>();
@@ -126,10 +119,16 @@ public class Scheduler implements Runnable {
 	}
 
 	/**
-	 * Tell the elevator to move if needed
+	 * Determine where an elevator should move
+	 * 
+	 * @return FloorData - the floor to move to or null if no work to do
 	 */
-	public void sendElevatorCommand() {
-		ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
+	public FloorData getElevatorMoveCommand() {
+		// ElevatorSubsystem eSubsystem = elevatorSystems.get(0);
+		// TODO pick the BEST elevator
+		// TODO no longer using the subsystem to get elevator data, use internal
+		// hashmaps
+		ElevatorSubsystem eSubsystem = elevatorMap.get(1);
 
 		int elevatorCurrFloor = eSubsystem.getElevator().getCurrentFloor();
 		int elevatorDestFloor = 2 * NUMBER_OF_FLOORS;
@@ -147,13 +146,13 @@ public class Scheduler implements Runnable {
 		} else if (upButtonSet) {
 			System.out.println("Current floor button is UP - find closest up or down if empty");
 			elevatorDestFloor = findClosestUp(elevatorCurrFloor);
-			if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+			if (elevatorDestFloor == 2 * NUMBER_OF_FLOORS) {
 				elevatorDestFloor = findClosestDown(elevatorCurrFloor);
 			}
 		} else if (downButtonSet) {
 			System.out.println("Current floor button is DOWN - find closest down or up if empty");
 			elevatorDestFloor = findClosestDown(elevatorCurrFloor);
-			if (elevatorDestFloor == 2*NUMBER_OF_FLOORS) {
+			if (elevatorDestFloor == 2 * NUMBER_OF_FLOORS) {
 				elevatorDestFloor = findClosestUp(elevatorCurrFloor);
 			}
 		} else {
@@ -167,6 +166,7 @@ public class Scheduler implements Runnable {
 			this.state = SchedulerStates.IDLE;
 			floorUpButtonsMap.remove(elevatorCurrFloor);
 			floorDownButtonsMap.remove(elevatorCurrFloor);
+			return null;
 		} else {
 			// tell the elevator where to go
 
@@ -189,88 +189,84 @@ public class Scheduler implements Runnable {
 			}
 			System.out.println("Scheduler sending elevator to floor " + elevatorDestFloor + ", isGoingUp: "
 					+ isFutureStateGoingUp);
-			FloorData message = new FloorData(elevatorDestFloor, isFutureStateGoingUp);
-			sendElevatorSystemMessage(message);
-		}
-	}
-
-	/**
-	 * Sends a message to the floor subsystem
-	 * 
-	 * @param message the message to send to the floor
-	 */
-	public void sendFloorSystemMessage(ElevatorData message) {
-		synchronized (floorRecieveQueue) {
-			floorRecieveQueue.add(message);
-			System.out.println("Scheduler forwarded message to floor");
-			floorRecieveQueue.notifyAll();
-		}
-	}
-
-	/**
-	 * Set the floor button as pressed in the HashMaps
-	 * 
-	 * @param message FloorData, message received from floor
-	 */
-	public void handleFloorRequest(FloorData message) {
-		System.out.println("Scheduler got message " + message);
-		System.out.println("Scheduler marking floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
-		boolean goingUp = message.getGoingUp();
-		int destFloor = message.getFloor();
-
-		if (goingUp) {
-			floorUpButtonsMap.put(destFloor, true);
-		} else {
-			floorDownButtonsMap.put(destFloor, true);
-		}
-		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
-		state = SchedulerStates.WOKRING;
-		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
-			sendElevatorCommand();
-			elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
-		}
-	}
-
-	/**
-	 * Sends a message to the elevator subsystem
-	 * 
-	 * @param message the message to send to the elevator
-	 */
-	public void sendElevatorSystemMessage(FloorData message) {
-		synchronized (elevatorRecieveQuque) {
-			elevatorRecieveQuque.add(message);
-			System.out.println("Scheduler sending message to Elevator subsys : " + message);
-			elevatorRecieveQuque.notifyAll();
-		}
-	}
-
-	public void handleElevatorResponse(ElevatorData message) {
-		if (message.getState() == ElevatorStates.IDLE) {
-			System.out.println("Scheduler forwarding floor elevator arrival");
-			sendFloorSystemMessage(message);
-
-			System.out.println("Scheduler got reply: Elevator looking for work");
-			sendElevatorCommand();
-		} else {
-			System.out.println("Scheduler got reply: Elevator moving, arrival at" + message.getArrivalTime());
+			return new FloorData(elevatorDestFloor, isFutureStateGoingUp, LocalTime.now());
 		}
 	}
 
 	public void receiveElevator() throws IOException {
-		while(true) {
-			DatagramPacket elevatorPacket = NetworkUtils.receivePacket(schedulerElevatorReceiveSocket);
+		while (true) {
+			DatagramPacket elevatorPacket = NetworkUtils.receivePacket(schedulerElevatorSendReceiveSocket);
 			ElevatorData elevatorMessage = (ElevatorData) NetworkUtils.deserializeObject(elevatorPacket);
 			int senderPort = elevatorPacket.getPort();
 			InetAddress senderAddress = elevatorPacket.getAddress();
+			
+
+			if (!elevatorMap.containsKey(elevatorMessage.getELEVATOR_NUMBER())) {
+				// add elevator to map if not already present
+				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
+						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+			} else {
+				// update elevator state in map
+				elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).setLatestMessage(elevatorMessage);
+			}
+
+
+			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+				// tell the floor elevator has arrived
+				System.out.println("Scheduler forwarding floor elevator arrival");
+				NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
+						Constants.FLOOR_SYS_RECEIVE_PORT); // TODO floor port?
+
+				// determine next floor to go to
+				System.out.println("Scheduler got reply: Elevator looking for work");
+				FloorData message = getElevatorMoveCommand();
+				if (message != null) { // null if no work to do
+					byte[] data = NetworkUtils.serializeObject(message);
+					NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, senderPort, senderAddress);
+				}
+			} else {
+				System.out
+						.println("Scheduler got reply: Elevator moving, arrival at" + elevatorMessage.getArrivalTime());
+			}
 		}
 	}
 
 	public void receiveFloor() throws IOException {
 		while (true) {
-			DatagramPacket floorPacket = NetworkUtils.receivePacket(schedulerFloorReceiveSocket);
+			DatagramPacket floorPacket = NetworkUtils.receivePacket(schedulerFloorSendReceiveSocket);
 			FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(floorPacket);
 			int senderPort = floorPacket.getPort();
 			InetAddress senderAddress = floorPacket.getAddress();
+
+
+			System.out.println("Scheduler got message " + floorMessage);
+			System.out
+					.println("Scheduler marking floor " + floorMessage.getFloor() + " as GoingUp: "
+							+ floorMessage.getGoingUp());
+
+			boolean goingUp = floorMessage.getGoingUp();
+			int destFloor = floorMessage.getFloor();
+
+			if (goingUp) {
+				floorUpButtonsMap.put(destFloor, true);
+			} else {
+				floorDownButtonsMap.put(destFloor, true);
+			}
+			System.out.println(
+					"Scheduler marked floor " + floorMessage.getFloor() + " as GoingUp: " + floorMessage.getGoingUp());
+			state = SchedulerStates.WOKRING;
+
+			if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
+				// tell elevator to move to floor
+				// TODO we cant do this, elevator is running on another machine
+				// need to keep track of all elevators and their corresponding ports
+				// Map<ElevaorNumber, port) - Maybe also add the status of the elevator here???
+				FloorData message = getElevatorMoveCommand();
+				elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
+				// TODO what elevator to send this to?
+				byte[] data = NetworkUtils.serializeObject(message);
+				NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, senderPort, senderAddress);
+			}
 		}
 	}
 

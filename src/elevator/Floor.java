@@ -16,7 +16,6 @@ import util.NetworkUtils;
  *
  */
 public class Floor implements Runnable {
-	private final int FLOOR_NUMBER;
 //	private Queue<ElevatorData> receiveQueue;
 //	private Queue<Object> schedulerQueue;
 
@@ -32,9 +31,8 @@ public class Floor implements Runnable {
 	 * @param floorNumber    the floor's number
 	 * @throws SocketException
 	 */
-	public Floor(int floorNumber) throws SocketException {
+	public Floor() throws SocketException {
 		this.floorReceiveSocket = new DatagramSocket();
-		this.FLOOR_NUMBER = floorNumber;
 	}
 
 //	public void sendMessage(FloorData data) {
@@ -47,7 +45,8 @@ public class Floor implements Runnable {
 		System.out.println("Floor is sending message to Scheduler: " + data.toString());
 		new Thread(() -> {
 			try {
-				DatagramSocket socket = new DatagramSocket();
+				DatagramSocket socket = new DatagramSocket(null);
+				socket.connect(floorReceiveSocket.getInetAddress(), floorReceiveSocket.getPort());
 				byte[] byteData = NetworkUtils.serializeObject(data);
 				NetworkUtils.sendPacket(byteData, socket, Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
 				// TODO Scheduler Address
