@@ -1,8 +1,13 @@
 package elevator;
 
-import java.util.Queue;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 
-import util.SendReceiveUtil;
+import messages.ElevatorData;
+import messages.FloorData;
+import util.NetworkUtils;
 
 /**
  * Class to represent the floor subsystem
@@ -12,8 +17,10 @@ import util.SendReceiveUtil;
  */
 public class Floor implements Runnable {
 	private final int FLOOR_NUMBER;
-	private Queue<ElevatorData> receiveQueue;
-	private Queue<Object> schedulerQueue;
+//	private Queue<ElevatorData> receiveQueue;
+//	private Queue<Object> schedulerQueue;
+
+	private DatagramSocket floorReceiveSocket;
 
 	/**
 	 * Creates a floor with shared synchronized message queues and the floor number
@@ -23,35 +30,32 @@ public class Floor implements Runnable {
 	 * @param schedulerQueue the synchronized message queue to send information to
 	 *                       the Scheduler
 	 * @param floorNumber    the floor's number
+	 * @throws SocketException
 	 */
-	public Floor(Queue<ElevatorData> receiveQueue, Queue<Object> schedulerQueue, int floorNumber) {
-		this.receiveQueue = receiveQueue;
-		this.schedulerQueue = schedulerQueue;
+	public Floor(int floorNumber) throws SocketException {
+		this.floorReceiveSocket = new DatagramSocket();
 		this.FLOOR_NUMBER = floorNumber;
 	}
 
-	/**
-	 * Gets the floor's receive queue
-	 * 
-	 * @return Queue <Message>, floor's receive queue
-	 */
-	public Queue<ElevatorData> getreceiveQueue() {
-		return this.receiveQueue;
-	}
-
-	/**
-	 * Gets the floor's scheduler queue
-	 * 
-	 * @return Object <Message>, floor's scheduler queue
-	 */
-	public Queue<Object> getSchedulerQueue() {
-		return this.schedulerQueue;
-	}
-
-	public void sendMessage(FloorData data) {
+//	public void sendMessage(FloorData data) {
+//		System.out.println("Floor is sending message to Scheduler: " + data.toString());
+//		new Thread(() -> {
+//			SendReceiveUtil.sendData(schedulerQueue, data);
+//		}).start();
+//	}
+	public void sendMessageToScheduler(FloorData data) {
 		System.out.println("Floor is sending message to Scheduler: " + data.toString());
 		new Thread(() -> {
-			SendReceiveUtil.sendData(schedulerQueue, data);
+			try {
+				DatagramSocket socket = new DatagramSocket();
+				byte[] byteData = NetworkUtils.serializeObject(data);
+				NetworkUtils.sendPacket(byteData, socket, Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
+				// TODO Scheduler Address
+			} catch (Exception e) {
+				System.err.println("FLOOR ERROR: sendMessageToScheduler()");
+				e.printStackTrace();
+			}
+			
 		}).start();
 	}
 
@@ -60,27 +64,17 @@ public class Floor implements Runnable {
 	 */
 	public void run() {
 		while (true) {
-			synchronized (receiveQueue) {
-				// wait for elevator response
-				while (receiveQueue.isEmpty()) {
-					try {
-						receiveQueue.wait();
-					} catch (InterruptedException e) {
-						System.out.println("Error in Floor Thread");
-						e.printStackTrace();
-					}
+			try {
+				DatagramPacket elevatorMessage = NetworkUtils.receivePacket(floorReceiveSocket);
+				ElevatorData message = (ElevatorData) NetworkUtils.deserializeObject(elevatorMessage);
+				System.out.println("Floor received message: " + message.toString());
+				if (message.getCurrentFloor() == message.getMovingToFloor()
+						&& message.getState() == ElevatorStates.IDLE) {
+					System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
 				}
-
-				for (int i = 0; i < receiveQueue.size(); i++) {
-					ElevatorData message = receiveQueue.poll();
-					System.out.println("Floor received message: " + message.toString());
-					if (message.getCurrentFloor() == message.getMovingToFloor()
-							&& message.getState() == ElevatorStates.IDLE) {
-						System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
-					}
-
-					receiveQueue.notifyAll();
-				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}

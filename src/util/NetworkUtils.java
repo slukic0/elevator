@@ -1,6 +1,10 @@
 package util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -101,6 +105,28 @@ public class NetworkUtils {
 			byte[] msg, int sendPort) throws IOException {
 		sendPacket(msg, sendSocket, sendPort);
 		return receivePacket(receieveSocket);
+	}
+
+	public static byte[] serializeObject(Object obj) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ObjectOutputStream os = new ObjectOutputStream(outputStream);
+		os.writeObject(obj);
+		return outputStream.toByteArray();
+
+	}
+
+	public static Object deserializeObject(DatagramPacket packet) {
+		byte[] data = packet.getData();
+		ByteArrayInputStream in = new ByteArrayInputStream(data);
+		ObjectInputStream is;
+		try {
+			is = new ObjectInputStream(in);
+			return is.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			System.err.println("ERROR: unable to deserialize packet " + packet.toString());
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**

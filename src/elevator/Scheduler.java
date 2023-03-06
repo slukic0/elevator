@@ -1,8 +1,16 @@
 package elevator;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Queue;
+
+import messages.ElevatorData;
+import messages.FloorData;
+import util.NetworkUtils;
 
 /**
  * Represents the Scheduler in the system
@@ -13,9 +21,16 @@ import java.util.Queue;
 public class Scheduler implements Runnable {
 	private ArrayList<ElevatorSubsystem> elevatorSystems;
 
-	private Queue<Object> receiveQueue;
-	private Queue<FloorData> elevatorRecieveQuque;
-	private Queue<ElevatorData> floorRecieveQueue;
+//	private Queue<Object> receiveQueue;
+//	private Queue<FloorData> elevatorRecieveQuque;
+//	private Queue<ElevatorData> floorRecieveQueue;
+	// replace queues with one socket for FloorData, one socket for ElevatorData
+	// don't need to know floor/elevator port, just respond using the packet port
+	// and address
+
+	private DatagramSocket schedulerFloorReceiveSocket;
+	private DatagramSocket schedulerElevatorReceiveSocket;
+
 
 	public HashMap<Integer, Boolean> floorUpButtonsMap;
 	public HashMap<Integer, Boolean> floorDownButtonsMap;
@@ -33,62 +48,16 @@ public class Scheduler implements Runnable {
 	 * @param elevatorRecieveQuque Queue for elevator to receive
 	 * @param floors               list of floors
 	 * @param elevatorSubsystems   list of Elevator Subsystems
+	 * @throws SocketException thrown if sockets cannot be created
 	 */
-	public Scheduler(Queue<Object> receiveQueue, Queue<ElevatorData> floorRecieveQueue,
-			Queue<FloorData> elevatorRecieveQuque, Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) {
-		this.receiveQueue = receiveQueue;
-		this.floorRecieveQueue = floorRecieveQueue;
-		this.elevatorRecieveQuque = elevatorRecieveQuque;
+	public Scheduler(Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) throws SocketException {
+		this.schedulerElevatorReceiveSocket = new DatagramSocket(Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
+		this.schedulerFloorReceiveSocket = new DatagramSocket(Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
 		this.elevatorSystems = elevatorSubsystems;
 
 		this.floorUpButtonsMap = new HashMap<>();
 		this.floorDownButtonsMap = new HashMap<>();
 		this.state = SchedulerStates.IDLE;
-	}
-
-	/**
-	 * Gets the scheduler's receive queue
-	 * 
-	 * @return receiveQueue scheduler's receive queue
-	 */
-	public Queue<Object> getreceiveQueue() {
-		return this.receiveQueue;
-	}
-	
-	/**
-	 * Gets the scheduler's receive queue
-	 * 
-	 * @return receiveQueue scheduler's receive queue
-	 */
-	public Queue<ElevatorData> getFloorReceiveQueue() {
-		return this.floorRecieveQueue;
-	}
-	
-
-	/**
-	 * Sends a message to the floor subsystem
-	 * 
-	 * @param message the message to send to the floor
-	 */
-	public void sendFloorSystemMessage(ElevatorData message) {
-		synchronized (floorRecieveQueue) {
-			floorRecieveQueue.add(message);
-			System.out.println("Scheduler forwarded message to floor");
-			floorRecieveQueue.notifyAll();
-		}
-	}
-
-	/**
-	 * Sends a message to the elevator subsystem
-	 * 
-	 * @param message the message to send to the elevator
-	 */
-	public void sendElevatorSystemMessage(FloorData message) {
-		synchronized (elevatorRecieveQuque) {
-			elevatorRecieveQuque.add(message);
-			System.out.println("Scheduler sending message to Elevator subsys : " + message);
-			elevatorRecieveQuque.notifyAll();
-		}
 	}
 
 	/*
@@ -153,30 +122,6 @@ public class Scheduler implements Runnable {
 			} else {
 				return closestUp;
 			}
-		}
-	}
-
-	/**
-	 * Set the floor button as pressed in the HashMaps
-	 * 
-	 * @param message FloorData, message received from floor
-	 */
-	public void handleFloorRequest(FloorData message) {
-		System.out.println("Scheduler got message " + message);
-		System.out.println("Scheduler marking floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
-		boolean goingUp = message.getGoingUp();
-		int destFloor = message.getFloor();
-
-		if (goingUp) {
-			floorUpButtonsMap.put(destFloor, true);
-		} else {
-			floorDownButtonsMap.put(destFloor, true);
-		}
-		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
-		state = SchedulerStates.WOKRING;
-		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
-			sendElevatorCommand();
-			elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
 		}
 	}
 
@@ -249,6 +194,56 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	/**
+	 * Sends a message to the floor subsystem
+	 * 
+	 * @param message the message to send to the floor
+	 */
+	public void sendFloorSystemMessage(ElevatorData message) {
+		synchronized (floorRecieveQueue) {
+			floorRecieveQueue.add(message);
+			System.out.println("Scheduler forwarded message to floor");
+			floorRecieveQueue.notifyAll();
+		}
+	}
+
+	/**
+	 * Set the floor button as pressed in the HashMaps
+	 * 
+	 * @param message FloorData, message received from floor
+	 */
+	public void handleFloorRequest(FloorData message) {
+		System.out.println("Scheduler got message " + message);
+		System.out.println("Scheduler marking floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
+		boolean goingUp = message.getGoingUp();
+		int destFloor = message.getFloor();
+
+		if (goingUp) {
+			floorUpButtonsMap.put(destFloor, true);
+		} else {
+			floorDownButtonsMap.put(destFloor, true);
+		}
+		System.out.println("Scheduler marked floor " + message.getFloor() + " as GoingUp: " + message.getGoingUp());
+		state = SchedulerStates.WOKRING;
+		if (elevatorSystems.get(0).getElevator().getState() == ElevatorStates.IDLE) {
+			sendElevatorCommand();
+			elevatorSystems.get(0).getElevator().setState(ElevatorStates.PROCESSING);
+		}
+	}
+
+	/**
+	 * Sends a message to the elevator subsystem
+	 * 
+	 * @param message the message to send to the elevator
+	 */
+	public void sendElevatorSystemMessage(FloorData message) {
+		synchronized (elevatorRecieveQuque) {
+			elevatorRecieveQuque.add(message);
+			System.out.println("Scheduler sending message to Elevator subsys : " + message);
+			elevatorRecieveQuque.notifyAll();
+		}
+	}
+
 	public void handleElevatorResponse(ElevatorData message) {
 		if (message.getState() == ElevatorStates.IDLE) {
 			System.out.println("Scheduler forwarding floor elevator arrival");
@@ -261,36 +256,43 @@ public class Scheduler implements Runnable {
 		}
 	}
 
+	public void receiveElevator() throws IOException {
+		while(true) {
+			DatagramPacket elevatorPacket = NetworkUtils.receivePacket(schedulerElevatorReceiveSocket);
+			ElevatorData elevatorMessage = (ElevatorData) NetworkUtils.deserializeObject(elevatorPacket);
+			int senderPort = elevatorPacket.getPort();
+			InetAddress senderAddress = elevatorPacket.getAddress();
+		}
+	}
+
+	public void receiveFloor() throws IOException {
+		while (true) {
+			DatagramPacket floorPacket = NetworkUtils.receivePacket(schedulerFloorReceiveSocket);
+			FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(floorPacket);
+			int senderPort = floorPacket.getPort();
+			InetAddress senderAddress = floorPacket.getAddress();
+		}
+	}
+
 	/**
 	 * Runs the scheduler's thread
 	 */
 	public void run() {
-		while (true) {
-			synchronized (receiveQueue) {
-				while (receiveQueue.isEmpty()) {
-					try {
-						receiveQueue.wait();
-					} catch (InterruptedException e) {
-						System.out.println("Error in Scheduler Thread");
-						e.printStackTrace();
-					}
-				}
-				// get the message(s)
-				for (int i = 0; i < receiveQueue.size(); i++) {
-
-					Object message = receiveQueue.poll();
-
-					if (message instanceof FloorData) {
-						handleFloorRequest((FloorData) message);
-
-					} else if (message instanceof ElevatorData) {
-						// one of the elevators sent us this message
-						handleElevatorResponse((ElevatorData) message);
-					}
-				}
-
-				receiveQueue.notifyAll();
+		new Thread(() -> {
+			try {
+				this.receiveElevator();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		}
+		}).start();
+		new Thread(() -> {
+			try {
+				this.receiveFloor();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}).start();
 	}
 }

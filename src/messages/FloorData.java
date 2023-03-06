@@ -1,8 +1,13 @@
-package elevator;
+package messages;
 
+import java.io.Serializable;
 import java.time.LocalTime;
 
-public class FloorData {
+public class FloorData implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8338140153567912284L;
 	private LocalTime time;
 	private int floor;
 	private boolean goingUp;
@@ -17,13 +22,6 @@ public class FloorData {
 		this.floor = floor;
 		this.goingUp = goingUp;
 		this.time = time;
-	}
-
-	/** 
-	 * Second Class constructor 
-	**/
-	public FloorData(int floor, boolean goingUp) {
-		this(floor, goingUp, LocalTime.now());
 	}
 
 	/**

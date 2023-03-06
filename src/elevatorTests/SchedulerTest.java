@@ -1,6 +1,8 @@
 
 package elevatorTests;
 import elevator.*;
+import messages.ElevatorData;
+import messages.FloorData;
 
 import org.junit.Test;
 import org.junit.jupiter.api.*;

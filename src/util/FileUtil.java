@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import elevator.FloorData;
+import messages.FloorData;
 
 public class FileUtil {
 	public static String[] readFile(Class<?> myClass, String filePath) throws IOException {

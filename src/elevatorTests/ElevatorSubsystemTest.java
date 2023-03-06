@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 
 import elevator.*;
+import messages.ElevatorData;
+import messages.FloorData;
 
 /**
  * Class for testing the methods in the ElevatorSubsystem Class

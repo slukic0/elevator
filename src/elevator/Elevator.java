@@ -2,6 +2,9 @@ package elevator;
 
 import java.time.LocalTime;
 
+import messages.ElevatorData;
+import messages.FloorData;
+
 /**
  * Class to represent the elevator subsystem
  * 
@@ -92,7 +95,7 @@ public class Elevator implements Runnable {
 	 * Process information from floor related to elevator
 	 * @param data FloorData, message from floor
 	 */
-	public void processPacket(FloorData data) {
+	public void processPacketData(FloorData data) {
 		int destFloor = data.getFloor();
 		ElevatorStates newState = destFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);

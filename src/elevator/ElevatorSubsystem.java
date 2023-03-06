@@ -1,67 +1,66 @@
 package elevator;
 
-import java.util.Queue;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 
-import util.SendReceiveUtil;
+import messages.ElevatorData;
+import messages.FloorData;
+import util.NetworkUtils;
 
 public class ElevatorSubsystem implements Runnable {
 
 	private Elevator elevator;
-	private Queue<FloorData> receiveQueue;
-	private Queue<Object> schedulerReceiveQueue;
+//	private Queue<FloorData> receiveQueue;
+//	private Queue<Object> schedulerReceiveQueue;
+	private DatagramSocket elevatorReceiveSocket;;
 
 	/**
 	 * Creates Elevator Subsystem object
-	 * @param receiveQueue			Queue for information received from floor
-	 * @param schedulerReceiveQueue	Queue for message send to scheduler
-	 * @param elevatorNumber		Associated elevator number
-	 * @param currentFloor			Associated elevator's current floor
+	 * 
+	 * @param receiveQueue          Queue for information received from floor
+	 * @param schedulerReceiveQueue Queue for message send to scheduler
+	 * @param elevatorNumber        Associated elevator number
+	 * @param currentFloor          Associated elevator's current floor
+	 * @throws SocketException thrown if socket cannot be created
 	 */
-	public ElevatorSubsystem(Queue<FloorData> receiveQueue, Queue<Object> schedulerReceiveQueue, int elevatorNumber,
-			int currentFloor) {
+	public ElevatorSubsystem(int elevatorNumber, int currentFloor) throws SocketException {
 		this.elevator = new Elevator(this, elevatorNumber, currentFloor);
-		this.receiveQueue = receiveQueue;
-		this.schedulerReceiveQueue = schedulerReceiveQueue;
+		this.elevatorReceiveSocket = new DatagramSocket();
 		
 		// Start the elevator
 		new Thread(this.elevator).start();
 	}
-	
+
 	/**
 	 * Getter to return elevator object
+	 * 
 	 * @return returns elevator of subsystem
 	 */
 	public Elevator getElevator() {
 		return elevator;
 	}
-	
-	/***
-	 * Gets the scheduler's receive queue
-	 * 
-	 * @return receiveQueue scheduler's receive queue
-	 */
-	public Queue<FloorData> getreceiveQueue() {
-		return this.receiveQueue;
-	}
-	
-	/***
-	 * Gets the scheduler's schedulerReceive queue
-	 * 
-	 * @return receiveQueue scheduler's receive queue
-	 */
-	public Queue<Object> getSchedulerReceiveQueue() {
-		return this.schedulerReceiveQueue;
-	}
 
 	/**
 	 * Sends message of elevator data to scheduler
+	 * 
 	 * @param message ElevatorData, message to send to scheduler
 	 *
 	 */
 	public void sendSchedulerMessage(ElevatorData message) {
-		System.out.println("Elevator subsystem sending message " + message);
+		System.out.println("Elevator subsystem is sending message to Scheduler: " + message.toString());
 		new Thread(() -> {
-			SendReceiveUtil.sendData(schedulerReceiveQueue, message);
+			try {
+				DatagramSocket socket = new DatagramSocket();
+				byte[] byteData = NetworkUtils.serializeObject(message);
+				NetworkUtils.sendPacket(byteData, socket, Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
+				// TODO Scheduler Address
+			} catch (Exception e) {
+				System.err.println("FLOOR ERROR: sendSchedulerMessage()");
+				e.printStackTrace();
+			}
+
 		}).start();
 	}
 
@@ -71,19 +70,14 @@ public class ElevatorSubsystem implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			synchronized (receiveQueue) {
-				while (receiveQueue.isEmpty()) {
-					try {
-						receiveQueue.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				for (int i = 0; i < receiveQueue.size(); i++) {
-					FloorData data = receiveQueue.poll();
-					System.out.println("Elevator SubSystem received " + data);
-					elevator.processPacket(data);
-				}
+			try {
+				DatagramPacket floorMessage = NetworkUtils.receivePacket(elevatorReceiveSocket);
+				FloorData message = (FloorData) NetworkUtils.deserializeObject(floorMessage);
+				System.out.println("Elevator SubSystem received " + message);
+				elevator.processPacketData(message);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
