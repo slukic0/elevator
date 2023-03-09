@@ -9,17 +9,19 @@ public class FloorData implements Serializable {
 	 */
 	private static final long serialVersionUID = 8338140153567912284L;
 	private LocalTime time;
-	private int floor;
+	private int startingFloor, destinationFloor;
 	private boolean goingUp;
 
 	/**
 	 * 
-	 * @param floor floor to start at
+	 * @param startingFloor floor to start at
+	 * @param destinationFloor floor to arrive at
 	 * @param goingUp true if going up, false if down
 	 * @param time time of request
 	 */
-	public FloorData(int floor, boolean goingUp, LocalTime time) {
-		this.floor = floor;
+	public FloorData(int startingFloor, int destinationFloor, boolean goingUp, LocalTime time) {
+		this.startingFloor = startingFloor;
+		this.destinationFloor = destinationFloor;
 		this.goingUp = goingUp;
 		this.time = time;
 	}
@@ -34,13 +36,23 @@ public class FloorData implements Serializable {
 	}
 
 	/** 
-	 * Returns the attribute representing the floor number 
+	 * Returns the attribute representing the starting floor number 
 	 * 
-	 * @return floor  the floor number
+	 * @return startingFloor  the startingfloor number
 	 * 
 	 */
-	public int getFloor() {
-		return floor;
+	public int getStartingFloor() {
+		return startingFloor;
+	}
+
+	/** 
+	 * Returns the attribute representing the destination floor number 
+	 * 
+	 * @return destinationFloor  the destination floor number
+	 * 
+	 */
+	public int getDestinationFloor() {
+		return destinationFloor;
 	}
 	
 	/**
@@ -57,6 +69,6 @@ public class FloorData implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "Floor: " + floor + ", Time: " + time.toString() + ", GoingUp: " + goingUp;
+		return "StartingFloor: " + startingFloor + ", DestinationFloor: " + destinationFloor + ", Time: " + time.toString() + ", GoingUp: " + goingUp;
 	}
 }

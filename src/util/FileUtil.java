@@ -33,15 +33,16 @@ public class FileUtil {
 	public static FloorData[] parseStringInput(String[] lines) {
 		ArrayList<FloorData> data = new ArrayList<>();
 		for (String s : lines) {
-			// time|floor|button
-			// Example: 12:43:47.0|0|UP
+			// time|startingFloor|destinationFloor
+			// Example: 12:43:47.0|1|3
 			String[] event = s.split("\\|");
 
-			int floor = Integer.parseInt(event[1]);
-			boolean up = event[2].equals("UP") ? true : false;
+			int startingFloor = Integer.parseInt(event[1]);
+			int destinationFloor = Integer.parseInt(event[2]);
+			boolean up = (Integer.parseInt(event[2]) > Integer.parseInt(event[1]));
 			LocalTime time = LocalTime.parse(event[0]);
 
-			data.add(new FloorData(floor, up, time));
+			data.add(new FloorData(startingFloor, destinationFloor, up, time));
 		}
 
 		return data.toArray(new FloorData[data.size()]);

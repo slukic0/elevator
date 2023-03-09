@@ -96,7 +96,7 @@ public class Elevator implements Runnable {
 	 * @param data FloorData, message from floor
 	 */
 	public void processPacketData(FloorData data) {
-		int destFloor = data.getFloor();
+		int destFloor = data.getDestinationFloor();
 		ElevatorStates newState = destFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);
 
