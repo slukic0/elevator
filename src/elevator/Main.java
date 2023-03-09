@@ -21,14 +21,14 @@ public class Main {
 		// only 1 floor and 1 elevator for now...
 		
 		
-		ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(elevatorSystemQueue, schedulerQueue, 1, Constants.STARTING_FLOOR);
-		Floor floor = new Floor(floorQueue, schedulerQueue, Constants.STARTING_FLOOR);
+		ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(1, Constants.STARTING_FLOOR);
+		Floor floor = new Floor();
 
 		Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<ElevatorSubsystem>();
 		elevatorSubsystems.add(elevatorSubsystem);
 
-		Scheduler scheduler = new Scheduler(schedulerQueue, floorQueue, elevatorSystemQueue, floors, elevatorSubsystems);
+		Scheduler scheduler = new Scheduler(floors, elevatorSubsystems);
 
 		// Create & start the threads
 		Thread eThread = new Thread(elevatorSubsystem);
@@ -44,7 +44,7 @@ public class Main {
 		FloorData[] data = FileUtil.parseStringInput(input);
 		for (FloorData d : data) {
 			System.out.println("Adding FloorData: " + d.toString());
-			floor.sendMessage(d);
+			floor.sendMessageToScheduler(d);
 		}
 
 	}

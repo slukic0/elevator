@@ -197,7 +197,7 @@ public class Scheduler implements Runnable {
 	*/
 	// TOOD UNCOMMENT
 	public FloorData getElevatorMoveCommand() {
-		return new FloorData(5, true, LocalTime.now());
+		return new FloorData(1, 5, true, LocalTime.now());
 	}
 	
 	public void receiveElevator() throws IOException {
