@@ -90,6 +90,15 @@ public class Elevator implements Runnable {
 	public void setCurrentFloor(int floor) {
 		this.currentFloor = floor;
 	}
+
+	/**
+	 * Gets the elevator's destination floor
+	 * 
+	 * @return destinationFloor the elevator's destination floor
+	 */
+	public int getDestinationFloor() {
+		return this.destinationFloor;
+	}
 	
 	/**
 	 * Process information from floor related to elevator

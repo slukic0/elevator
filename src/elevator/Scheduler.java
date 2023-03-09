@@ -132,7 +132,7 @@ public class Scheduler implements Runnable {
 		ElevatorSubsystem eSubsystem = elevatorMap.get(1);
 
 		int elevatorCurrFloor = eSubsystem.getElevator().getCurrentFloor();
-		int elevatorDestFloor = 2 * NUMBER_OF_FLOORS;
+		int elevatorDestFloor = eSubsystem.getElevator().getDestinationFloor();
 
 		System.out.println("Scheduler determining next floor for Elevator with elevator state "
 				+ eSubsystem.getElevator().getState());
