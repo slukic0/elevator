@@ -248,11 +248,11 @@ public class Scheduler implements Runnable {
 
 			System.out.println("Scheduler got message " + floorMessage);
 			System.out
-					.println("Scheduler marking floor " + floorMessage.getFloor() + " as GoingUp: "
+					.println("Scheduler marking floor " + floorMessage.getStartingFloor() + " as GoingUp: "    ///Should this be starting or destination floor?
 							+ floorMessage.getGoingUp());
 
 			boolean goingUp = floorMessage.getGoingUp();
-			int destFloor = floorMessage.getFloor();
+			int destFloor = floorMessage.getDestinationFloor();
 
 			if (goingUp) {
 				floorUpButtonsMap.put(destFloor, true);
@@ -260,7 +260,7 @@ public class Scheduler implements Runnable {
 				floorDownButtonsMap.put(destFloor, true);
 			}
 			System.out.println(
-					"Scheduler marked floor " + floorMessage.getFloor() + " as GoingUp: " + floorMessage.getGoingUp());
+					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: " + floorMessage.getGoingUp());			///Should this be starting or destination floor?
 			state = SchedulerStates.WOKRING;
 			FloorData message = getElevatorMoveCommand();
 			// TODO what elevator to send this to?
