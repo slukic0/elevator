@@ -3,7 +3,7 @@ package messages;
 import java.io.Serializable;
 import java.time.LocalTime;
 
-import elevator.ElevatorStates;
+import elevatorImpl.ElevatorStates;
 
 public class ElevatorData implements Serializable {
 	/**

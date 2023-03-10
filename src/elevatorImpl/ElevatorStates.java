@@ -1,4 +1,4 @@
-package elevator;
+package elevatorImpl;
 
 public enum ElevatorStates {
 	GOING_UP,

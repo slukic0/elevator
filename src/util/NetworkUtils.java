@@ -5,11 +5,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+
+import messages.FloorData;
 
 public class NetworkUtils {
 	private NetworkUtils() {
@@ -63,7 +66,7 @@ public class NetworkUtils {
 	 * @throws IOException thrown if the socket cannot receive a packet
 	 */
 	public static DatagramPacket receivePacket(DatagramSocket socket) throws IOException {
-		byte[] data = new byte[100];
+		byte[] data = new byte[2084];
 		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
 
 		try {
@@ -108,25 +111,31 @@ public class NetworkUtils {
 		return receivePacket(receieveSocket);
 	}
 
-	public static byte[] serializeObject(Object obj) throws IOException {
+	public static byte[] serializeObject(Object obj) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ObjectOutputStream os = new ObjectOutputStream(outputStream);
-		os.writeObject(obj);
-		return outputStream.toByteArray();
+		ObjectOutputStream os;
+		try {
+			os = new ObjectOutputStream(outputStream);
+			os.writeObject(obj);
+			os.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return Arrays.copyOf(outputStream.toByteArray(), outputStream.toByteArray().length);
 
 	}
 
 	public static Object deserializeObject(DatagramPacket packet) {
 		byte[] data = packet.getData();
 		ByteArrayInputStream in = new ByteArrayInputStream(data);
-		ObjectInputStream is;
+		
 		try {
-			is = new ObjectInputStream(in);
-			return is.readObject();
+			ObjectInputStream is = new ObjectInputStream(in);
+			return (Object) is.readObject();
 		} catch (IOException | ClassNotFoundException e) {
 			System.err.println("ERROR: unable to deserialize packet " + packet.toString());
-			e.printStackTrace();
-			return null;
+			throw new Error("Failed to Deserialize packet " + packet.toString());
 		}
 	}
 

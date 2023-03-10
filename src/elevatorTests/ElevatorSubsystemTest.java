@@ -11,7 +11,7 @@ import java.util.Queue;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 
-import elevator.*;
+import elevatorImpl.*;
 import messages.ElevatorData;
 import messages.FloorData;
 

@@ -1,10 +1,11 @@
 
 package elevatorTests;
-import elevator.*;
 import messages.ElevatorData;
 import messages.FloorData;
 
 import org.junit.jupiter.api.*;
+
+import elevatorImpl.*;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
