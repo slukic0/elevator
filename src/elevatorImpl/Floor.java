@@ -44,19 +44,19 @@ public class Floor implements Runnable {
 	public void sendMessageToScheduler(FloorData data) {
 		
 		new Thread(() -> {
-			System.out.println("Floor is sending message to Scheduler: " + data.toString());
 			try {
-				//DatagramSocket socket = new DatagramSocket(null);
-				//socket.connect(floorReceiveSocket.getInetAddress(), floorReceiveSocket.getPort());
-				byte[] byteData = NetworkUtils.serializeObject(data);
+				// wait before sending
+				Thread.sleep(data.getTime().toSecondOfDay()*1000);
 				
+				byte[] byteData = NetworkUtils.serializeObject(data);
+				System.out.println("Floor sending message " + data.toString());
 				NetworkUtils.sendPacket(byteData, floorReceiveSocket, Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
 				// TODO Scheduler Address
 			} catch (Exception e) {
 				System.err.println("FLOOR ERROR: sendMessageToScheduler()");
 				e.printStackTrace();
 			}
-			
+
 		}).start();
 	}
 
