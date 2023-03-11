@@ -12,8 +12,6 @@ import util.NetworkUtils;
 public class ElevatorSubsystem implements Runnable {
 
 	private Elevator elevator;
-//	private Queue<FloorData> receiveQueue;
-//	private Queue<Object> schedulerReceiveQueue;
 	private DatagramSocket elevatorSendReceiveSocket;;
 
 	/**

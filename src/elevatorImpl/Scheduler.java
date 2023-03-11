@@ -9,8 +9,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.hamcrest.core.Is;
-
 import messages.ElevatorData;
 import messages.FloorData;
 import util.NetworkUtils;
@@ -249,11 +247,7 @@ public class Scheduler implements Runnable {
 			int senderPort = floorPacket.getPort();
 			InetAddress senderAddress = floorPacket.getAddress();
 
-
 			System.out.println("Scheduler got message " + floorMessage);
-			System.out
-					.println("Scheduler marking floor " + floorMessage.getStartingFloor() + " as GoingUp: "    ///Should this be starting or destination floor?
-							+ floorMessage.getGoingUp());
 
 			boolean goingUp = floorMessage.getGoingUp();
 			int destFloor = floorMessage.getDestinationFloor();
@@ -270,6 +264,7 @@ public class Scheduler implements Runnable {
 			// TODO what elevator to send this to?
 			// getElevatorMoveCommand should probably tell us this
 			byte[] data = NetworkUtils.serializeObject(message);
+			System.out.println("Scheduler send message to Elevator " +message.toString());
 			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, Constants.ELEVATOR_SYS_RECEIVE_PORT, senderAddress);
 		}
 	}
