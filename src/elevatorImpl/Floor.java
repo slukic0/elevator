@@ -32,7 +32,7 @@ public class Floor implements Runnable {
 	 * @throws SocketException
 	 */
 	public Floor() throws SocketException {
-		this.floorReceiveSocket = new DatagramSocket();
+		this.floorReceiveSocket = new DatagramSocket(Constants.FLOOR_RECEIVE_PORT);
 	}
 
 //	public void sendMessage(FloorData data) {

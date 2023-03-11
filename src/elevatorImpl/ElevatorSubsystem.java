@@ -27,7 +27,7 @@ public class ElevatorSubsystem implements Runnable {
 	 */
 	public ElevatorSubsystem(int elevatorNumber, int currentFloor) throws SocketException {
 		this.elevator = new Elevator(this, elevatorNumber, currentFloor);
-		this.elevatorSendReceiveSocket = new DatagramSocket();
+		this.elevatorSendReceiveSocket = new DatagramSocket(Constants.ELEVATOR_SYS_RECEIVE_PORT);
 		
 		// Start the elevator
 		new Thread(this.elevator).start();

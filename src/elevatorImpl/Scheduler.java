@@ -9,6 +9,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.hamcrest.core.Is;
+
 import messages.ElevatorData;
 import messages.FloorData;
 import util.NetworkUtils;
@@ -207,22 +209,24 @@ public class Scheduler implements Runnable {
 			int senderPort = elevatorPacket.getPort();
 			InetAddress senderAddress = elevatorPacket.getAddress();
 			
+			
+			///FIX: Error because this.elevatorMap Is null
 
-			if (!elevatorMap.containsKey(elevatorMessage.getELEVATOR_NUMBER())) {
-				// add elevator to map if not already present
-				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
-						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
-			} else {
-				// update elevator state in map
-				elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).setLatestMessage(elevatorMessage);
-			}
+//			if (!elevatorMap.containsKey(elevatorMessage.getELEVATOR_NUMBER())) {
+//				// add elevator to map if not already present
+//				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
+//						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+//			} else {
+//				// update elevator state in map
+//				elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).setLatestMessage(elevatorMessage);
+//			}
 
 
 			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
 				// tell the floor elevator has arrived
 				System.out.println("Scheduler forwarding floor elevator arrival");
 				NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-						Constants.FLOOR_SYS_RECEIVE_PORT); // TODO floor port?
+						Constants.FLOOR_RECEIVE_PORT); // TODO floor port?
 
 				// determine next floor to go to
 				System.out.println("Scheduler got reply: Elevator looking for work");
@@ -266,7 +270,7 @@ public class Scheduler implements Runnable {
 			// TODO what elevator to send this to?
 			// getElevatorMoveCommand should probably tell us this
 			byte[] data = NetworkUtils.serializeObject(message);
-			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, senderPort, senderAddress);
+			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, Constants.ELEVATOR_SYS_RECEIVE_PORT, senderAddress);
 		}
 	}
 
