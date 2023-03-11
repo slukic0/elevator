@@ -38,7 +38,7 @@ public class ElevatorSubsystemTest {
 		Queue<Object> schedulerQueue = new LinkedList<>();
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-		elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+		elevatorSubsystem = new ElevatorSubsystem(1,1);
 		elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
 
         Floor[] floors = new Floor[] { floor };
@@ -46,10 +46,10 @@ public class ElevatorSubsystemTest {
 		
 		elevatorSubsystems.add(elevatorSubsystem);
 
-		floor = new Floor(elevatorQueue, schedulerQueue, 0);
+		floor = new Floor();
         
-        floorData = new FloorData(0, false);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
+        floorData = new FloorData(1, 2, true, LocalTime.now());
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	
 	
@@ -59,15 +59,15 @@ public class ElevatorSubsystemTest {
 		Queue<Object> schedulerQueue = new LinkedList<>();
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-		elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
+		elevatorSubsystem = new ElevatorSubsystem(2, 2);
 		elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
 		
 		Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
 		elevatorSubsystems.add(elevatorSubsystem);
 		
-		Scheduler scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
-		elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
+		Scheduler scheduler = new Scheduler(floors, elevatorSubsystems);
+		elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(),1);
 	
 		scheduler.getFloorReceiveQueue().add(elevatorData);
 		

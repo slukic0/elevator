@@ -10,6 +10,7 @@ import elevatorImpl.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.net.SocketException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -37,19 +38,20 @@ public class ElevatorTest {
 	@BeforeAll
 	public static void init(){
 
-		Queue<Object> schedulerQueue = new LinkedList<>();
-		Queue<FloorData> floorQueue = new LinkedList<>();
-		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-
         Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
 		elevatorSubsystems.add(elevatorSubsystem);
 
-		floor = new Floor(elevatorQueue, schedulerQueue, 0);
-        scheduler = new Scheduler(schedulerQueue, elevatorQueue, floorQueue, floors, elevatorSubsystems);
-        elevatorSubsystem = new ElevatorSubsystem(floorQueue, schedulerQueue, 0, 0);
-        floorData = new FloorData(0, false);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 0, 1, LocalTime.now());
+		try {
+			floor = new Floor();
+			scheduler = new Scheduler(floors, elevatorSubsystems);
+	        elevatorSubsystem = new ElevatorSubsystem(1, 1);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        floorData = new FloorData(1, 2, true, LocalTime.now());
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	
 	/**
