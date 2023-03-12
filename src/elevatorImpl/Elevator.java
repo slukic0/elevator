@@ -1,6 +1,8 @@
 package elevatorImpl;
 
 import java.time.LocalTime;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import messages.ElevatorData;
 import messages.FloorData;
@@ -18,6 +20,7 @@ public class Elevator implements Runnable {
 	private ElevatorSubsystem elevatorSubsystem;
 	private ElevatorStates state;
 	private ElevatorStates prevDirection;
+	private Queue<Integer> destFloorQueue;
 
 	/**
 	 * Creates an elevator with shared synchronized message queues, the elevator
@@ -37,6 +40,7 @@ public class Elevator implements Runnable {
 		this.destinationFloor = currentFloor;
 		this.state = ElevatorStates.IDLE;
 		this.prevDirection = ElevatorStates.IDLE;
+		this.destFloorQueue = new LinkedList<Integer>();
 	}
 
 	/**
@@ -106,11 +110,8 @@ public class Elevator implements Runnable {
 	 */
 	public void processPacketData(FloorData data) {
 		int destFloor = data.getDestinationFloor();
-		ElevatorStates newState = destFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-		System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + destFloor);
-
-		this.destinationFloor = destFloor;
-		this.state = newState;
+		this.destFloorQueue.offer(data.getStartingFloor());
+		this.destFloorQueue.offer(data.getDestinationFloor());
 		this.wake();
 	}
 	
@@ -142,9 +143,17 @@ public class Elevator implements Runnable {
 		while (true) {
 			switch (state) {
 			case IDLE: {
-				System.out.println("Elevator IDLE, going to nap...");
-				pause();
-				break;
+				// check if we have stuff enqueued
+				if (destFloorQueue.isEmpty()) {
+					System.out.println("Elevator has no work, going to nap...");
+					pause();
+					break;
+				} else {
+					this.destinationFloor = destFloorQueue.poll();
+					ElevatorStates newState = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+					System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + this.destinationFloor);
+					this.state = newState;
+				}
 			}
 			case GOING_DOWN:
 			case GOING_UP:
