@@ -4,7 +4,7 @@ Stefan Lukic 101156711
 Nicolas Tanouchev 101143947
 Pranav Hari 101144482
 
-Milestone 2
+Milestone 3
 
 Files contained:
 src/elevatorImpl: Elevator.java, Floor.java,  Message.java, Main.java
