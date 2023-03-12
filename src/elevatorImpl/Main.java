@@ -1,7 +1,6 @@
 package elevatorImpl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import messages.FloorData;
 import util.FileUtil;
@@ -15,11 +14,7 @@ public class Main {
 		ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem(1, Constants.STARTING_FLOOR);
 		Floor floor = new Floor();
 
-		Floor[] floors = new Floor[] { floor };
-		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<ElevatorSubsystem>();
-		elevatorSubsystems.add(elevatorSubsystem);
-
-		Scheduler scheduler = new Scheduler(floors, elevatorSubsystems);
+		Scheduler scheduler = new Scheduler();
 
 		// Create & start the threads
 		Thread eThread = new Thread(elevatorSubsystem);
