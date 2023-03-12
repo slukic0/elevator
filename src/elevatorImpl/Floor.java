@@ -69,8 +69,7 @@ public class Floor implements Runnable {
 				DatagramPacket elevatorMessage = NetworkUtils.receivePacket(floorReceiveSocket);
 				ElevatorData message = (ElevatorData) NetworkUtils.deserializeObject(elevatorMessage);
 				System.out.println("Floor received message: " + message.toString());
-				if (message.getCurrentFloor() == message.getMovingToFloor()
-						&& message.getState() == ElevatorStates.IDLE) {
+				if (message.getCurrentFloor() == message.getMovingToFloor()) {
 					System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
 				}
 			} catch (IOException e) {

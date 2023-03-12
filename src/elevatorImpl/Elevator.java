@@ -150,9 +150,12 @@ public class Elevator implements Runnable {
 				if (destFloorQueue.isEmpty()) {
 					this.state = ElevatorStates.IDLE;
 				} else {
+					elevatorSubsystem.sendSchedulerMessage(
+						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+								ELEVATOR_NUMBER)); // Tell the floor we have arrived before moving again
 					this.destinationFloor = destFloorQueue.poll();
 					ElevatorStates newState = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-					System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + this.destinationFloor);
+					System.out.println("Elevator" + this.ELEVATOR_NUMBER + " setting state to " + newState + " and destFloor to " + this.destinationFloor);
 					this.state = newState;
 				}
 				
@@ -160,7 +163,7 @@ public class Elevator implements Runnable {
 			}
 			
 			case IDLE: {
-				System.out.println("Elevator has no work, asking for work...");
+				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has no work, asking for work...");
 
 				// tell the scheduler we have arrived and are IDLE (looking for work)
 				elevatorSubsystem.sendSchedulerMessage(
@@ -174,8 +177,8 @@ public class Elevator implements Runnable {
 			case GOING_DOWN:
 			case GOING_UP:
 				// Move the elevator
-				System.out.println("Elevator current state: " + this.state + ", prevDirection: " + prevDirection);
-				System.out.println("Moving to floor " + destinationFloor);
+				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " current state: " + this.state + ", prevDirection: " + prevDirection);
+				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
 				int diff = Math.abs(destinationFloor - currentFloor);
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
@@ -186,7 +189,7 @@ public class Elevator implements Runnable {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				System.out.println("Elevator has arrived at floor " + destinationFloor);
+				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has arrived at floor " + destinationFloor);
 				currentFloor = destinationFloor;
 				currState = state;
 				this.state = ElevatorStates.PROCESSING;
