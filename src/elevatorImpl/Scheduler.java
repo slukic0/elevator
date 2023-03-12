@@ -149,24 +149,18 @@ public class Scheduler implements Runnable {
 				}
 			}
 		}
+		
+		// Floor has been tasked to an elevator, remove button flag
+		if (goingUp) {
+			floorUpButtonsMap.remove(floor);
+		} else {
+			floorDownButtonsMap.remove(floor);
+		}
 
 		// If a moving elevator was closer
 		if (movingElevatorNum != -1) {
-			// Floor has been tasked to an elevator, remove button flag
-			if (goingUp) {
-				floorUpButtonsMap.remove(movingElevatorNum);
-			} else {
-				floorDownButtonsMap.remove(movingElevatorNum);
-			}
 			return movingElevatorNum;
 		} else {
-
-			// Floor has been tasked to an elevator, remove button flag
-			if (goingUp) {
-				floorUpButtonsMap.remove(elevatorNum);
-			} else {
-				floorDownButtonsMap.remove(elevatorNum);
-			}
 			return elevatorNum;
 		}
 	}
