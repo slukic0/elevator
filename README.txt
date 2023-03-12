@@ -7,21 +7,26 @@ Pranav Hari 101144482
 Milestone 2
 
 Files contained:
-src/elevator: Elevator.java, Floor.java, Scheduler.java, Message.java, Main.java
-  Scheduler: Contains server class for scheduler
-  Elevator: Contains client class for Elevator object
-  ElevatorSubSystem: Contains client class for Elevator SubSystem object
-  ElevatorData: Message structure used to send data about an elevator
-  Floor: Contains client class for Floor object
-  FloorData: Message structure used to send data about a floor button
-  Message: Contains class for message data structure
-  Main: Contains main, initializes all objects
-  Constants: Constants file
+src/elevatorImpl: Elevator.java, Floor.java,  Message.java, Main.java
+  Constants.java: Constants file
+  Elevator.java: Contains client class for Elevator object
+  ElevatorStates.java: Enum states class for elevator states
+  ElevatorStatus.java: Contains class for Elevator's current status
+  ElevatorSubSystem.java: Contains client class for Elevator SubSystem object
   events.txt: text file containing data log
+  Floor: Contains client class for Floor object
+  Main: Contains main, initializes all objects
+  Scheduler.java: Contains server class for scheduler
+  SchedulerStates.java: Enum states class for scheduler states
   
 src/util: 
   FileUtil.java: Class for parsing input file
+  NetworkUtils.java: Class for sending, receiving, and handling UDP packets
   SendRecieveUtil.java: Class for sending and receiving data between subsystems
+  
+src/messages:
+  ElevatorData: Message structure used to send data about an elevator
+  FloorData: Message structure used to send data about a floor button
   
 src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, events.txt
   SchedulerTests: Contains tests for Scheduler class
@@ -36,6 +41,14 @@ src/diagrams:
   Iteration2UML.png - Iteration 2 class diagram
   Iteration2Sequence.png - Iteration 2 sequence diagram
   Iteration2State.png - Iteration 2 state diagram
+  Iteration3UML.png - Iteration 3 class diagram
+  Iteration3Sequence.png - Iteration 3 sequence diagram
+  Iteration3State.png - Iteration 3 state diagram
 
 To run:
 Open elevator project in eclipse. Run with configuration.
+
+Task Breakdown for Iteration 3:
+Iteration 3 code implementation, debugging and testing: Filip Lukic, Stefan Lukic, Nicolas Tanouchev
+Unit testing: Pranav Hari
+UML Diagrams: Christopher Semaan
