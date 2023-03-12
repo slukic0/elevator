@@ -145,7 +145,16 @@ public class Elevator implements Runnable {
 			case IDLE: {
 				// check if we have stuff enqueued
 				if (destFloorQueue.isEmpty()) {
-					System.out.println("Elevator has no work, going to nap...");
+					System.out.println("Elevator has no work, asking for work...");
+
+					state = ElevatorStates.IDLE;
+					// tell the scheduler we have arrived and are IDLE (looking for work)
+					elevatorSubsystem.sendSchedulerMessage(
+							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+									ELEVATOR_NUMBER));
+					prevDirection = currState;
+
+
 					pause();
 					break;
 				} else {
@@ -153,6 +162,12 @@ public class Elevator implements Runnable {
 					ElevatorStates newState = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 					System.out.println("Elevator SubSystem setting state to " + newState + " and destFloor to " + this.destinationFloor);
 					this.state = newState;
+
+					// tell the elevator we have arrived and are moving
+					elevatorSubsystem.sendSchedulerMessage(
+							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+									ELEVATOR_NUMBER));
+					prevDirection = currState;
 				}
 			}
 			case GOING_DOWN:
@@ -173,12 +188,6 @@ public class Elevator implements Runnable {
 				System.out.println("Elevator has arrived at floor " + destinationFloor);
 				currentFloor = destinationFloor;
 				currState = state;
-				state = ElevatorStates.IDLE;
-				// tell the scheduler we have arrived
-				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
-								ELEVATOR_NUMBER));
-				prevDirection = currState;
 
 				break;
 			default:
