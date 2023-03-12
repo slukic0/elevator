@@ -40,7 +40,7 @@ public class ElevatorSubsystemTest {
 		Queue<FloorData> floorQueue = new LinkedList<>();
 		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
 		try {
-			elevatorSubsystem = new ElevatorSubsystem(1,1);
+			elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
 			floor = new Floor();
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
@@ -72,7 +72,7 @@ public class ElevatorSubsystemTest {
 		elevatorSubsystems.add(elevatorSubsystem);
 		
 		try {
-			elevatorSubsystem = new ElevatorSubsystem(2, 2);
+			elevatorSubsystem = new ElevatorSubsystem(2, 2, Constants.ELEVATOR_SYS_RECEIVE_PORT2);
 			Scheduler scheduler = new Scheduler();
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
