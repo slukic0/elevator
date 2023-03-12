@@ -26,7 +26,7 @@ public class Scheduler implements Runnable {
 
 	public HashMap<Integer, Integer> floorUpButtonsMap;
 	public HashMap<Integer, Integer> floorDownButtonsMap;
-	
+
 	public HashMap<Integer, ElevatorStatus> elevatorMap; // all the elevators in our system
 
 	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
@@ -127,14 +127,14 @@ public class Scheduler implements Runnable {
 	/**
 	 * Scheduling Algorithm
 	 */
-	public int findElevatorForMove(int floor) {
+	public int findElevatorForMove(int floor, boolean goingUp) {
 		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
 		// Get all free elevators (idle)
 		int diff = Integer.MAX_VALUE;
 		int elevatorNum = -1;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
 			int currFloor = elevator.getValue().getLatestMessage().getCurrentFloor();
-			if (Math.abs(currFloor - floor) < diff){
+			if (Math.abs(currFloor - floor) < diff) {
 				elevatorNum = elevator.getKey();
 			}
 		}
@@ -144,7 +144,7 @@ public class Scheduler implements Runnable {
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
 			if (elevator.getValue().getLatestMessage().getState() != ElevatorStates.IDLE) {
 				int currFloor = elevator.getValue().getLatestMessage().getMovingToFloor();
-				if (Math.abs(currFloor - floor) * 2 < diff){ // Priority to free elevators
+				if (Math.abs(currFloor - floor) * 2 < diff) { // Priority to free elevators
 					movingElevatorNum = elevator.getKey();
 				}
 			}
@@ -152,12 +152,25 @@ public class Scheduler implements Runnable {
 
 		// If a moving elevator was closer
 		if (movingElevatorNum != -1) {
+			// Floor has been tasked to an elevator, remove button flag
+			if (goingUp) {
+				floorUpButtonsMap.remove(movingElevatorNum);
+			} else {
+				floorDownButtonsMap.remove(movingElevatorNum);
+			}
 			return movingElevatorNum;
 		} else {
+
+			// Floor has been tasked to an elevator, remove button flag
+			if (goingUp) {
+				floorUpButtonsMap.remove(elevatorNum);
+			} else {
+				floorDownButtonsMap.remove(elevatorNum);
+			}
 			return elevatorNum;
 		}
 	}
-	
+
 	/**
 	 * Receives packets from an elevator
 	 * 
@@ -171,7 +184,8 @@ public class Scheduler implements Runnable {
 			InetAddress senderAddress = elevatorPacket.getAddress();
 
 			// Update the status of the received elevator data
-			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(), new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
+					new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
 			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
 				// tell the floor elevator has arrived
@@ -207,9 +221,10 @@ public class Scheduler implements Runnable {
 				floorDownButtonsMap.put(startFloor, destFloor);
 			}
 			System.out.println(
-					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: " + floorMessage.getGoingUp());			///Should this be starting or destination floor?
+					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
+							+ floorMessage.getGoingUp()); /// Should this be starting or destination floor?
 			// TODO what elevator to send this to?
-			int elevatorNumber = findElevatorForMove(startFloor);
+			int elevatorNumber = findElevatorForMove(startFloor, goingUp);
 			// getElevatorMoveCommand should probably tell us this
 
 			state = SchedulerStates.DISPTACHING_ELEVATOR;
@@ -217,7 +232,8 @@ public class Scheduler implements Runnable {
 			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp);
 			byte[] data = NetworkUtils.serializeObject(message);
 			System.out.println("Scheduler send message to Elevator " + message.toString());
-			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, elevatorMap.get(elevatorNumber).getPort(), elevatorMap.get(elevatorNumber).getAddress());
+			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, elevatorMap.get(elevatorNumber).getPort(),
+					elevatorMap.get(elevatorNumber).getAddress());
 		}
 	}
 
