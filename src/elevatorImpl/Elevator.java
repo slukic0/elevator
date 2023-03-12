@@ -112,7 +112,10 @@ public class Elevator implements Runnable {
 		int destFloor = data.getDestinationFloor();
 		this.destFloorQueue.offer(data.getStartingFloor());
 		this.destFloorQueue.offer(data.getDestinationFloor());
-		this.wake();
+		if (this.state == ElevatorStates.IDLE) {
+			this.wake();
+		}
+		
 	}
 	
 	/**
@@ -154,9 +157,7 @@ public class Elevator implements Runnable {
 									ELEVATOR_NUMBER));
 					prevDirection = currState;
 
-
 					pause();
-					break;
 				} else {
 					this.destinationFloor = destFloorQueue.poll();
 					ElevatorStates newState = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
@@ -169,6 +170,7 @@ public class Elevator implements Runnable {
 									ELEVATOR_NUMBER));
 					prevDirection = currState;
 				}
+				break;
 			}
 			case GOING_DOWN:
 			case GOING_UP:
