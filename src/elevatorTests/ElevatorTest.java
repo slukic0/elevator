@@ -44,7 +44,7 @@ public class ElevatorTest {
 
 		try {
 			floor = new Floor();
-			scheduler = new Scheduler(floors, elevatorSubsystems);
+			scheduler = new Scheduler();
 	        elevatorSubsystem = new ElevatorSubsystem(1, 1);
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
