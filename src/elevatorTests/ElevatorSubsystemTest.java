@@ -73,7 +73,7 @@ public class ElevatorSubsystemTest {
 		
 		try {
 			elevatorSubsystem = new ElevatorSubsystem(2, 2);
-			Scheduler scheduler = new Scheduler(floors, elevatorSubsystems);
+			Scheduler scheduler = new Scheduler();
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
