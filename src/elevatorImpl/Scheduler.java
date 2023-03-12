@@ -40,11 +40,9 @@ public class Scheduler implements Runnable {
 	 * @param receiveQueue         receive Queue from floor
 	 * @param floorRecieveQueue    Queue for floor to receive
 	 * @param elevatorRecieveQuque Queue for elevator to receive
-	 * @param floors               list of floors
-	 * @param elevatorSubsystems   list of Elevator Subsystems
 	 * @throws SocketException thrown if sockets cannot be created
 	 */
-	public Scheduler(Floor[] floors, ArrayList<ElevatorSubsystem> elevatorSubsystems) throws SocketException {
+	public Scheduler() throws SocketException {
 		this.schedulerElevatorSendReceiveSocket = new DatagramSocket(Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
 		this.schedulerFloorSendReceiveSocket = new DatagramSocket(Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
 
