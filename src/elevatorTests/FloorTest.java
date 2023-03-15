@@ -8,17 +8,11 @@ import org.junit.jupiter.api.*;
 import elevatorImpl.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.net.SocketException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import javax.xml.crypto.Data;
-
-import util.FileUtil;
 
 
 /**

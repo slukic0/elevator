@@ -109,7 +109,6 @@ public class Elevator implements Runnable {
 	 * @param data FloorData, message from floor
 	 */
 	public void processPacketData(FloorData data) {
-		int destFloor = data.getDestinationFloor();
 		this.destFloorQueue.offer(data.getStartingFloor());
 		this.destFloorQueue.offer(data.getDestinationFloor());
 		if (this.state == ElevatorStates.IDLE) {
