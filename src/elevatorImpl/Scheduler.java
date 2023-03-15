@@ -261,4 +261,11 @@ public class Scheduler implements Runnable {
 			}
 		}).start();
 	}
+
+	public static void main(String[] args) throws SocketException {
+		Scheduler scheduler = new Scheduler();
+		Thread sThread = new Thread(scheduler);
+		sThread.start();
+
+	}
 }

@@ -9,6 +9,8 @@ import messages.ElevatorData;
 import messages.FloorData;
 import util.NetworkUtils;
 
+import util.FileUtil;
+
 /**
  * Class to represent the floor subsystem
  * 
@@ -76,6 +78,19 @@ public class Floor implements Runnable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public static void main(String[] args) throws SocketException, IOException {
+		Floor floor = new Floor();
+		Thread fThread = new Thread(floor);
+		fThread.start();
+
+		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
+		FloorData[] data = FileUtil.parseStringInput(input);
+		for (FloorData d : data) {
+			System.out.println("Adding FloorData: " + d.toString());
+			floor.sendMessageToScheduler(d);
 		}
 	}
 

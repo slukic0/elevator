@@ -77,4 +77,15 @@ public class ElevatorSubsystem implements Runnable {
 			}
 		}
 	}
+
+	public static void main(String[] args) throws SocketException {
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR, Constants.ELEVATOR_SYS_RECEIVE_PORT2);
+
+		Thread eThread1 = new Thread(elevatorSubsystem1);
+		Thread eThread2 = new Thread(elevatorSubsystem2);
+
+		eThread1.start();
+		eThread2.start();
+	}
 }

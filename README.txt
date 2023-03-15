@@ -15,7 +15,6 @@ src/elevatorImpl: Elevator.java, Floor.java,  Message.java, Main.java
   ElevatorSubSystem.java: Contains client class for Elevator SubSystem object
   events.txt: text file containing data log
   Floor: Contains client class for Floor object
-  Main: Contains main, initializes all objects
   Scheduler.java: Contains server class for scheduler
   SchedulerStates.java: Enum states class for scheduler states
   
@@ -46,7 +45,9 @@ src/diagrams:
   Iteration3State.png - Iteration 3 state diagram
 
 To run:
-Open elevator project in eclipse. Run with configuration.
+1. Run the main method found in Scheduler.java
+2. Run the main method found in Floor.java
+3. Run the main method found in ElevatorSubSystem.java within 5 seconds after running Floor.java
 
 Task Breakdown for Iteration 3:
 Iteration 3 code implementation, debugging and testing: Filip Lukic, Stefan Lukic, Nicolas Tanouchev
