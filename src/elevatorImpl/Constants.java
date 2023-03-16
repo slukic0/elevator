@@ -1,7 +1,5 @@
 package elevatorImpl;
 
-import java.net.InetAddress;
-
 public class Constants {
 
 	private Constants() {}

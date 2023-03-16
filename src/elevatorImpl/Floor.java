@@ -68,7 +68,6 @@ public class Floor implements Runnable {
 					System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
