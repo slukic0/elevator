@@ -3,6 +3,7 @@ package elevatorImpl;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 import messages.ElevatorData;
@@ -26,7 +27,7 @@ public class ElevatorSubsystem implements Runnable {
 	public ElevatorSubsystem(int elevatorNumber, int currentFloor, int receivePort) throws SocketException {
 		this.elevator = new Elevator(this, elevatorNumber, currentFloor);
 		this.elevatorSendReceiveSocket = new DatagramSocket(receivePort);
-		
+
 		// Start the elevator
 		new Thread(this.elevator).start();
 	}
@@ -51,8 +52,8 @@ public class ElevatorSubsystem implements Runnable {
 		new Thread(() -> {
 			try {
 				byte[] byteData = NetworkUtils.serializeObject(message);
-				NetworkUtils.sendPacket(byteData, elevatorSendReceiveSocket, Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT);
-				// TODO Scheduler Address
+				NetworkUtils.sendPacket(byteData, elevatorSendReceiveSocket, Constants.SCHEDULER_ELEVATOR_RECEIVE_PORT,
+						InetAddress.getByName(Constants.SCHEDULER_ADDRESS));
 			} catch (Exception e) {
 				System.err.println("FLOOR ERROR: sendSchedulerMessage()");
 				e.printStackTrace();
@@ -79,8 +80,10 @@ public class ElevatorSubsystem implements Runnable {
 	}
 
 	public static void main(String[] args) throws SocketException {
-		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR, Constants.ELEVATOR_SYS_RECEIVE_PORT2);
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+				Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR,
+				Constants.ELEVATOR_SYS_RECEIVE_PORT2);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
 		Thread eThread2 = new Thread(elevatorSubsystem2);

@@ -116,7 +116,6 @@ public class NetworkUtils {
 			os.writeObject(obj);
 			os.flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return Arrays.copyOf(outputStream.toByteArray(), outputStream.toByteArray().length);
