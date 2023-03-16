@@ -32,23 +32,17 @@ public class ElevatorTest {
 
     /**
      * Initializes the variables that will be used to test the methods in the Elevator Class
+     * @throws SocketException
      */
 	@BeforeAll
-	public static void init(){
-
-        Floor[] floors = new Floor[] { floor };
+	public static void init() throws SocketException{
+		System.out.println("INIT CALLED!!!!!!!!!!!");
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
 		elevatorSubsystems.add(elevatorSubsystem);
-
-		try {
-			floor = new Floor();
-			scheduler = new Scheduler();
-	        elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        floorData = new FloorData(1, 2, true, LocalTime.now());
+		floor = new Floor();
+		scheduler = new Scheduler();
+		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+        floorData = new FloorData(2, 3, true, LocalTime.now());
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	
@@ -58,29 +52,18 @@ public class ElevatorTest {
 	@Test
     public void testSendMessage(){
         
-        try {
-			elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-	        elevatorSubsystem.sendSchedulerMessage(elevatorData);
-	        boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
-	        assertTrue(value);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        elevatorSubsystem.sendSchedulerMessage(elevatorData);
+		boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
+		assertTrue(value);
     }
 
 	@Test
 	public void testProcessPacketData() {
 		
-		 try {
-				elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-				elevatorSubsystem.getElevator().processPacketData(floorData);
-				assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
-				assertEquals(elevatorSubsystem.getElevator().getDestQueue(), floorData.getDestinationFloor());
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		elevatorSubsystem.getElevator().processPacketData(floorData);
+		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
+		System.out.println(elevatorSubsystem.getElevator().getDestQueue());
+		assertEquals(elevatorSubsystem.getElevator().getDestQueue().peek(), floorData.getDestinationFloor());
 	}
 	
 	// @Test
