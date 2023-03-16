@@ -54,6 +54,19 @@ public class Floor implements Runnable {
 
 		}).start();
 	}
+	
+	public boolean checkMessage(ElevatorData elevatorData) {
+		if (elevatorData == null) {
+			return false;
+		}
+		else {
+			if (elevatorData.getCurrentFloor() == elevatorData.getMovingToFloor()) {
+				System.out.println("Floor: Elevator has arrived at floor " + elevatorData.getCurrentFloor());
+			}
+			return true;
+		}
+		
+	}
 
 	/**
 	 * Runs the floor's thread
@@ -64,9 +77,7 @@ public class Floor implements Runnable {
 				DatagramPacket elevatorMessage = NetworkUtils.receivePacket(floorReceiveSocket);
 				ElevatorData message = (ElevatorData) NetworkUtils.deserializeObject(elevatorMessage);
 				System.out.println("Floor received message: " + message.toString());
-				if (message.getCurrentFloor() == message.getMovingToFloor()) {
-					System.out.println("Floor: Elevator has arrived at floor " + message.getCurrentFloor());
-				}
+				this.checkMessage(message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -58,16 +58,68 @@ public class ElevatorTest {
 	@Test
     public void testSendMessage(){
         
-        elevatorSubsystem.sendSchedulerMessage(elevatorData);
-        
-        boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
-        assertTrue(value);
-        
+        try {
+			elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+	        elevatorSubsystem.sendSchedulerMessage(elevatorData);
+	        boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
+	        assertTrue(value);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
-	
-	public void testElevatorState() {
-		elevatorSubsystem.sendSchedulerMessage(elevatorData);
-		assertEquals(elevatorData.getState(), ElevatorStates.GOING_UP);
+
+	@Test
+	public void testProcessPacketData() {
+		
+		 try {
+				elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+				elevatorSubsystem.getElevator().processPacketData(floorData);
+				assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
+				assertEquals(elevatorSubsystem.getElevator().getDestQueue(), floorData.getDestinationFloor());
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
+	
+	// @Test
+	// public void testElevatorDestinationFloor() {
+	//   try {
+	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
+	// 		assertEquals(elevatorData.getMovingToFloor(), elevatorSubsystem.getElevator().getDestinationFloor());
+	// 	} catch (SocketException e) {
+	// 		// TODO Auto-generated catch block
+	// 		e.printStackTrace();
+	// 	}
+	// }
+	
+	// @Test
+	// public void testElevatorStartingFloor() {
+	//   try {
+	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
+	// 		assertEquals(elevatorData.getCurrentFloor(), elevatorSubsystem.getElevator().getCurrentFloor());
+	// 	} catch (SocketException e) {
+	// 		// TODO Auto-generated catch block
+	// 		e.printStackTrace();
+	// 	}
+	// }
+	
+	// @Test
+	// public void testElevatorPrevDirectionFloor() {
+	//   try {
+	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
+	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
+	// 		assertEquals(elevatorData.getPrevDirection(), elevatorSubsystem.getElevator().getPrevDirection());
+	// 	} catch (SocketException e) {
+	// 		// TODO Auto-generated catch block
+	// 		e.printStackTrace();
+	// 	}
+	// }
+	
+
+
 
 }

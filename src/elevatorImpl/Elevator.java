@@ -118,6 +118,10 @@ public class Elevator implements Runnable {
 		
 	}
 	
+	public Queue<Integer> getDestQueue(){
+		return this.destFloorQueue;
+	}
+	
 	/**
 	 * Triggers synchronized wait function
 	 */

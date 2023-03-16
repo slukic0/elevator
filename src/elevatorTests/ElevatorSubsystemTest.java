@@ -61,12 +61,6 @@ public class ElevatorSubsystemTest {
 	@Test
 	public void testSendSchedulerMessage() {
 		
-		Queue<Object> schedulerQueue = new LinkedList<>();
-		Queue<FloorData> floorQueue = new LinkedList<>();
-		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-		
-		//elevatorSubsystem.getSchedulerReceiveQueue().add(elevatorData); 
-		
 		Floor[] floors = new Floor[] { floor };
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
 		elevatorSubsystems.add(elevatorSubsystem);
@@ -79,14 +73,7 @@ public class ElevatorSubsystemTest {
 			e.printStackTrace();
 		}
 		elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(),1);
-	
-		//scheduler.getFloorReceiveQueue().add(elevatorData);
-		
-		assertEquals(elevatorData.getState(), ElevatorStates.GOING_UP);
-
-        //assertEquals(elevatorData, scheduler.getFloorReceiveQueue().poll(), "Message was not sent/received properly");
 	}
-	
 }
 	
 	

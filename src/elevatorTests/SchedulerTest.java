@@ -10,6 +10,7 @@ import elevatorImpl.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.module.FindException;
 import java.net.SocketException;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -61,22 +62,12 @@ public class SchedulerTest {
 
     }
 	
-
-	@Test
-	public void testHandleElevatorResponse(){
-
-		Queue<Object> schedulerQueue = new LinkedList<>();
-		Queue<FloorData> floorQueue = new LinkedList<>();
-		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-        try {
-			elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        //assertEquals(floorData, elevatorSubsystem.getreceiveQueue().poll());
-        assertEquals(1, 1);
-    }
+	
+	@Test 
+	public void findElevatorForMove() {
+		
+	}
+	
+	
 
 }

@@ -16,7 +16,11 @@
 	</natures>
 	<filteredResources>
 		<filter>
+<<<<<<< HEAD
 			<id>1678801487576</id>
+=======
+			<id>1678921663138</id>
+>>>>>>> 6cbe3d1 (Add new tests)
 			<name></name>
 			<type>30</type>
 			<matcher>

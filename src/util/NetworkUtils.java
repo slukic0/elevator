@@ -119,7 +119,6 @@ public class NetworkUtils {
 			e.printStackTrace();
 		}
 		return Arrays.copyOf(outputStream.toByteArray(), outputStream.toByteArray().length);
-
 	}
 
 	public static Object deserializeObject(DatagramPacket packet) {
