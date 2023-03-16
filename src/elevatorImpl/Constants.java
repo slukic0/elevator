@@ -1,5 +1,7 @@
 package elevatorImpl;
 
+import java.net.InetAddress;
+
 public class Constants {
 
 	private Constants() {}
@@ -14,6 +16,7 @@ public class Constants {
 	public static final int ELEVATOR_SYS_RECEIVE_PORT1 = 4;
 	public static final int ELEVATOR_SYS_RECEIVE_PORT2 = 5;
 
+	public static final String SCHEDULER_ADDRESS = "192.168.1.119";
+	public static final String FLOOR_ADDRESS = "192.168.1.109";
 
-	// TODO Scheduler address
 }

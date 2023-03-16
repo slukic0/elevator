@@ -3,6 +3,7 @@ package elevatorImpl;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 
 import messages.ElevatorData;
@@ -18,8 +19,6 @@ import util.FileUtil;
  *
  */
 public class Floor implements Runnable {
-//	private Queue<ElevatorData> receiveQueue;
-//	private Queue<Object> schedulerQueue;
 
 	private DatagramSocket floorReceiveSocket;
 
@@ -37,23 +36,17 @@ public class Floor implements Runnable {
 		this.floorReceiveSocket = new DatagramSocket(Constants.FLOOR_RECEIVE_PORT);
 	}
 
-//	public void sendMessage(FloorData data) {
-//		System.out.println("Floor is sending message to Scheduler: " + data.toString());
-//		new Thread(() -> {
-//			SendReceiveUtil.sendData(schedulerQueue, data);
-//		}).start();
-//	}
 	public void sendMessageToScheduler(FloorData data) {
-		
+
 		new Thread(() -> {
 			try {
 				// wait before sending
-				Thread.sleep(data.getTime().toSecondOfDay()*1000);
-				
+				Thread.sleep(data.getTime().toSecondOfDay() * 1000);
+
 				byte[] byteData = NetworkUtils.serializeObject(data);
 				System.out.println("Floor sending message " + data.toString());
-				NetworkUtils.sendPacket(byteData, floorReceiveSocket, Constants.SCHEDULER_FLOOR_RECEIVE_PORT);
-				// TODO Scheduler Address
+				NetworkUtils.sendPacket(byteData, floorReceiveSocket, Constants.SCHEDULER_FLOOR_RECEIVE_PORT,
+						InetAddress.getByName(Constants.SCHEDULER_ADDRESS));
 			} catch (Exception e) {
 				System.err.println("FLOOR ERROR: sendMessageToScheduler()");
 				e.printStackTrace();

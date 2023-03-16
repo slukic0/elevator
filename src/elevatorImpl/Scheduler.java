@@ -200,7 +200,7 @@ public class Scheduler implements Runnable {
 								+ elevatorMessage.getArrivalTime());
 			}
 			NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-						Constants.FLOOR_RECEIVE_PORT);
+						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
 		}
 	}
 
