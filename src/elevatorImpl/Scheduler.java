@@ -51,6 +51,10 @@ public class Scheduler implements Runnable {
 		this.floorDownButtonsMap = new HashMap<>();
 		this.state = SchedulerStates.IDLE;
 	}
+	
+	public DatagramSocket getFloorSocket() {
+		return this.schedulerFloorSendReceiveSocket;
+	}
 
 	/*
 	 * Returns the floor above current
@@ -58,7 +62,7 @@ public class Scheduler implements Runnable {
 	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no
 	 * floors exist.
 	 */
-	private int findClosestUp(int currFloor) {
+	public int findClosestUp(int currFloor) {
 		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
 			if (floorUpButtonsMap.containsKey(i)) {
 				return i;
@@ -78,7 +82,7 @@ public class Scheduler implements Runnable {
 	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no
 	 * floors exist.
 	 */
-	private int findClosestDown(int currFloor) {
+	public int findClosestDown(int currFloor) {
 		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
 			if (floorDownButtonsMap.containsKey(i)) {
 				return i;
@@ -98,7 +102,7 @@ public class Scheduler implements Runnable {
 	 * @param currFloor int, floor the elevator is on
 	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
 	 */
-	private int findClosest(int currFloor) {
+	public int findClosest(int currFloor) {
 		int closestDown = findClosestDown(currFloor);
 		int closestUp = findClosestUp(currFloor);
 
@@ -200,7 +204,7 @@ public class Scheduler implements Runnable {
 								+ elevatorMessage.getArrivalTime());
 			}
 			NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-						Constants.FLOOR_RECEIVE_PORT);
+						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
 		}
 	}
 
