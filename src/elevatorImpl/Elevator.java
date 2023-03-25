@@ -21,6 +21,8 @@ public class Elevator implements Runnable {
 	private ElevatorStates state;
 	private ElevatorStates prevDirection;
 	private Queue<Integer> destFloorQueue;
+	private Queue<Integer> hardFaultQueue;
+	private Queue<Integer> transientFaultQueue;
 	private int hardFaultStatus;
 	private int transientFaultStatus;
 	private boolean isStuck;
@@ -44,6 +46,8 @@ public class Elevator implements Runnable {
 		this.state = ElevatorStates.IDLE;
 		this.prevDirection = ElevatorStates.IDLE;
 		this.destFloorQueue = new LinkedList<Integer>();
+		this.hardFaultQueue = new LinkedList<Integer>();
+		this.transientFaultQueue = new LinkedList<Integer>();
 		this.hardFaultStatus = 0;
 		this.transientFaultStatus = 0;
 		this.isStuck = false;
@@ -109,6 +113,18 @@ public class Elevator implements Runnable {
 	public int getDestinationFloor() {
 		return this.destinationFloor;
 	}
+
+	public Queue<Integer> getDestQueue(){
+		return this.destFloorQueue;
+	}
+
+	public Queue<Integer> getHardFaultQueue(){
+		return this.hardFaultQueue;
+	}
+
+	public Queue<Integer> getTransientFaultQueue(){
+		return this.transientFaultQueue;
+	}
 	
 	/**
 	 * Process information from floor related to elevator
@@ -121,13 +137,16 @@ public class Elevator implements Runnable {
 			this.state = ElevatorStates.PROCESSING;
 			this.wake();
 		}
-		this.hardFaultStatus = data.getHardFault();
-		this.transientFaultStatus = data.getTransientFault();
+
+		this.hardFaultQueue.offer(0);
+		this.hardFaultQueue.offer(data.getHardFault());
+		this.transientFaultQueue.offer(0);
+		this.transientFaultQueue.offer(data.getTransientFault());
+		//this.hardFaultStatus = data.getHardFault();
+		//this.transientFaultStatus = data.getTransientFault();
 	}
 	
-	public Queue<Integer> getDestQueue(){
-		return this.destFloorQueue;
-	}
+	
 	
 	/**
 	 * Triggers synchronized wait function
@@ -208,13 +227,13 @@ public class Elevator implements Runnable {
 				System.out.println(
 						"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
 
-				if (this.hardFaultStatus == 1) {
-					System.out.println("Timing event fault");
+				//Check for Timer fault
+				if (this.hardFaultQueue.poll() == 1) {
+					System.out.println("\n\nTiming event fault\n\n");
 					isStuck = true;
 				} else {
 					this.state = ElevatorStates.ARRIVED;
 				}
-				
 				break;
 			
 			case ARRIVED:
@@ -225,7 +244,7 @@ public class Elevator implements Runnable {
 					e.printStackTrace();
 				}
 
-				if(this.transientFaultStatus == 1){
+				if(this.transientFaultQueue.poll() == 1){
 					System.out.println(ELEVATOR_NUMBER+": Door stuck fault\n");
 					//Handle transient fault
 					try {
