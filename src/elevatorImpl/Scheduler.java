@@ -128,7 +128,7 @@ public class Scheduler implements Runnable {
 	}
 
 	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault, int transientFault) {
-		return new FloorData(startFloor, destFloor, goingUp, LocalTime.now(), hardFault, transientFault);
+		return new FloorData(startFloor, destFloor, LocalTime.now(), hardFault, transientFault);
 	}
 
 

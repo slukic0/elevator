@@ -16,14 +16,13 @@ public class FloorData implements Serializable {
 	 * 
 	 * @param startingFloor floor to start at
 	 * @param destinationFloor floor to arrive at
-	 * @param goingUp true if going up, false if down
 	 * @param time time of request
 	 */
-	public FloorData(int startingFloor, int destinationFloor, boolean goingUp, LocalTime time, int hardFault, int transientFault) {
+	public FloorData(int startingFloor, int destinationFloor, LocalTime time, int hardFault, int transientFault) {
 		this.startingFloor = startingFloor;
 		this.destinationFloor = destinationFloor;
-		this.goingUp = goingUp;
 		this.time = time;
+		this.goingUp = destinationFloor - startingFloor > 0;
 		this.hardFault = hardFault;
 		this.transientFault = transientFault;
 	}
