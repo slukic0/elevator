@@ -51,84 +51,132 @@ public class Scheduler implements Runnable {
 		this.floorDownButtonsMap = new HashMap<>();
 		this.state = SchedulerStates.IDLE;
 	}
-	
+
 	public DatagramSocket getFloorSocket() {
 		return this.schedulerFloorSendReceiveSocket;
 	}
 
 	/*
-	 * Returns the floor above current
+	 * Checks all up-moving elevators if a floor request is on its way
+	 * e.g. If elevator x is moving from floor 2 to floor 5 and a request to go up
+	 * at at floor 4 comes in,
+	 * elevator x should stop at floor 4 since it's on its way
 	 * 
-	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no
-	 * floors exist.
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
-	public int findClosestUp(int currFloor) {
-		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
-			if (floorUpButtonsMap.containsKey(i)) {
-				return i;
+	public int[] checkUpElevatorsEnRoute(int requestFloor) {
+		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int elevatorId = -1;
+		ElevatorData elevatorMessage;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			// Iterate to find closest elevator, record distance and elevator number
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.GOING_UP
+					&& elevatorMessage.getCurrentFloor() < requestFloor) {
+				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
+					diff = requestFloor - elevatorMessage.getCurrentFloor();
+					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
+				}
 			}
 		}
-		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
-			if (floorUpButtonsMap.containsKey(i)) {
-				return i;
-			}
-		}
-		return 2 * NUMBER_OF_FLOORS;
+		return new int[] { elevatorId, diff };
 	}
 
 	/*
-	 * Returns the floor below current
+	 * Checks all down-moving elevators if a floor request is on its way
+	 * e.g. If elevator x is moving from floor 8 to floor 3 and a request to go dwon
+	 * at at floor 4 comes in,
+	 * elevator x should stop at floor 4 since it's on its way
 	 * 
-	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no
-	 * floors exist.
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
-	public int findClosestDown(int currFloor) {
-		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
-			if (floorDownButtonsMap.containsKey(i)) {
-				return i;
+	public int[] checkDownElevatorsEnRoute(int requestFloor) {
+		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int elevatorId = -1;
+		ElevatorData elevatorMessage;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
+					&& elevatorMessage.getCurrentFloor() > requestFloor) {
+				// Iterate to find closest elevator, record distance and elevator number
+				if (Math.abs(elevatorMessage.getCurrentFloor() - requestFloor) < diff) {
+					diff = Math.abs(elevatorMessage.getCurrentFloor() - requestFloor);
+					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
+				}
 			}
 		}
-		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
-			if (floorDownButtonsMap.containsKey(i)) {
-				return i;
-			}
-		}
-		return 2 * NUMBER_OF_FLOORS;
+		return new int[] { elevatorId, diff };
 	}
 
 	/**
-	 * A very hacky function to find the closest floor that needs an elevator
+	 * Check free elevators to find closest to the request floor
 	 * 
-	 * @param currFloor int, floor the elevator is on
-	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
+	 * @param requestFloor
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
-	public int findClosest(int currFloor) {
-		int closestDown = findClosestDown(currFloor);
-		int closestUp = findClosestUp(currFloor);
-
-		if (closestDown == 2 * NUMBER_OF_FLOORS && closestUp == 2 * NUMBER_OF_FLOORS) {
-			return 2 * NUMBER_OF_FLOORS;
-		} else if (closestUp == 2 * NUMBER_OF_FLOORS) {
-			return closestDown == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestDown;
-		} else if (closestDown == 2 * NUMBER_OF_FLOORS) {
-			return closestUp == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestUp;
-		} else {
-			if (currFloor - closestDown < closestUp - currFloor) {
-				return closestDown;
-			} else {
-				return closestUp;
+	public int[] checkAllElevators(int requestFloor) {
+		int diff = Integer.MAX_VALUE;
+		int elevatorId = -1;
+		ElevatorData elevatorMessage;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+				// Iterate to find closest elevator, record distance and elevator number
+				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
+					diff = Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
+					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
+				}
+			}
+			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
+					|| elevatorMessage.getState() == ElevatorStates.GOING_UP) {
+				if (Math.abs(elevatorMessage.getMovingToFloor() - elevatorMessage.getCurrentFloor())
+						+ Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
+					diff = Math.abs(elevatorMessage.getMovingToFloor() - elevatorMessage.getCurrentFloor())
+							+ Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
+					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
+				}
 			}
 		}
+		return new int[] { elevatorId, diff };
 	}
 
-	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp) {
-		return new FloorData(startFloor, destFloor, goingUp, LocalTime.now());
+	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault,
+			int transientFault) {
+		return new FloorData(startFloor, destFloor, LocalTime.now(), hardFault, transientFault);
+	}
+
+	/**
+	 * Find the closest elevator to a floor. Check free and moving elevators
+	 * 
+	 * @param requestFloor int, the floor sending a request to go up or down
+	 * @param goingUp      boolean, direction of button on floor
+	 */
+	public int findClosestElevator(int requestFloor, boolean goingUp) {
+		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
+		int[] closestEnRoute;
+		int[] closestElevators;
+		// Check if request floor is on the way of a moving elevator
+		if (goingUp) {
+			closestEnRoute = checkUpElevatorsEnRoute(requestFloor);
+		} else {
+			closestEnRoute = checkDownElevatorsEnRoute(requestFloor);
+		}
+		// If the floor is on the way of a moving elevator, then we can just task that
+		// elevator to stop
+		// at the request floor to pickup and continue
+		if (closestEnRoute[1] != Integer.MAX_VALUE) {
+			return closestEnRoute[0];
+		}
+
+		closestElevators = checkAllElevators(requestFloor);
+		return closestElevators[0];
 	}
 
 	/**
 	 * Scheduling Algorithm
 	 */
 	public int findElevatorForMove(int floor, boolean goingUp) {
+		// TODO update algo
 		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
 		// Get all free elevators (idle)
 		int diff = Integer.MAX_VALUE;
@@ -151,7 +199,8 @@ public class Scheduler implements Runnable {
 			if (elevator.getValue().getLatestMessage().getState() != ElevatorStates.IDLE) {
 				int destFloor = elevator.getValue().getLatestMessage().getMovingToFloor();
 				System.out.println(
-						"Elevator " + elevator.getKey() + "(in use) is " + Math.abs(destFloor - floor) + " floors away");
+						"Elevator " + elevator.getKey() + "(in use) is " + Math.abs(destFloor - floor)
+								+ " floors away");
 				if ((Math.abs(destFloor - floor)) < diff) { // Priority to free elevators
 					diff = Math.abs(destFloor - floor);
 					movingElevatorNum = elevator.getKey();
@@ -192,19 +241,19 @@ public class Scheduler implements Runnable {
 			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 					new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
-			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
-				// tell the floor elevator has arrived
-				System.out.println(
-						"Scheduler forwarding floor elevator " + elevatorMessage.getELEVATOR_NUMBER() + " arrival");
-			} else {
-				System.out
-						.println("Scheduler got reply: Elevator " + elevatorMessage.getELEVATOR_NUMBER()
-								+ " moving from floor " + elevatorMessage.getCurrentFloor() + " to floor "
-								+ elevatorMessage.getMovingToFloor() + ", arrival at "
-								+ elevatorMessage.getArrivalTime());
-			}
+			System.out
+					.println("Got Message: Elevator " + elevatorMessage.getELEVATOR_NUMBER()
+							+ " moving from floor " + elevatorMessage.getCurrentFloor() + " to floor "
+							+ elevatorMessage.getMovingToFloor() + ", arrival at "
+							+ elevatorMessage.getArrivalTime());
+
+			// TODO determine when to forward messages to floor
+
+			// if (elevatorMessage.getState() == ElevatorStates.ARRIVED || ){
+
+			// }
 			NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
+					Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
 		}
 	}
 
@@ -218,11 +267,11 @@ public class Scheduler implements Runnable {
 			DatagramPacket floorPacket = NetworkUtils.receivePacket(schedulerFloorSendReceiveSocket);
 			FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(floorPacket);
 
-			System.out.println("Scheduler got message " + floorMessage);
-
 			boolean goingUp = floorMessage.getGoingUp();
 			int startFloor = floorMessage.getStartingFloor();
 			int destFloor = floorMessage.getDestinationFloor();
+			int hardFault = floorMessage.getHardFault();
+			int transientFault = floorMessage.getTransientFault();
 
 			if (goingUp) {
 				floorUpButtonsMap.put(startFloor, destFloor);
@@ -230,17 +279,17 @@ public class Scheduler implements Runnable {
 				floorDownButtonsMap.put(startFloor, destFloor);
 			}
 			System.out.println(
-					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
-							+ floorMessage.getGoingUp()); /// Should this be starting or destination floor?
+					"Marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
+							+ floorMessage.getGoingUp());
 			// TODO what elevator to send this to?
 			int elevatorNumber = findElevatorForMove(startFloor, goingUp);
 			// getElevatorMoveCommand should probably tell us this
 
 			state = SchedulerStates.DISPTACHING_ELEVATOR;
 
-			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp);
+			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp, hardFault, transientFault);
 			byte[] data = NetworkUtils.serializeObject(message);
-			System.out.println("Scheduler send message to Elevator " + elevatorNumber + " " + message.toString());
+			System.out.println("Send message to Elevator " + elevatorNumber + " " + message.toString());
 			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, elevatorMap.get(elevatorNumber).getPort(),
 					elevatorMap.get(elevatorNumber).getAddress());
 		}
@@ -270,6 +319,6 @@ public class Scheduler implements Runnable {
 		Scheduler scheduler = new Scheduler();
 		Thread sThread = new Thread(scheduler);
 		sThread.start();
-
+		System.out.println("Scheduler starting...");
 	}
 }

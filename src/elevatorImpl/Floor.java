@@ -61,7 +61,7 @@ public class Floor implements Runnable {
 		}
 		else {
 			if (elevatorData.getCurrentFloor() == elevatorData.getMovingToFloor()) {
-				System.out.println("Floor: Elevator has arrived at floor " + elevatorData.getCurrentFloor());
+				System.out.println("Floor: Elevator " + elevatorData.getELEVATOR_NUMBER() + " has arrived at floor " + elevatorData.getCurrentFloor());
 			}
 			return true;
 		}
@@ -76,7 +76,7 @@ public class Floor implements Runnable {
 			try {
 				DatagramPacket elevatorMessage = NetworkUtils.receivePacket(floorReceiveSocket);
 				ElevatorData message = (ElevatorData) NetworkUtils.deserializeObject(elevatorMessage);
-				System.out.println("Floor received message: " + message.toString());
+				System.out.println("Got message: " + message.toString());
 				this.checkMessage(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -92,7 +92,6 @@ public class Floor implements Runnable {
 		String[] input = FileUtil.readFile(floor.getClass(), "events.txt");
 		FloorData[] data = FileUtil.parseStringInput(input);
 		for (FloorData d : data) {
-			System.out.println("Adding FloorData: " + d.toString());
 			floor.sendMessageToScheduler(d);
 		}
 	}

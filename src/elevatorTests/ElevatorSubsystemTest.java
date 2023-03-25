@@ -53,7 +53,7 @@ public class ElevatorSubsystemTest {
 		
 		elevatorSubsystems.add(elevatorSubsystem);
         
-        floorData = new FloorData(1, 2, true, LocalTime.now());
+        floorData = new FloorData(1, 2, LocalTime.now());
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	

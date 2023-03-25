@@ -5,4 +5,5 @@ public enum ElevatorStates {
 	GOING_DOWN,
 	IDLE,
 	PROCESSING,
+	ARRIVED,
 }

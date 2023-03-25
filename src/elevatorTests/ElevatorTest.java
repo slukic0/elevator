@@ -42,7 +42,7 @@ public class ElevatorTest {
 		floor = new Floor();
 		scheduler = new Scheduler();
 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-        floorData = new FloorData(2, 3, true, LocalTime.now());
+        floorData = new FloorData(2, 3, LocalTime.now());
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	
