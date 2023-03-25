@@ -57,68 +57,49 @@ public class Scheduler implements Runnable {
 	}
 
 	/*
-	 * Returns the floor above current
+	 * Checks all up-moving elevators if a floor request is on its way
+	 * e.g. If elevator x is moving from floor 2 to floor 5 and a request to go up at at floor 4 comes in,
+	 * elevator x should stop at floor 4 since it's on its way
 	 * 
-	 * @return int, the closest floor above currFloor or 2*NUMBER_OF_FLOORS if no
-	 * floors exist.
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
-	public int findClosestUp(int currFloor) {
-		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
-			if (floorUpButtonsMap.containsKey(i)) {
-				return i;
+	public int[] checkUpElevators(int requestFloor) {
+		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
+		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int elevatorId = -1;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			// Iterate to find closest elevator, record distance and elevaor number
+			if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.GOING_UP){
+				if(Math.abs(requestFloor - elevator.getValue().getLatestMessage().getCurrentFloor()) < diff) {
+					diff = requestFloor - elevator.getValue().getLatestMessage().getCurrentFloor();
+					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
+				}
 			}
 		}
-		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
-			if (floorUpButtonsMap.containsKey(i)) {
-				return i;
-			}
-		}
-		return 2 * NUMBER_OF_FLOORS;
+		return new int[]{elevatorId, diff};
 	}
 
 	/*
-	 * Returns the floor below current
+	 * Checks all down-moving elevators if a floor request is on its way
+	 * e.g. If elevator x is moving from floor 8 to floor 3 and a request to go dwon at at floor 4 comes in,
+	 * elevator x should stop at floor 4 since it's on its way
 	 * 
-	 * @return int, the closest floor below currFloor or 2*NUMBER_OF_FLOORS if no
-	 * floors exist.
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
-	public int findClosestDown(int currFloor) {
-		for (int i = currFloor - 1; i >= STARTING_FLOOR; i--) {
-			if (floorDownButtonsMap.containsKey(i)) {
-				return i;
+	public int[] checkDownElevators(int requestFloor) {
+		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
+		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int elevatorId = -1;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.GOING_DOWN){
+				// Iterate to find closest elevator, record distance and elevaor number
+				if(Math.abs(elevator.getValue().getLatestMessage().getCurrentFloor() - requestFloor) < diff) {
+					diff = elevator.getValue().getLatestMessage().getCurrentFloor() - requestFloor;
+					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
+				}
 			}
 		}
-		for (int i = currFloor + 1; i <= NUMBER_OF_FLOORS; i++) {
-			if (floorDownButtonsMap.containsKey(i)) {
-				return i;
-			}
-		}
-		return 2 * NUMBER_OF_FLOORS;
-	}
-
-	/**
-	 * A very hacky function to find the closest floor that needs an elevator
-	 * 
-	 * @param currFloor int, floor the elevator is on
-	 * @return the closest floor or 2*NUMBER_OF_FLOORS if no floors exist.
-	 */
-	public int findClosest(int currFloor) {
-		int closestDown = findClosestDown(currFloor);
-		int closestUp = findClosestUp(currFloor);
-
-		if (closestDown == 2 * NUMBER_OF_FLOORS && closestUp == 2 * NUMBER_OF_FLOORS) {
-			return 2 * NUMBER_OF_FLOORS;
-		} else if (closestUp == 2 * NUMBER_OF_FLOORS) {
-			return closestDown == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestDown;
-		} else if (closestDown == 2 * NUMBER_OF_FLOORS) {
-			return closestUp == 2 * NUMBER_OF_FLOORS ? 2 * NUMBER_OF_FLOORS : closestUp;
-		} else {
-			if (currFloor - closestDown < closestUp - currFloor) {
-				return closestDown;
-			} else {
-				return closestUp;
-			}
-		}
+		return new int[]{elevatorId, diff};
 	}
 
 	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault, int transientFault) {
