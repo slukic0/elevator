@@ -223,7 +223,7 @@ public class Elevator implements Runnable {
 
 				//Check for Timer fault
 				if (this.hardFaultQueue.poll() == 1) {
-					System.out.println("\n\nTiming event fault\n\n");
+					System.out.println("\nTiming event fault\n");
 					isStuck = true;
 				} else {
 					this.state = ElevatorStates.ARRIVED;
@@ -239,11 +239,11 @@ public class Elevator implements Runnable {
 				}
 
 				if(this.transientFaultQueue.poll() == 1){
-					System.out.println(ELEVATOR_NUMBER+": Door stuck fault\n");
+					System.out.println("\nElevator " + ELEVATOR_NUMBER+": Door stuck fault\n");
 					//Handle transient fault
 					try {
 						Thread.sleep(1000);
-						System.out.println(ELEVATOR_NUMBER +": Door has been fixed\n");
+						System.out.println("\nElevator " + ELEVATOR_NUMBER +": Door has been fixed\n");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -269,6 +269,6 @@ public class Elevator implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
-		System.err.println(ELEVATOR_NUMBER + " shutdown");
+		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }
