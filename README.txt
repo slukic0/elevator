@@ -46,8 +46,8 @@ src/diagrams:
 
 To run:
 1. Run the main method found in Scheduler.java
-2. Run the main method found in Floor.java
-3. Run the main method found in ElevatorSubSystem.java within 5 seconds after running Floor.java
+2. Run the main method found in ElevatorSubSystem.java
+3. Run the main method found in Floor.java
 
 Task Breakdown for Iteration 3:
 Iteration 3 code implementation, debugging and testing: Filip Lukic, Stefan Lukic, Nicolas Tanouchev
