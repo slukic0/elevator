@@ -47,6 +47,11 @@ public class Scheduler implements Runnable {
 		this.state = SchedulerStates.IDLE;
 	}
 
+	/**
+	 * Gets the scheduler's floor socket
+	 * 
+	 * @return schedulerFloorSendReceiveSocket	 the scheduler's floor socket
+	 */
 	public DatagramSocket getFloorSocket() {
 		return this.schedulerFloorSendReceiveSocket;
 	}
@@ -135,6 +140,17 @@ public class Scheduler implements Runnable {
 		return new int[] { elevatorId, diff };
 	}
 
+	/**
+	 * Gets the elevator move command 
+	 *
+	 * @param startFloor		the elevator's starting floor
+	 * @param destFloor			the elevator's destination floor
+	 * @param goingUp			true if the evelator going up, else false
+	 * @param hardFault			1 if there is a hard fault, else 0
+	 * @param transientFault	1 if there is a transient fault, else 0
+	 *
+	 * @return FloorData		FloorData containing the elevator's next instructions
+	 */
 	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault,
 			int transientFault) {
 		return new FloorData(startFloor, destFloor, LocalTime.now(), hardFault, transientFault);
@@ -298,6 +314,9 @@ public class Scheduler implements Runnable {
 		}).start();
 	}
 
+	/**
+	 * Main method to run Scheduler
+	 */
 	public static void main(String[] args) throws SocketException {
 		Scheduler scheduler = new Scheduler();
 		Thread sThread = new Thread(scheduler);

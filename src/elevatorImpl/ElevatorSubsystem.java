@@ -80,6 +80,9 @@ public class ElevatorSubsystem implements Runnable {
 		}
 	}
 
+	/**
+	 * Main method to run Elevator Subsystem
+	 */
 	public static void main(String[] args) throws SocketException {
 		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT1);

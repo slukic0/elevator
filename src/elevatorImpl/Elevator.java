@@ -26,13 +26,10 @@ public class Elevator implements Runnable {
 	private boolean isStuck;
 
 	/**
-	 * Creates an elevator with shared synchronized message queues, the elevator
-	 * number and its current floor
+	 * Creates an elevator ties to an Elevator Subsystem with the elevator number and its current floor
 	 * 
-	 * @param receiveQueue   the synchronized message queue to receive information
+	 * @param elevatorSubsystem   the synchronized message queue to receive information
 	 *                       from the Scheduler
-	 * @param subsystemQueue the synchronized message queue to send information to
-	 *                       the Scheduler
 	 * @param elevatorNumber the elevator number
 	 * @param currentFloor   the elevator's current floor
 	 */
@@ -110,20 +107,36 @@ public class Elevator implements Runnable {
 		return this.destinationFloor;
 	}
 
+	/**
+	 * Gets the elevator's destination floor queue
+	 * 
+	 * @return destFloorQueue the elevator's destination floor queue
+	 */
 	public Queue<Integer> getDestQueue(){
 		return this.destFloorQueue;
 	}
 
+	/**
+	 * Gets the elevator's hard fault queue
+	 * 
+	 * @return hardFaultQueue the elevator's hard fault queue
+	 */
 	public Queue<Integer> getHardFaultQueue(){
 		return this.hardFaultQueue;
 	}
 
+	/**
+	 * Gets the elevator's transient fault queue
+	 * 
+	 * @return transientFaultQueue the elevator's transient fault queue
+	 */
 	public Queue<Integer> getTransientFaultQueue(){
 		return this.transientFaultQueue;
 	}
 	
 	/**
-	 * Process information from floor related to elevator
+	 * Process information from floor related to elevator, including 
+	 * starting and destination floors, and faults
 	 * @param data FloorData, message from floor
 	 */
 	public void processPacketData(FloorData data) {
@@ -139,7 +152,6 @@ public class Elevator implements Runnable {
 		this.transientFaultQueue.offer(0);
 		this.transientFaultQueue.offer(data.getTransientFault());
 	}
-	
 	
 	
 	/**
@@ -242,7 +254,7 @@ public class Elevator implements Runnable {
 					System.out.println("\nElevator " + ELEVATOR_NUMBER+": Door stuck fault\n");
 					//Handle transient fault
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(2000);
 						System.out.println("\nElevator " + ELEVATOR_NUMBER +": Door has been fixed\n");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
