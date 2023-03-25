@@ -191,20 +191,25 @@ public class Scheduler implements Runnable {
 			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 					new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
-			System.out
-					.println("Got Message: Elevator " + elevatorMessage.getELEVATOR_NUMBER()
-							+ " moving from floor " + elevatorMessage.getCurrentFloor() + " to floor "
-							+ elevatorMessage.getMovingToFloor() + ", arrival at "
-							+ elevatorMessage.getArrivalTime());
+			System.out.println("Got E Message: Num " + elevatorMessage.getELEVATOR_NUMBER() +", Cur "+ elevatorMessage.getCurrentFloor() +", Dest " + elevatorMessage.getMovingToFloor() +", State "+elevatorMessage.getState());
 
-			// TODO determine when to forward messages to floor
-
-			if (elevatorMessage.getState() == ElevatorStates.ARRIVED) { // Remove the destination now that the elevator
-																		// had arrived
+			if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
+				// Remove the destination now from the queue
 				elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).removeFirst();
+
+				// inform the floor of the arrival
+				NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
+						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
+			} else if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+				if (elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()) != null &&  elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst() != null){
+					ElevatorCommandData message = getElevatorMoveCommand(elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst(), 0, 0); // TODO fault?
+					byte[] data = NetworkUtils.serializeObject(message);
+					System.out.println("Send message to Elevator " + elevatorMessage.getELEVATOR_NUMBER() + " " + message.toString());
+					NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket,
+							elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getPort(),
+							elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getAddress());
+				}
 			}
-			NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-					Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
 		}
 	}
 
@@ -235,21 +240,16 @@ public class Scheduler implements Runnable {
 			ElevatorData latestData = elevatorMap.get(elevatorNumber).getLatestMessage();
 
 			if (latestData.getState() == ElevatorStates.IDLE) { // free elevator
-				Queue<Integer> queue = elevatorQueueMap.get(elevatorNumber);
+				Deque<Integer> queue = elevatorQueueMap.get(elevatorNumber);
 				int prevDestFloor = latestData.getMovingToFloor();
 				if (queue == null) {
 					Deque<Integer> newDeque = new ArrayDeque<>();
+					newDeque.offerFirst(startFloor);
 					newDeque.offerLast(prevDestFloor);
 					elevatorQueueMap.put(elevatorNumber, newDeque);
 				} else {
 					queue.offer(prevDestFloor);
 				}
-				ElevatorCommandData message = getElevatorMoveCommand(destFloor, hardFault, transientFault);
-				byte[] data = NetworkUtils.serializeObject(message);
-				System.out.println("Send message to Elevator " + elevatorNumber + " " + message.toString());
-				NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket,
-						elevatorMap.get(elevatorNumber).getPort(),
-						elevatorMap.get(elevatorNumber).getAddress());
 
 			} else {
 				// Check If Interupt needed
@@ -272,6 +272,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
 							// Insert starting floor to stop at as first dest
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+							System.out.println("Up new dest infront of old");
 						} else {
 							// New destination is after old destination
 							// Remove old dest to be able to put new dest after it
@@ -282,6 +283,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
 							// Insert starting floor to stop at as first dest
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+							System.out.println("Up new est after old");
 						}
 
 					} else if (startFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
@@ -293,6 +295,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
 							// Insert starting floor to stop at as first dest
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+							System.out.println("Down new dest infront of old");
 						} else {
 							// New destination is after old destination
 							// Remove old dest to be able to put new dest after it
@@ -303,6 +306,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
 							// Insert starting floor to stop at as first dest
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+							System.out.println("Down new dest after old");
 						}
 					}
 
@@ -310,8 +314,16 @@ public class Scheduler implements Runnable {
 					// Not on the way, so add at end
 					elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
 					elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
+					System.out.println("else case no interrupt");
 				}
 			}
+			ElevatorCommandData message = getElevatorMoveCommand(elevatorQueueMap.get(elevatorNumber).peekFirst(),
+					hardFault, transientFault);
+			byte[] data = NetworkUtils.serializeObject(message);
+			System.out.println("Send message to Elevator " + elevatorNumber + " " + message.toString());
+			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket,
+					elevatorMap.get(elevatorNumber).getPort(),
+					elevatorMap.get(elevatorNumber).getAddress());
 		}
 	}
 

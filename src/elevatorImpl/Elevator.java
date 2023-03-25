@@ -122,6 +122,7 @@ public class Elevator implements Runnable {
 	 */
 	public void processPacketData(ElevatorCommandData data) {
 		//this.destFloorQueue.offer(data.getDestinationFloor());
+		System.out.println("Set new desintation to " + data.getDestinationFloor()); 
 		this.destinationFloor =  data.getDestinationFloor();
 		if (this.state == ElevatorStates.IDLE) {
 			this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
@@ -182,7 +183,7 @@ public class Elevator implements Runnable {
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor), ELEVATOR_NUMBER));
 
-				for (int i=1; i <=  Math.abs(destinationFloor - currentFloor); i++){
+				while(currentFloor != destinationFloor) {
 					try {
 						Thread.sleep(2000);
 
@@ -193,7 +194,7 @@ public class Elevator implements Runnable {
 						}
 						
 						elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-								destinationFloor, LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor-i)), ELEVATOR_NUMBER));
+								destinationFloor, LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor)), ELEVATOR_NUMBER));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
