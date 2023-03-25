@@ -23,8 +23,6 @@ public class Elevator implements Runnable {
 	private Queue<Integer> destFloorQueue;
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
-	private int hardFaultStatus;
-	private int transientFaultStatus;
 	private boolean isStuck;
 
 	/**
@@ -48,8 +46,6 @@ public class Elevator implements Runnable {
 		this.destFloorQueue = new LinkedList<Integer>();
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
-		this.hardFaultStatus = 0;
-		this.transientFaultStatus = 0;
 		this.isStuck = false;
 	}
 
@@ -133,8 +129,6 @@ public class Elevator implements Runnable {
 	public void processPacketData(FloorData data) {
 		this.destFloorQueue.offer(data.getStartingFloor());
 		this.destFloorQueue.offer(data.getDestinationFloor());
-		this.hardFaultStatus = data.getHardFault();
-		this.transientFaultStatus = data.getTransientFault();
 		if (this.state == ElevatorStates.IDLE) {
 			this.state = ElevatorStates.PROCESSING;
 			this.wake();
@@ -144,8 +138,6 @@ public class Elevator implements Runnable {
 		this.hardFaultQueue.offer(data.getHardFault());
 		this.transientFaultQueue.offer(0);
 		this.transientFaultQueue.offer(data.getTransientFault());
-		//this.hardFaultStatus = data.getHardFault();
-		//this.transientFaultStatus = data.getTransientFault();
 	}
 	
 	
@@ -231,7 +223,7 @@ public class Elevator implements Runnable {
 
 				//Check for Timer fault
 				if (this.hardFaultQueue.poll() == 1) {
-					System.out.println("\n\nTiming event fault\n\n");
+					System.out.println("\nTiming event fault\n");
 					isStuck = true;
 				} else {
 					this.state = ElevatorStates.ARRIVED;
@@ -247,11 +239,11 @@ public class Elevator implements Runnable {
 				}
 
 				if(this.transientFaultQueue.poll() == 1){
-					System.out.println(ELEVATOR_NUMBER+": Door stuck fault\n");
+					System.out.println("\nElevator " + ELEVATOR_NUMBER+": Door stuck fault\n");
 					//Handle transient fault
 					try {
 						Thread.sleep(1000);
-						System.out.println(ELEVATOR_NUMBER +": Door has been fixed\n");
+						System.out.println("\nElevator " + ELEVATOR_NUMBER +": Door has been fixed\n");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -277,6 +269,6 @@ public class Elevator implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
-		System.err.println(ELEVATOR_NUMBER + " shutdown");
+		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }
