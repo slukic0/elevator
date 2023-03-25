@@ -133,6 +133,8 @@ public class Elevator implements Runnable {
 	public void processPacketData(FloorData data) {
 		this.destFloorQueue.offer(data.getStartingFloor());
 		this.destFloorQueue.offer(data.getDestinationFloor());
+		this.hardFaultStatus = data.getHardFault();
+		this.transientFaultStatus = data.getTransientFault();
 		if (this.state == ElevatorStates.IDLE) {
 			this.state = ElevatorStates.PROCESSING;
 			this.wake();
@@ -275,5 +277,6 @@ public class Elevator implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
+		System.err.println(ELEVATOR_NUMBER + " shutdown");
 	}
 }
