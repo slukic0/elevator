@@ -23,9 +23,6 @@ public class Scheduler implements Runnable {
 	private DatagramSocket schedulerFloorSendReceiveSocket;
 	private DatagramSocket schedulerElevatorSendReceiveSocket;
 
-	public HashMap<Integer, Integer> floorUpButtonsMap;
-	public HashMap<Integer, Integer> floorDownButtonsMap;
-
 	public HashMap<Integer, ElevatorStatus> elevatorMap; // all the elevators in our system
 
 	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
@@ -47,8 +44,6 @@ public class Scheduler implements Runnable {
 
 		this.elevatorMap = new HashMap<>();
 
-		this.floorUpButtonsMap = new HashMap<>();
-		this.floorDownButtonsMap = new HashMap<>();
 		this.state = SchedulerStates.IDLE;
 	}
 
@@ -208,13 +203,6 @@ public class Scheduler implements Runnable {
 			}
 		}
 
-		// Floor has been tasked to an elevator, remove button flag
-		if (goingUp) {
-			floorUpButtonsMap.remove(floor);
-		} else {
-			floorDownButtonsMap.remove(floor);
-		}
-
 		// If a moving elevator was closer
 		if (movingElevatorNum != -1) {
 			System.out.println("Elevator " + movingElevatorNum + " has been selected");
@@ -273,16 +261,11 @@ public class Scheduler implements Runnable {
 			int hardFault = floorMessage.getHardFault();
 			int transientFault = floorMessage.getTransientFault();
 
-			if (goingUp) {
-				floorUpButtonsMap.put(startFloor, destFloor);
-			} else {
-				floorDownButtonsMap.put(startFloor, destFloor);
-			}
 			System.out.println(
 					"Marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
 							+ floorMessage.getGoingUp());
 			// TODO what elevator to send this to?
-			int elevatorNumber = findElevatorForMove(startFloor, goingUp);
+			int elevatorNumber = findClosestElevator(startFloor, goingUp);
 			// getElevatorMoveCommand should probably tell us this
 
 			state = SchedulerStates.DISPTACHING_ELEVATOR;
