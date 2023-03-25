@@ -6,8 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import messages.ElevatorCommandData;
 import messages.ElevatorData;
-import messages.FloorData;
 import util.NetworkUtils;
 
 public class ElevatorSubsystem implements Runnable {
@@ -70,8 +70,8 @@ public class ElevatorSubsystem implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				DatagramPacket floorMessage = NetworkUtils.receivePacket(elevatorSendReceiveSocket);
-				FloorData message = (FloorData) NetworkUtils.deserializeObject(floorMessage);
+				DatagramPacket elevatorCommandMessage = NetworkUtils.receivePacket(elevatorSendReceiveSocket);
+				ElevatorCommandData message = (ElevatorCommandData) NetworkUtils.deserializeObject(elevatorCommandMessage);
 				System.out.println("Elevator "+ Thread.currentThread().getName() +" Got Message: " + message.toString());
 				elevator.processPacketData(message);
 			} catch (IOException e) {

@@ -4,8 +4,8 @@ import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import messages.ElevatorCommandData;
 import messages.ElevatorData;
-import messages.FloorData;
 
 /**
  * Class to represent the elevator subsystem
@@ -20,7 +20,6 @@ public class Elevator implements Runnable {
 	private ElevatorSubsystem elevatorSubsystem;
 	private ElevatorStates state;
 	private ElevatorStates prevDirection;
-	private Queue<Integer> destFloorQueue;
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
 	private boolean isStuck;
@@ -43,7 +42,6 @@ public class Elevator implements Runnable {
 		this.destinationFloor = currentFloor;
 		this.state = ElevatorStates.IDLE;
 		this.prevDirection = ElevatorStates.IDLE;
-		this.destFloorQueue = new LinkedList<Integer>();
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
@@ -110,10 +108,6 @@ public class Elevator implements Runnable {
 		return this.destinationFloor;
 	}
 
-	public Queue<Integer> getDestQueue(){
-		return this.destFloorQueue;
-	}
-
 	public Queue<Integer> getHardFaultQueue(){
 		return this.hardFaultQueue;
 	}
@@ -126,11 +120,11 @@ public class Elevator implements Runnable {
 	 * Process information from floor related to elevator
 	 * @param data FloorData, message from floor
 	 */
-	public void processPacketData(FloorData data) {
-		this.destFloorQueue.offer(data.getStartingFloor());
-		this.destFloorQueue.offer(data.getDestinationFloor());
+	public void processPacketData(ElevatorCommandData data) {
+		//this.destFloorQueue.offer(data.getDestinationFloor());
+		this.destinationFloor =  data.getDestinationFloor();
 		if (this.state == ElevatorStates.IDLE) {
-			this.state = ElevatorStates.PROCESSING;
+			this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 			this.wake();
 		}
 
@@ -169,18 +163,6 @@ public class Elevator implements Runnable {
 		ElevatorStates currState = ElevatorStates.IDLE; // Use to store state before sending data
 		while (!isStuck) {
 			switch (state) {
-			case PROCESSING: {
-				if (destFloorQueue.isEmpty()) {
-					this.state = ElevatorStates.IDLE;
-				} else {
-					this.destinationFloor = destFloorQueue.poll();
-					ElevatorStates newState = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-					this.state = newState;
-				}
-				
-				break;
-			}
-			
 			case IDLE: {
 				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has no work, asking for work...");
 
@@ -197,22 +179,21 @@ public class Elevator implements Runnable {
 			case GOING_UP:
 				// Move the elevator
 				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
-				int diff = destinationFloor - currentFloor;
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
+						destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor), ELEVATOR_NUMBER));
 
-				for (int i=1; i <=  Math.abs(diff); i++){
+				for (int i=1; i <=  Math.abs(destinationFloor - currentFloor); i++){
 					try {
 						Thread.sleep(2000);
 
-						if(diff > 0){
+						if(destinationFloor - currentFloor > 0){
 							currentFloor++;
-						} else if (diff < 0){
+						} else if (destinationFloor - currentFloor < 0){
 							currentFloor--;
 						}
 						
 						elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-								destinationFloor, LocalTime.now().plusSeconds(2 * (diff-i)), ELEVATOR_NUMBER));
+								destinationFloor, LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor-i)), ELEVATOR_NUMBER));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -262,7 +243,7 @@ public class Elevator implements Runnable {
 						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
 								ELEVATOR_NUMBER));
 
-				this.state = ElevatorStates.PROCESSING;
+				this.state = ElevatorStates.IDLE;
 				
 				break;
 			default:
