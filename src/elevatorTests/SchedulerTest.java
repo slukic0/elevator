@@ -58,7 +58,7 @@ public class SchedulerTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        floorData = new FloorData(1, 2, true, LocalTime.now());
+        floorData = new FloorData(1, 2, LocalTime.now());
 
     }
 	

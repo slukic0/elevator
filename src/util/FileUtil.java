@@ -39,12 +39,11 @@ public class FileUtil {
 
 			int startingFloor = Integer.parseInt(event[1]);
 			int destinationFloor = Integer.parseInt(event[2]);
-			boolean up = (Integer.parseInt(event[2]) > Integer.parseInt(event[1]));
 			LocalTime time = LocalTime.parse(event[0]);
 			int hardFault = Integer.parseInt(event[3]);
 			int transientFault = Integer.parseInt(event[4]);
 
-			data.add(new FloorData(startingFloor, destinationFloor, up, time, hardFault, transientFault));
+			data.add(new FloorData(startingFloor, destinationFloor, time, hardFault, transientFault));
 		}
 
 		return data.toArray(new FloorData[data.size()]);
