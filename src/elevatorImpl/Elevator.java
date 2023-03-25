@@ -213,14 +213,39 @@ public class Elevator implements Runnable {
 					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has arrived at floor " + destinationFloor);
 					currentFloor = destinationFloor;
 					currState = state;
-					this.state = ElevatorStates.PROCESSING;
+					this.state = ElevatorStates.ARRIVED;
 				}
 				
 				
 				break;
 			
-			case DOOR_CLOSE: 
-			case DOOR_OPEN:
+			case ARRIVED:
+				// wait for a bit
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				if(this.transientFaultStatus == 1){
+					System.out.println("Door stuck fault\n");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				else{
+					// wait for a bit
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					currState = state;
+					this.state = ElevatorStates.PROCESSING;
+				}
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
