@@ -64,14 +64,15 @@ public class Scheduler implements Runnable {
 	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
 	public int[] checkUpElevators(int requestFloor) {
-		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
 		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
 		int elevatorId = -1;
+		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
-			// Iterate to find closest elevator, record distance and elevaor number
-			if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.GOING_UP){
-				if(Math.abs(requestFloor - elevator.getValue().getLatestMessage().getCurrentFloor()) < diff) {
-					diff = requestFloor - elevator.getValue().getLatestMessage().getCurrentFloor();
+			// Iterate to find closest elevator, record distance and elevator number
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.GOING_UP && elevatorMessage.getCurrentFloor() <= requestFloor){
+				if(Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
+					diff = requestFloor - elevatorMessage.getCurrentFloor();
 					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
 				}
 			}
@@ -87,23 +88,67 @@ public class Scheduler implements Runnable {
 	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
 	public int[] checkDownElevators(int requestFloor) {
-		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
 		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
 		int elevatorId = -1;
+		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
-			if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.GOING_DOWN){
-				// Iterate to find closest elevator, record distance and elevaor number
-				if(Math.abs(elevator.getValue().getLatestMessage().getCurrentFloor() - requestFloor) < diff) {
-					diff = elevator.getValue().getLatestMessage().getCurrentFloor() - requestFloor;
-					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN &&  elevatorMessage.getCurrentFloor() >= requestFloor){
+				// Iterate to find closest elevator, record distance and elevator number
+				if(Math.abs(elevatorMessage.getCurrentFloor() - requestFloor) < diff) {
+					diff = elevatorMessage.getCurrentFloor() - requestFloor;
+					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
 				}
 			}
 		}
 		return new int[]{elevatorId, diff};
 	}
 
+	/**
+	 * Check free elevators to find closest to the request floor
+	 * 
+	 * @param requestFloor
+	 * @return int[], [id of elevator, distance in floors of closet elevator found]
+	 */
+	public int[] checkFreeElevators(int requestFloor) {
+		int diff = Integer.MAX_VALUE;
+		int elevatorId = -1;
+		ElevatorData elevatorMessage;
+		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+			elevatorMessage = elevator.getValue().getLatestMessage();
+			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+				// Iterate to find closest elevator, record distance and elevator number
+				if(Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
+					diff = requestFloor - elevatorMessage.getCurrentFloor();
+					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
+				}
+			}
+		}
+		return new int []{elevatorId, diff};
+	}
+
 	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault, int transientFault) {
 		return new FloorData(startFloor, destFloor, goingUp, LocalTime.now(), hardFault, transientFault);
+	}
+
+
+	/**
+	 * Find the closest elevator to a floor. Check free and moving elevators
+	 * 
+	 * @param requestFloor int, the floor sending a request to go up or down
+	 * @param goingUp boolean, direction of button on floor
+	 */
+	public void findClosestElevator(int requestFloor, boolean goingUp) {
+		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
+		int[] closestMoving;
+		int[] closestFree;
+		// Check if request floor is on the way of a moving elevator
+		if (goingUp) {
+			closestMoving = checkUpElevators(requestFloor);
+		} else {
+			closestMoving = checkDownElevators(requestFloor);
+		}
+		closestFree = checkFreeElevators(requestFloor);
 	}
 
 	/**
