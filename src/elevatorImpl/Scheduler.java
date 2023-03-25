@@ -110,6 +110,7 @@ public class Scheduler implements Runnable {
 	 * Scheduling Algorithm
 	 */
 	public int findElevatorForMove(int floor, boolean goingUp) {
+		// TODO update algo
 		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
 		// Get all free elevators (idle)
 		int diff = Integer.MAX_VALUE;
@@ -173,17 +174,17 @@ public class Scheduler implements Runnable {
 			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 					new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
-			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
-				// tell the floor elevator has arrived
-				System.out.println(
-						"Scheduler forwarding floor elevator " + elevatorMessage.getELEVATOR_NUMBER() + " arrival");
-			} else {
-				System.out
-						.println("Scheduler got reply: Elevator " + elevatorMessage.getELEVATOR_NUMBER()
-								+ " moving from floor " + elevatorMessage.getCurrentFloor() + " to floor "
-								+ elevatorMessage.getMovingToFloor() + ", arrival at "
-								+ elevatorMessage.getArrivalTime());
-			}
+			System.out
+					.println("Got Message: Elevator " + elevatorMessage.getELEVATOR_NUMBER()
+							+ " moving from floor " + elevatorMessage.getCurrentFloor() + " to floor "
+							+ elevatorMessage.getMovingToFloor() + ", arrival at "
+							+ elevatorMessage.getArrivalTime());
+
+			// TODO determine when to forward messages to floor
+
+			// if (elevatorMessage.getState() == ElevatorStates.ARRIVED || ){
+
+			// }
 			NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
 						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
 		}
@@ -199,8 +200,6 @@ public class Scheduler implements Runnable {
 			DatagramPacket floorPacket = NetworkUtils.receivePacket(schedulerFloorSendReceiveSocket);
 			FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(floorPacket);
 
-			System.out.println("Scheduler got message " + floorMessage);
-
 			boolean goingUp = floorMessage.getGoingUp();
 			int startFloor = floorMessage.getStartingFloor();
 			int destFloor = floorMessage.getDestinationFloor();
@@ -213,7 +212,7 @@ public class Scheduler implements Runnable {
 				floorDownButtonsMap.put(startFloor, destFloor);
 			}
 			System.out.println(
-					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
+					"Marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
 							+ floorMessage.getGoingUp());
 			// TODO what elevator to send this to?
 			int elevatorNumber = findElevatorForMove(startFloor, goingUp);
@@ -223,7 +222,7 @@ public class Scheduler implements Runnable {
 
 			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp, hardFault, transientFault);
 			byte[] data = NetworkUtils.serializeObject(message);
-			System.out.println("Scheduler send message to Elevator " + elevatorNumber + " " + message.toString());
+			System.out.println("Send message to Elevator " + elevatorNumber + " " + message.toString());
 			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, elevatorMap.get(elevatorNumber).getPort(),
 					elevatorMap.get(elevatorNumber).getAddress());
 		}
@@ -253,6 +252,6 @@ public class Scheduler implements Runnable {
 		Scheduler scheduler = new Scheduler();
 		Thread sThread = new Thread(scheduler);
 		sThread.start();
-
+		System.out.println("Scheduler starting...");
 	}
 }

@@ -29,7 +29,9 @@ public class ElevatorSubsystem implements Runnable {
 		this.elevatorSendReceiveSocket = new DatagramSocket(receivePort);
 
 		// Start the elevator
-		new Thread(this.elevator).start();
+		Thread eThread = new Thread(this.elevator);
+		eThread.setName(Thread.currentThread().getName());
+		eThread.start();
 	}
 
 	/**
@@ -48,7 +50,6 @@ public class ElevatorSubsystem implements Runnable {
 	 *
 	 */
 	public void sendSchedulerMessage(ElevatorData message) {
-		System.out.println("Elevator subsystem is sending message to Scheduler: " + message.toString());
 		new Thread(() -> {
 			try {
 				byte[] byteData = NetworkUtils.serializeObject(message);
@@ -71,7 +72,7 @@ public class ElevatorSubsystem implements Runnable {
 			try {
 				DatagramPacket floorMessage = NetworkUtils.receivePacket(elevatorSendReceiveSocket);
 				FloorData message = (FloorData) NetworkUtils.deserializeObject(floorMessage);
-				System.out.println("Elevator SubSystem received " + message);
+				System.out.println("Elevator "+ Thread.currentThread().getName() +" Got Message: " + message.toString());
 				elevator.processPacketData(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -86,7 +87,9 @@ public class ElevatorSubsystem implements Runnable {
 				Constants.ELEVATOR_SYS_RECEIVE_PORT2);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
+		eThread1.setName("1");
 		Thread eThread2 = new Thread(elevatorSubsystem2);
+		eThread2.setName("2");
 
 		eThread1.start();
 		eThread2.start();
