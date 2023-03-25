@@ -23,8 +23,6 @@ public class Elevator implements Runnable {
 	private Queue<Integer> destFloorQueue;
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
-	private int hardFaultStatus;
-	private int transientFaultStatus;
 	private boolean isStuck;
 
 	/**
@@ -48,8 +46,6 @@ public class Elevator implements Runnable {
 		this.destFloorQueue = new LinkedList<Integer>();
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
-		this.hardFaultStatus = 0;
-		this.transientFaultStatus = 0;
 		this.isStuck = false;
 	}
 
@@ -133,8 +129,6 @@ public class Elevator implements Runnable {
 	public void processPacketData(FloorData data) {
 		this.destFloorQueue.offer(data.getStartingFloor());
 		this.destFloorQueue.offer(data.getDestinationFloor());
-		this.hardFaultStatus = data.getHardFault();
-		this.transientFaultStatus = data.getTransientFault();
 		if (this.state == ElevatorStates.IDLE) {
 			this.state = ElevatorStates.PROCESSING;
 			this.wake();
@@ -144,8 +138,6 @@ public class Elevator implements Runnable {
 		this.hardFaultQueue.offer(data.getHardFault());
 		this.transientFaultQueue.offer(0);
 		this.transientFaultQueue.offer(data.getTransientFault());
-		//this.hardFaultStatus = data.getHardFault();
-		//this.transientFaultStatus = data.getTransientFault();
 	}
 	
 	
