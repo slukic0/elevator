@@ -241,24 +241,17 @@ public class Scheduler implements Runnable {
 
 			if (latestData.getState() == ElevatorStates.IDLE) { // free elevator
 				Deque<Integer> queue = elevatorQueueMap.get(elevatorNumber);
-				int prevDestFloor = latestData.getMovingToFloor();
 				if (queue == null) {
 					Deque<Integer> newDeque = new ArrayDeque<>();
 					newDeque.offerFirst(startFloor);
-					newDeque.offerLast(prevDestFloor);
+					newDeque.offerLast(destFloor);
 					elevatorQueueMap.put(elevatorNumber, newDeque);
 				} else {
-					queue.offer(prevDestFloor);
+					queue.offerFirst(destFloor);
+					queue.offerFirst(startFloor);
 				}
 
 			} else {
-				// Check If Interupt needed
-
-				// CASES
-				//
-				// BOTH UP, new Dest is after old dest
-				// BOTH DOWN, new Dest is after old dest
-
 				boolean elevatorGoingUp = latestData.getCurrentFloor() < latestData.getMovingToFloor();
 				boolean newGoingUp = startFloor < destFloor;
 
@@ -274,7 +267,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
 							System.out.println("Up new dest infront of old");
 						} else {
-							// New destination is after old destination
+							// BOTH UP, new Dest is after old dest
 							// Remove old dest to be able to put new dest after it
 							int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
 							// Insert new dest infront
@@ -283,7 +276,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
 							// Insert starting floor to stop at as first dest
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
-							System.out.println("Up new est after old");
+							System.out.println("Up new dest after old");
 						}
 
 					} else if (startFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
@@ -297,7 +290,7 @@ public class Scheduler implements Runnable {
 							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
 							System.out.println("Down new dest infront of old");
 						} else {
-							// New destination is after old destination
+							// BOTH DOWN, new Dest is after old dest
 							// Remove old dest to be able to put new dest after it
 							int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
 							// Insert new dest infront
@@ -312,8 +305,8 @@ public class Scheduler implements Runnable {
 
 				} else {
 					// Not on the way, so add at end
-					elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
 					elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
+					elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
 					System.out.println("else case no interrupt");
 				}
 			}
