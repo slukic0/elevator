@@ -121,8 +121,8 @@ public class Scheduler implements Runnable {
 		}
 	}
 
-	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp) {
-		return new FloorData(startFloor, destFloor, goingUp, LocalTime.now());
+	public FloorData getElevatorMoveCommand(int startFloor, int destFloor, boolean goingUp, int hardFault, int transientFault) {
+		return new FloorData(startFloor, destFloor, goingUp, LocalTime.now(), hardFault, transientFault);
 	}
 
 	/**
@@ -223,6 +223,8 @@ public class Scheduler implements Runnable {
 			boolean goingUp = floorMessage.getGoingUp();
 			int startFloor = floorMessage.getStartingFloor();
 			int destFloor = floorMessage.getDestinationFloor();
+			int hardFault = floorMessage.getHardFault();
+			int transientFault = floorMessage.getTransientFault();
 
 			if (goingUp) {
 				floorUpButtonsMap.put(startFloor, destFloor);
@@ -231,14 +233,14 @@ public class Scheduler implements Runnable {
 			}
 			System.out.println(
 					"Scheduler marked floor " + floorMessage.getStartingFloor() + " as GoingUp: "
-							+ floorMessage.getGoingUp()); /// Should this be starting or destination floor?
+							+ floorMessage.getGoingUp());
 			// TODO what elevator to send this to?
 			int elevatorNumber = findElevatorForMove(startFloor, goingUp);
 			// getElevatorMoveCommand should probably tell us this
 
 			state = SchedulerStates.DISPTACHING_ELEVATOR;
 
-			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp);
+			FloorData message = getElevatorMoveCommand(startFloor, destFloor, goingUp, hardFault, transientFault);
 			byte[] data = NetworkUtils.serializeObject(message);
 			System.out.println("Scheduler send message to Elevator " + elevatorNumber + " " + message.toString());
 			NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket, elevatorMap.get(elevatorNumber).getPort(),

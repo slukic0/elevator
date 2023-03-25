@@ -33,7 +33,7 @@ public class FileUtil {
 	public static FloorData[] parseStringInput(String[] lines) {
 		ArrayList<FloorData> data = new ArrayList<>();
 		for (String s : lines) {
-			// time|startingFloor|destinationFloor
+			// time|startingFloor|destinationFloor|Hard|Transient
 			// Example: 12:43:47.0|1|3
 			String[] event = s.split("\\|");
 
@@ -41,8 +41,10 @@ public class FileUtil {
 			int destinationFloor = Integer.parseInt(event[2]);
 			boolean up = (Integer.parseInt(event[2]) > Integer.parseInt(event[1]));
 			LocalTime time = LocalTime.parse(event[0]);
+			int hardFault = Integer.parseInt(event[3]);
+			int transientFault = Integer.parseInt(event[4]);
 
-			data.add(new FloorData(startingFloor, destinationFloor, up, time));
+			data.add(new FloorData(startingFloor, destinationFloor, up, time, hardFault, transientFault));
 		}
 
 		return data.toArray(new FloorData[data.size()]);

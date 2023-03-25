@@ -1,7 +1,6 @@
-// Enter Events in the following format: time|startingFloor|destinationFloor
+// Enter Events in the following format: time|startingFloor|destinationFloor|HardFault|Transient
 // Example: 12:43:47.0|0|3
 // Example: 12:43:47.0|4|2
-00:00:05.0|4|6
-00:00:06.0|2|3
-00:00:08.0|3|1
-00:00:09.0|1|4
+00:00:05.0|4|6|0|0
+00:00:06.0|2|3|1|0
+00:00:07.0|2|3|0|1
