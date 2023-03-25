@@ -184,14 +184,20 @@ public class Elevator implements Runnable {
 			case GOING_UP:
 				// Move the elevator
 				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
-				int diff = Math.abs(destinationFloor - currentFloor);
+				int diff = destinationFloor - currentFloor;
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
 
-				for (int i=1; i <= diff; i++){
+				for (int i=1; i <=  Math.abs(diff); i++){
 					try {
 						Thread.sleep(2000);
-						currentFloor++;
+
+						if(diff > 0){
+							currentFloor++;
+						} else if (diff < 0){
+							currentFloor--;
+						}
+						
 						elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 								destinationFloor, LocalTime.now().plusSeconds(2 * (diff-i)), ELEVATOR_NUMBER));
 					} catch (InterruptedException e) {
