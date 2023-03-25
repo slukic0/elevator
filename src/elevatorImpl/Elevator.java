@@ -21,6 +21,9 @@ public class Elevator implements Runnable {
 	private ElevatorStates state;
 	private ElevatorStates prevDirection;
 	private Queue<Integer> destFloorQueue;
+	private int hardFaultStatus;
+	private int transientFaultStatus;
+	private boolean isStuck;
 
 	/**
 	 * Creates an elevator with shared synchronized message queues, the elevator
@@ -41,6 +44,9 @@ public class Elevator implements Runnable {
 		this.state = ElevatorStates.IDLE;
 		this.prevDirection = ElevatorStates.IDLE;
 		this.destFloorQueue = new LinkedList<Integer>();
+		this.hardFaultStatus = 0;
+		this.transientFaultStatus = 0;
+		this.isStuck = false;
 	}
 
 	/**
@@ -115,7 +121,8 @@ public class Elevator implements Runnable {
 			this.state = ElevatorStates.PROCESSING;
 			this.wake();
 		}
-		
+		this.hardFaultStatus = data.getHardFault();
+		this.transientFaultStatus = data.getTransientFault();
 	}
 	
 	public Queue<Integer> getDestQueue(){
@@ -147,7 +154,7 @@ public class Elevator implements Runnable {
 	 */
 	public void run() {
 		ElevatorStates currState = ElevatorStates.IDLE; // Use to store state before sending data
-		while (true) {
+		while (!isStuck) {
 			switch (state) {
 			case PROCESSING: {
 				if (destFloorQueue.isEmpty()) {
@@ -186,17 +193,34 @@ public class Elevator implements Runnable {
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
 
-				// wait for a bit
-				try {
-					Thread.sleep(2000 * diff);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				if(this.hardFaultStatus == 1){
+					System.out.println("Timing event fault");
+					// wait for a bit
+					try {
+						Thread.sleep(2500 * diff);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					isStuck = true;
 				}
-				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has arrived at floor " + destinationFloor);
-				currentFloor = destinationFloor;
-				currState = state;
-				this.state = ElevatorStates.PROCESSING;
+				else{
+					// wait for a bit
+					try {
+						Thread.sleep(2000 * diff);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has arrived at floor " + destinationFloor);
+					currentFloor = destinationFloor;
+					currState = state;
+					this.state = ElevatorStates.PROCESSING;
+				}
+				
+				
 				break;
+			
+			case DOOR_CLOSE: 
+			case DOOR_OPEN:
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
