@@ -221,28 +221,30 @@ public class Elevator implements Runnable {
 
 				if(this.transientFaultStatus == 1){
 					System.out.println(ELEVATOR_NUMBER+": Door stuck fault\n");
+					//Handle transient fault
 					try {
 						Thread.sleep(1000);
+						System.out.println(ELEVATOR_NUMBER +": Door has been fixed\n");
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
-				else{
-					// wait for a bit
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					currState = state;
-
-					// Tell the floor we have arrived
-					elevatorSubsystem.sendSchedulerMessage(
-							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
-									ELEVATOR_NUMBER));
-
-					this.state = ElevatorStates.PROCESSING;
+				
+				// wait for a bit
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
+				currState = state;
+
+				// Tell the floor we have arrived
+				elevatorSubsystem.sendSchedulerMessage(
+						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+								ELEVATOR_NUMBER));
+
+				this.state = ElevatorStates.PROCESSING;
+				
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + state);
