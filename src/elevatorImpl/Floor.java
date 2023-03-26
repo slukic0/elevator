@@ -36,12 +36,10 @@ public class Floor implements Runnable {
 		this.floorReceiveSocket = new DatagramSocket(Constants.FLOOR_RECEIVE_PORT);
 	}
 
-	/**
-	 * Sends Floor data message to Scheduler
-	 *
-	 * @param data		FloorData, the data to send to scheduler
-	 *
-	 */
+	public Floor(int port) throws SocketException {
+		this.floorReceiveSocket = new DatagramSocket(port);
+	}
+
 	public void sendMessageToScheduler(FloorData data) {
 
 		new Thread(() -> {

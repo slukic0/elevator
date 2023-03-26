@@ -36,18 +36,17 @@ public class ElevatorTest {
      */
 	@BeforeAll
 	public static void init() throws SocketException{
-		System.out.println("INIT CALLED!!!!!!!!!!!");
 		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
 		elevatorSubsystems.add(elevatorSubsystem);
-		floor = new Floor();
-		scheduler = new Scheduler();
-		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-        floorData = new FloorData(2, 3, LocalTime.now());
+		scheduler = new Scheduler(1025, 1026);
+		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
+        floorData = new FloorData(2, 3, LocalTime.now(), 1, 1);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
     }
 	
 	/**
      * Method to test sending a message in Elevator class
+	 * @throws SocketException
      */
 	@Test
     public void testSendMessage(){
@@ -58,7 +57,7 @@ public class ElevatorTest {
     }
 
 	@Test
-	public void testProcessPacketData() {
+	public void testProcessPacketData() throws SocketException {
 		
 		elevatorSubsystem.getElevator().processPacketData(floorData);
 		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);

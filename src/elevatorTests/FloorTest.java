@@ -33,96 +33,51 @@ import util.NetworkUtils;
  */
 public class FloorTest {
 
-	    public static Floor floor;
-	    public static Scheduler scheduler;
-	    public static FloorData floorData;
-	    public static ElevatorData elevatorData;
-	    public static ElevatorSubsystem elevatorSubsystem;
-	    public static DatagramSocket datagramSocket;
+	public static Floor floor;
+	public static Scheduler scheduler;
+	public static FloorData floorData;
+	public static ElevatorData elevatorData;
+	public static ElevatorSubsystem elevatorSubsystem;
+	public static DatagramSocket datagramSocket;
 
-	    /**
-	     * Initializes the variables that will be used to test the methods in the Scheduler Class
-	     */
+	/**
+	 * Initializes the variables that will be used to test the methods in the Scheduler Class
+	 * @throws SocketException
+	 */
 	@BeforeAll
-	public static void init(){
-
-        Queue<Object> schedulerQueue = new LinkedList<>();
-		Queue<FloorData> floorQueue = new LinkedList<>();
-		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
+	public static void init() throws SocketException{
 		
-		try {
-			datagramSocket = new DatagramSocket();
-		} catch (SocketException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-        Floor[] floors = new Floor[] { floor };
-		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
-		elevatorSubsystems.add(elevatorSubsystem);
-		
-		floor = null;
-		
-		try {
-			floor = new Floor();
-			scheduler = new Scheduler();
-	        elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        floorData = new FloorData(1, 2, LocalTime.now());
+		floor = new Floor(1028);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(),1);
-        
 	}
 	
-	/**
-     * Method to test sending a message in Floor class
-     */
 	@Test
-    public void testSendMessage(){
-        try {
-        	floor = new Floor();
-        	scheduler = new Scheduler();
-        	floor.sendMessageToScheduler(floorData);
-			DatagramPacket packet = NetworkUtils.receivePacket(scheduler.getFloorSocket());
-			FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(packet);
-			assertEquals(floorData.getDestinationFloor(), floorMessage.getDestinationFloor());
-			assertEquals(floorData.getGoingUp(), floorMessage.getGoingUp());
-			assertEquals(floorData.getStartingFloor(), floorMessage.getStartingFloor());
-			assertTrue(floorData.getTime().compareTo(floorMessage.getTime()) < 2);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
-	
-	@Test
-	public void testInvalidMessage() {
-		
-		try {
-			floor = new Floor();
-			boolean result = floor.checkMessage(null);
-			assertFalse(result);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void testInvalidMessage() throws SocketException {
+		boolean result = floor.checkMessage(null);
+		assertFalse(result);
 	}
 	
 	@Test
 	public void testValidMessage() {
-		
-		try {
-			floor = new Floor();
-			boolean result = floor.checkMessage(elevatorData);
-			assertTrue(result);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-
+		boolean result = floor.checkMessage(elevatorData);
+		assertTrue(result);
 	}
+
+	// Tests UDP - redundant
+	// /**
+    //  * Method to test sending a message in Floor class
+	//  * @throws IOException
+    //  */
+	// @Test
+    // public void testSendMessage() throws IOException{
+	// 	floor.sendMessageToScheduler(floorData);
+	// 	DatagramPacket packet = NetworkUtils.receivePacket(scheduler.getFloorSocket());
+	// 	FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(packet);
+	// 	assertEquals(floorData.getDestinationFloor(), floorMessage.getDestinationFloor());
+	// 	assertEquals(floorData.getGoingUp(), floorMessage.getGoingUp());
+	// 	assertEquals(floorData.getStartingFloor(), floorMessage.getStartingFloor());
+	// 	assertTrue(floorData.getTime().compareTo(floorMessage.getTime()) < 2);
+    // }
+	
 
 }

@@ -48,12 +48,31 @@ public class Scheduler implements Runnable {
 	}
 
 	/**
+	 * Constructor created for test
+	 * @param elevatorPort
+	 * @param floorPort
+	 * @throws SocketException
+	 */
+	public Scheduler(int elevatorPort, int floorPort) throws SocketException{
+		this.schedulerElevatorSendReceiveSocket = new DatagramSocket(elevatorPort);
+		this.schedulerFloorSendReceiveSocket = new DatagramSocket(floorPort);
+
+		this.elevatorMap = new HashMap<>();
+
+		this.state = SchedulerStates.IDLE;
+	}
+	
+	/**
 	 * Gets the scheduler's floor socket
 	 * 
 	 * @return schedulerFloorSendReceiveSocket	 the scheduler's floor socket
 	 */
 	public DatagramSocket getFloorSocket() {
 		return this.schedulerFloorSendReceiveSocket;
+	}
+
+	public void setElevatorMap(HashMap<Integer, ElevatorStatus> elevatorMap) {
+		this.elevatorMap = elevatorMap;
 	}
 
 	/*
@@ -183,51 +202,51 @@ public class Scheduler implements Runnable {
 		return closestElevators[0];
 	}
 
-	/**
-	 * Scheduling Algorithm
-	 */
-	public int findElevatorForMove(int floor, boolean goingUp) {
-		// TODO update algo
-		state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
-		// Get all free elevators (idle)
-		int diff = Integer.MAX_VALUE;
-		int elevatorNum = -1;
-		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
-			if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.IDLE) {
-				int currFloor = elevator.getValue().getLatestMessage().getCurrentFloor();
-				System.out.println(
-						"Elevator " + elevator.getKey() + "(free) is " + Math.abs(currFloor - floor) + " floors away");
-				if (Math.abs(currFloor - floor) < diff) {
-					diff = Math.abs(currFloor - floor);
-					elevatorNum = elevator.getKey();
-				}
-			}
-		}
+	// /**
+	//  * Scheduling Algorithm
+	//  */
+	// public int findElevatorForMove(int floor, boolean goingUp) {
+	// 	// TODO update algo
+	// 	state = SchedulerStates.FINDING_CLOSEST_ELEVATOR;
+	// 	// Get all free elevators (idle)
+	// 	int diff = Integer.MAX_VALUE;
+	// 	int elevatorNum = -1;
+	// 	for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+	// 		if (elevator.getValue().getLatestMessage().getState() == ElevatorStates.IDLE) {
+	// 			int currFloor = elevator.getValue().getLatestMessage().getCurrentFloor();
+	// 			System.out.println(
+	// 					"Elevator " + elevator.getKey() + "(free) is " + Math.abs(currFloor - floor) + " floors away");
+	// 			if (Math.abs(currFloor - floor) < diff) {
+	// 				diff = Math.abs(currFloor - floor);
+	// 				elevatorNum = elevator.getKey();
+	// 			}
+	// 		}
+	// 	}
 
-		// Get destinations of moving elevators
-		int movingElevatorNum = -1;
-		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
-			if (elevator.getValue().getLatestMessage().getState() != ElevatorStates.IDLE) {
-				int destFloor = elevator.getValue().getLatestMessage().getMovingToFloor();
-				System.out.println(
-						"Elevator " + elevator.getKey() + "(in use) is " + Math.abs(destFloor - floor)
-								+ " floors away");
-				if ((Math.abs(destFloor - floor)) < diff) { // Priority to free elevators
-					diff = Math.abs(destFloor - floor);
-					movingElevatorNum = elevator.getKey();
-				}
-			}
-		}
+	// 	// Get destinations of moving elevators
+	// 	int movingElevatorNum = -1;
+	// 	for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
+	// 		if (elevator.getValue().getLatestMessage().getState() != ElevatorStates.IDLE) {
+	// 			int destFloor = elevator.getValue().getLatestMessage().getMovingToFloor();
+	// 			System.out.println(
+	// 					"Elevator " + elevator.getKey() + "(in use) is " + Math.abs(destFloor - floor)
+	// 							+ " floors away");
+	// 			if ((Math.abs(destFloor - floor)) < diff) { // Priority to free elevators
+	// 				diff = Math.abs(destFloor - floor);
+	// 				movingElevatorNum = elevator.getKey();
+	// 			}
+	// 		}
+	// 	}
 
-		// If a moving elevator was closer
-		if (movingElevatorNum != -1) {
-			System.out.println("Elevator " + movingElevatorNum + " has been selected");
-			return movingElevatorNum;
-		} else {
-			System.out.println("Elevator " + elevatorNum + " has been selected");
-			return elevatorNum;
-		}
-	}
+	// 	// If a moving elevator was closer
+	// 	if (movingElevatorNum != -1) {
+	// 		System.out.println("Elevator " + movingElevatorNum + " has been selected");
+	// 		return movingElevatorNum;
+	// 	} else {
+	// 		System.out.println("Elevator " + elevatorNum + " has been selected");
+	// 		return elevatorNum;
+	// 	}
+	// }
 
 	/**
 	 * Receives packets from an elevator
@@ -323,4 +342,6 @@ public class Scheduler implements Runnable {
 		sThread.start();
 		System.out.println("Scheduler starting...");
 	}
+
+
 }
