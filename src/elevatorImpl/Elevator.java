@@ -24,6 +24,7 @@ public class Elevator implements Runnable {
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
 	private boolean isStuck;
+	private boolean exitFlag;
 
 	/**
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number and its current floor
@@ -44,6 +45,7 @@ public class Elevator implements Runnable {
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
+		this.exitFlag = false;
 	}
 
 	/**
@@ -87,6 +89,14 @@ public class Elevator implements Runnable {
 	 */
 	public int getCurrentFloor() {
 		return this.currentFloor;
+	}
+
+	public void setFlag(){
+		this.exitFlag = true;
+	}
+
+	public boolean getFlag(){
+		return this.exitFlag;
 	}
 
 	/**
@@ -151,6 +161,14 @@ public class Elevator implements Runnable {
 		this.hardFaultQueue.offer(data.getHardFault());
 		this.transientFaultQueue.offer(0);
 		this.transientFaultQueue.offer(data.getTransientFault());
+	}
+	
+	public void setIsStuck(){
+		this.isStuck = true;
+	}
+
+	public boolean getIsStuck(){
+		return this.isStuck;
 	}
 	
 	
@@ -236,7 +254,7 @@ public class Elevator implements Runnable {
 				//Check for Timer fault
 				if (this.hardFaultQueue.poll() == 1) {
 					System.out.println("\nTiming event fault\n");
-					isStuck = true;
+					setIsStuck();
 				} else {
 					this.state = ElevatorStates.ARRIVED;
 				}
@@ -281,6 +299,7 @@ public class Elevator implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
+		setFlag();
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }
