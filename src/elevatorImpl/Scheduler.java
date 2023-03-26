@@ -188,26 +188,35 @@ public class Scheduler implements Runnable {
 			InetAddress senderAddress = elevatorPacket.getAddress();
 
 			// Update the status of the received elevator data
-			elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
-					new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+			synchronized (this.elevatorMap) {
+				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
+						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+			}
 
-			System.out.println("Got E Message: Num " + elevatorMessage.getELEVATOR_NUMBER() +", Cur "+ elevatorMessage.getCurrentFloor() +", Dest " + elevatorMessage.getMovingToFloor() +", State "+elevatorMessage.getState());
+			System.out.println("Got E Message: Num " + elevatorMessage.getELEVATOR_NUMBER() + ", Cur "
+					+ elevatorMessage.getCurrentFloor() + ", Dest " + elevatorMessage.getMovingToFloor() + ", State "
+					+ elevatorMessage.getState());
 
-			if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
-				// Remove the destination now from the queue
-				elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).removeFirst();
+			synchronized (this.elevatorQueueMap) {
+				if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
+					// Remove the destination now from the queue
+					elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).removeFirst();
 
-				// inform the floor of the arrival
-				NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
-						Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
-			} else if (elevatorMessage.getState() == ElevatorStates.IDLE) {
-				if (elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()) != null &&  elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst() != null){
-					ElevatorCommandData message = getElevatorMoveCommand(elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst(), 0, 0); // TODO fault?
-					byte[] data = NetworkUtils.serializeObject(message);
-					System.out.println("Send message to Elevator " + elevatorMessage.getELEVATOR_NUMBER() + " " + message.toString());
-					NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket,
-							elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getPort(),
-							elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getAddress());
+					// inform the floor of the arrival
+					NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
+							Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
+				} else if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+					if (elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()) != null
+							&& elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst() != null) {
+						ElevatorCommandData message = getElevatorMoveCommand(
+								elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peekFirst(), 0, 0);
+						byte[] data = NetworkUtils.serializeObject(message);
+						System.out.println("Send message to Elevator " + elevatorMessage.getELEVATOR_NUMBER() + " "
+								+ message.toString());
+						NetworkUtils.sendPacket(data, schedulerElevatorSendReceiveSocket,
+								elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getPort(),
+								elevatorMap.get(elevatorMessage.getELEVATOR_NUMBER()).getAddress());
+					}
 				}
 			}
 		}
@@ -239,75 +248,77 @@ public class Scheduler implements Runnable {
 			// check if we need to interupt the elevator
 			ElevatorData latestData = elevatorMap.get(elevatorNumber).getLatestMessage();
 
-			if (latestData.getState() == ElevatorStates.IDLE) { // free elevator
-				Deque<Integer> queue = elevatorQueueMap.get(elevatorNumber);
-				if (queue == null) {
-					Deque<Integer> newDeque = new ArrayDeque<>();
-					newDeque.offerFirst(startFloor);
-					newDeque.offerLast(destFloor);
-					elevatorQueueMap.put(elevatorNumber, newDeque);
-				} else {
-					queue.offerFirst(destFloor);
-					queue.offerFirst(startFloor);
-				}
-
-			} else {
-				boolean elevatorGoingUp = latestData.getCurrentFloor() < latestData.getMovingToFloor();
-				boolean newGoingUp = startFloor < destFloor;
-
-				if (elevatorGoingUp == newGoingUp) { // both going up or both going down
-					if (startFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
-							&& newGoingUp) { // Interupt needed going down
-						// BOTH UP, new start is before old dest
-						if (destFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
-							// New destination is before old destination
-							// Insert new dest infront of old dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
-							// Insert starting floor to stop at as first dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
-							System.out.println("Up new dest infront of old");
-						} else {
-							// BOTH UP, new Dest is after old dest
-							// Remove old dest to be able to put new dest after it
-							int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
-							// Insert new dest infront
-							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
-							// Insert old dest infront of new dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
-							// Insert starting floor to stop at as first dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
-							System.out.println("Up new dest after old");
-						}
-
-					} else if (startFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
-							&& !newGoingUp) { // Interupt needed going down
-						// BOTH DOWN, new start is before old dest
-						if (destFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
-							// New destination is before old destination
-							// Insert new dest infront of old dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
-							// Insert starting floor to stop at as first dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
-							System.out.println("Down new dest infront of old");
-						} else {
-							// BOTH DOWN, new Dest is after old dest
-							// Remove old dest to be able to put new dest after it
-							int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
-							// Insert new dest infront
-							elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
-							// Insert old dest infront of new dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
-							// Insert starting floor to stop at as first dest
-							elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
-							System.out.println("Down new dest after old");
-						}
+			synchronized (this.elevatorQueueMap) {
+				if (latestData.getState() == ElevatorStates.IDLE || latestData.getState() == ElevatorStates.ARRIVED) { // free elevator
+					Deque<Integer> queue = elevatorQueueMap.get(elevatorNumber);
+					if (queue == null) {
+						Deque<Integer> newDeque = new ArrayDeque<>();
+						newDeque.offerFirst(startFloor);
+						newDeque.offerLast(destFloor);
+						elevatorQueueMap.put(elevatorNumber, newDeque);
+					} else {
+						queue.offerFirst(destFloor);
+						queue.offerFirst(startFloor);
 					}
 
 				} else {
-					// Not on the way, so add at end
-					elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
-					elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
-					System.out.println("else case no interrupt");
+					boolean elevatorGoingUp = latestData.getCurrentFloor() < latestData.getMovingToFloor();
+					boolean newGoingUp = startFloor < destFloor;
+
+					if (elevatorGoingUp == newGoingUp ) { // both going up or both going down
+						if (startFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
+								&& newGoingUp) { // Interrupt needed going down
+							// BOTH UP, new start is before old dest
+							if (destFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
+								// New destination is before old destination
+								// Insert new dest infront of old dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
+								// Insert starting floor to stop at as first dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+								System.out.println("Up new dest infront of old");
+							} else {
+								// BOTH UP, new Dest is after old dest
+								// Remove old dest to be able to put new dest after it
+								int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
+								// Insert new dest infront
+								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
+								// Insert old dest infront of new dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
+								// Insert starting floor to stop at as first dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+								System.out.println("Up new dest after old");
+							}
+
+						} else if (startFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
+								&& !newGoingUp) { // Interrupt needed going down
+							// BOTH DOWN, new start is before old dest
+							if (destFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
+								// New destination is before old destination
+								// Insert new dest infront of old dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
+								// Insert starting floor to stop at as first dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+								System.out.println("Down new dest infront of old");
+							} else {
+								// BOTH DOWN, new Dest is after old dest
+								// Remove old dest to be able to put new dest after it
+								int oldDest = elevatorQueueMap.get(elevatorNumber).removeFirst();
+								// Insert new dest infront
+								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
+								// Insert old dest infront of new dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(oldDest);
+								// Insert starting floor to stop at as first dest
+								elevatorQueueMap.get(elevatorNumber).offerFirst(startFloor);
+								System.out.println("Down new dest after old");
+							}
+						}
+
+					} else {
+						// Not on the way, so add at end
+						elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
+						elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
+						System.out.println("else case no interrupt");
+					}
 				}
 			}
 			ElevatorCommandData message = getElevatorMoveCommand(elevatorQueueMap.get(elevatorNumber).peekFirst(),
