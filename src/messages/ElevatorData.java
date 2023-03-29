@@ -16,6 +16,7 @@ public class ElevatorData implements Serializable {
 	private int movingToFloor;
 	private LocalTime arrivalTime;
 	private int ELEVATOR_NUMBER;
+	private boolean hardFault;
 
 	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor,
 			LocalTime arrivalTime, int elevatorNumber) {
@@ -25,6 +26,18 @@ public class ElevatorData implements Serializable {
 		this.movingToFloor = movingToFloor;
 		this.arrivalTime = arrivalTime;
 		this.ELEVATOR_NUMBER = elevatorNumber;
+		this.hardFault = false;
+	}
+
+	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor,
+			LocalTime arrivalTime, int elevatorNumber, boolean hardFault) {
+		this.state = state;
+		this.prevDirection = prevDirection;
+		this.currentFloor = currentFloor;
+		this.movingToFloor = movingToFloor;
+		this.arrivalTime = arrivalTime;
+		this.ELEVATOR_NUMBER = elevatorNumber;
+		this.hardFault = hardFault;
 	}
 
 	public ElevatorStates getState() {
@@ -53,6 +66,10 @@ public class ElevatorData implements Serializable {
 
 	public int getELEVATOR_NUMBER() {
 		return ELEVATOR_NUMBER;
+	}
+
+	public boolean getHardFault() {
+		return hardFault;
 	}
 
 	@Override

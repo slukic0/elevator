@@ -197,6 +197,14 @@ public class Scheduler implements Runnable {
 				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
+				
+				if (elevatorMessage.getHardFault()) {
+					// Remove elevator from system if unrecoverable fault occurs
+					System.out.println("Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
+					elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+					elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+				}
+
 				if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
 					// Remove the destination now from the queue
 					int floor = elevatorQueueMap.get(elevatorMessage.getELEVATOR_NUMBER()).peek();

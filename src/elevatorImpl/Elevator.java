@@ -258,6 +258,9 @@ public class Elevator implements Runnable {
 					throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
+		elevatorSubsystem.sendSchedulerMessage(
+			new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+					ELEVATOR_NUMBER, true));
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }
