@@ -31,6 +31,10 @@ public class ElevatorData implements Serializable {
 		return state;
 	}
 
+	public void setState(ElevatorStates state) {
+		this.state = state;
+	}
+
 	public ElevatorStates getPrevDirection() {
 		return prevDirection;
 	}

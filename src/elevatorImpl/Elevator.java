@@ -49,20 +49,22 @@ public class Elevator implements Runnable {
 
 	/**
 	 * Returns elevator's own number
+	 * 
 	 * @return int, associated elevator number
 	 */
 	public int getELEVATOR_NUMBER() {
 		return ELEVATOR_NUMBER;
 	}
-	
+
 	/**
 	 * Getter Returns current state
+	 * 
 	 * @return ElevatorState, associated elevator state
 	 */
 	public ElevatorStates getState() {
 		return state;
 	}
-	
+
 	/**
 	 * Set the internal state
 	 * 
@@ -108,35 +110,36 @@ public class Elevator implements Runnable {
 		return this.destinationFloor;
 	}
 
-	public Queue<Integer> getHardFaultQueue(){
+	public Queue<Integer> getHardFaultQueue() {
 		return this.hardFaultQueue;
 	}
 
-	public Queue<Integer> getTransientFaultQueue(){
+	public Queue<Integer> getTransientFaultQueue() {
 		return this.transientFaultQueue;
 	}
-	
+
 	/**
 	 * Process information from floor related to elevator
+	 * 
 	 * @param data FloorData, message from floor
 	 */
 	public void processPacketData(ElevatorCommandData data) {
-		//this.destFloorQueue.offer(data.getDestinationFloor());
-		System.out.println("Set new desintation to " + data.getDestinationFloor()); 
-		this.destinationFloor =  data.getDestinationFloor();
-		if (this.state == ElevatorStates.IDLE) {
-			this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-			this.wake();
-		}
+		// this.destFloorQueue.offer(data.getDestinationFloor());
+		System.out.println("Set new desintation to " + data.getDestinationFloor());
+		synchronized (this) {
+			this.destinationFloor = data.getDestinationFloor();
+			if (this.state == ElevatorStates.IDLE) {
+				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+				this.wake();
+			}
 
-		this.hardFaultQueue.offer(0);
-		this.hardFaultQueue.offer(data.getHardFault());
-		this.transientFaultQueue.offer(0);
-		this.transientFaultQueue.offer(data.getTransientFault());
+			this.hardFaultQueue.offer(0);
+			this.hardFaultQueue.offer(data.getHardFault());
+			this.transientFaultQueue.offer(0);
+			this.transientFaultQueue.offer(data.getTransientFault());
+		}
 	}
-	
-	
-	
+
 	/**
 	 * Triggers synchronized wait function
 	 */
@@ -147,8 +150,7 @@ public class Elevator implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	/**
 	 * Triggers notify thread
 	 */
@@ -164,91 +166,96 @@ public class Elevator implements Runnable {
 		ElevatorStates currState = ElevatorStates.IDLE; // Use to store state before sending data
 		while (!isStuck) {
 			switch (state) {
-			case IDLE: {
-				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has no work, asking for work...");
+				case IDLE: {
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has no work, asking for work...");
 
-				// tell the scheduler we have arrived and are IDLE (looking for work)
-				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
-								ELEVATOR_NUMBER));
-				prevDirection = currState;
+					// tell the scheduler we have arrived and are IDLE (looking for work)
+					elevatorSubsystem.sendSchedulerMessage(
+							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+									ELEVATOR_NUMBER));
+					prevDirection = currState;
 
-				pause();
-				break;
-			}
-			case GOING_DOWN:
-			case GOING_UP:
-				// Move the elevator
-				System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
-				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-						destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor), ELEVATOR_NUMBER));
+					pause();
+					break;
+				}
+				case GOING_DOWN:
+				case GOING_UP:
+					// Move the elevator
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
+					elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
+							destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor),
+							ELEVATOR_NUMBER));
 
-				while(currentFloor != destinationFloor) {
-					try {
-						Thread.sleep(2000);
+					while (currentFloor != destinationFloor) {
+						try {
+							Thread.sleep(2000);
 
-						if(destinationFloor - currentFloor > 0){
-							currentFloor++;
-						} else if (destinationFloor - currentFloor < 0){
-							currentFloor--;
+							synchronized (this) {
+								if (destinationFloor - currentFloor > 0) {
+									currentFloor++;
+								} else if (destinationFloor - currentFloor < 0) {
+									currentFloor--;
+								}
+							}
+
+							elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
+									destinationFloor,
+									LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor)),
+									ELEVATOR_NUMBER));
+						} catch (InterruptedException e) {
+							e.printStackTrace();
 						}
-						
-						elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
-								destinationFloor, LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor)), ELEVATOR_NUMBER));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
 					}
-				}
 
-				System.out.println(
-						"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
+					System.out.println(
+							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
 
-				//Check for Timer fault
-				if (this.hardFaultQueue.poll() == 1) {
-					System.out.println("\nTiming event fault\n");
-					isStuck = true;
-				} else {
-					this.state = ElevatorStates.ARRIVED;
-				}
-				break;
-			
-			case ARRIVED:
-				// wait for a bit
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+					// Check for Timer fault
+					if (this.hardFaultQueue.poll() == 1) {
+						System.out.println("\nTiming event fault\n");
+						isStuck = true;
+					} else {
+						this.state = ElevatorStates.ARRIVED;
+					}
+					break;
 
-				if(this.transientFaultQueue.poll() == 1){
-					System.out.println("\nElevator " + ELEVATOR_NUMBER+": Door stuck fault\n");
-					//Handle transient fault
+				case ARRIVED:
+					// wait for a bit
 					try {
-						Thread.sleep(1000);
-						System.out.println("\nElevator " + ELEVATOR_NUMBER +": Door has been fixed\n");
+						Thread.sleep(500);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}
-				
-				// wait for a bit
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				currState = state;
 
-				// Tell the floor we have arrived
-				elevatorSubsystem.sendSchedulerMessage(
-						new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
-								ELEVATOR_NUMBER));
+					if (this.transientFaultQueue.poll() == 1) {
+						System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
+						// Handle transient fault
+						try {
+							Thread.sleep(1000);
+							System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door has been fixed\n");
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
 
-				this.state = ElevatorStates.IDLE;
-				
-				break;
-			default:
-				throw new IllegalArgumentException("Unexpected value: " + state);
+					// wait for a bit
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					currState = state;
+
+					// Tell the floor we have arrived
+					elevatorSubsystem.sendSchedulerMessage(
+							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+									ELEVATOR_NUMBER));
+
+					this.state = ElevatorStates.IDLE;
+
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
