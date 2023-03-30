@@ -25,6 +25,7 @@ public class Elevator implements Runnable {
 	private Queue<Integer> transientFaultQueue;
 	private boolean isStuck;
 	private boolean exitFlag;
+	private boolean sleepFlag;
 
 	/**
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number and its current floor
@@ -46,6 +47,7 @@ public class Elevator implements Runnable {
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
 		this.exitFlag = false;
+		this.sleepFlag = false;
 	}
 
 	/**
@@ -91,12 +93,20 @@ public class Elevator implements Runnable {
 		return this.currentFloor;
 	}
 
-	public void setFlag(){
+	public void setHardFaultFlag(){
 		this.exitFlag = true;
 	}
 
-	public boolean getFlag(){
+	public boolean getHardFaultFlag(){
 		return this.exitFlag;
+	}
+
+	public void setTransientFaultFlag(){
+		this.sleepFlag = true;
+	}
+
+	public boolean getTransientFaultFlag(){
+		return this.sleepFlag;
 	}
 
 	/**
@@ -231,9 +241,12 @@ public class Elevator implements Runnable {
 				elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
 						destinationFloor, LocalTime.now().plusSeconds(2 * diff), ELEVATOR_NUMBER));
 
+				System.out.println("Diff:" + diff);
 				for (int i=1; i <=  Math.abs(diff); i++){
 					try {
 						Thread.sleep(2000);
+
+						System.out.println("HELLO");
 
 						if(diff > 0){
 							currentFloor++;
@@ -256,6 +269,7 @@ public class Elevator implements Runnable {
 					System.out.println("\nTiming event fault\n");
 					setIsStuck();
 				} else {
+					System.out.println("\nElse hit\n");
 					this.state = ElevatorStates.ARRIVED;
 				}
 				break;
@@ -269,6 +283,7 @@ public class Elevator implements Runnable {
 				}
 
 				if(this.transientFaultQueue.poll() == 1){
+					this.setTransientFaultFlag();
 					System.out.println("\nElevator " + ELEVATOR_NUMBER+": Door stuck fault\n");
 					//Handle transient fault
 					try {
@@ -299,7 +314,7 @@ public class Elevator implements Runnable {
 				throw new IllegalArgumentException("Unexpected value: " + state);
 			}
 		}
-		setFlag();
+		setHardFaultFlag();
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }

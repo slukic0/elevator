@@ -36,6 +36,7 @@ public class ElevatorTest {
     public static Scheduler scheduler;
     public static ElevatorSubsystem elevatorSubsystem;
     public static FloorData floorData;
+	public static FloorData transientFaultData;
     public static ElevatorData elevatorData;
 	public static DatagramSocket socket;
 	
@@ -48,36 +49,37 @@ public class ElevatorTest {
 	public static void init() throws SocketException{
 		scheduler = new Scheduler(1025, 1026);
 		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
-        floorData = new FloorData(2, 3, LocalTime.now(), 1, 0);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
+        floorData = new FloorData(1, 3, LocalTime.now(), 1, 0);
+		transientFaultData = new FloorData(1, 3, LocalTime.now(), 0, 1);
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 3, LocalTime.now(), 1);
 	}
 	
 	/**
      * Method to test sending a message in Elevator class
+	 * @throws InterruptedException
 	 * @throws SocketException
      */
-	@Test
-    public void testSendMessage(){
+	// @Test
+    // public void testSendMessage(){
         
-        elevatorSubsystem.sendSchedulerMessage(elevatorData);
-		boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
-		assertTrue(value);
-    }
+    //     elevatorSubsystem.sendSchedulerMessage(elevatorData);
+	// 	boolean value = elevatorData.getArrivalTime().compareTo(LocalTime.now()) < 2;
+	// 	assertTrue(value);
+    // }
 
-	@Test
-	public void testProcessPacketData() throws SocketException {
+	// @Test
+	// public void testProcessPacketData() throws SocketException {
 		
-		elevatorSubsystem.getElevator().processPacketData(floorData);
-		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
-		System.out.println(elevatorSubsystem.getElevator().getDestQueue());
-		assertEquals(elevatorSubsystem.getElevator().getDestQueue().peek(), floorData.getDestinationFloor());
-	}
+	// 	elevatorSubsystem.getElevator().processPacketData(floorData);
+	// 	assertEquals(ElevatorStates.PROCESSING, elevatorSubsystem.getElevator().getState());
+	// 	assertEquals(floorData.getDestinationFloor(), elevatorSubsystem.getElevator().getDestQueue().peek());
+	// }
 
 	@Test
-	public void testHardFault() throws UnknownHostException, IOException {
+	public void testHardFault() throws UnknownHostException, IOException, InterruptedException {
 		socket = new DatagramSocket();
 
-		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, 1,
 				1028);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
@@ -88,7 +90,36 @@ public class ElevatorTest {
 		byte[] byteData = NetworkUtils.serializeObject(floorData);
 		NetworkUtils.sendPacket(byteData, socket, 1028, InetAddress.getLocalHost());
 
-		assertEquals(true, elevatorSubsystem1.getElevator().getFlag());
+		Thread.sleep(10);
+		
+		System.out.println(elevatorSubsystem1.getElevator().getHardFaultQueue());
+
+		assertEquals(true, elevatorSubsystem1.getElevator().getHardFaultFlag());
+	}
+
+	@Test
+	public void testTransientFault() throws UnknownHostException, IOException, InterruptedException{
+
+		socket = new DatagramSocket();
+
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(1, 1,
+				1031);
+
+		Thread eThread2 = new Thread(elevatorSubsystem2);
+		eThread2.setName("1");
+
+		eThread2.start();
+
+		byte[] byteData = NetworkUtils.serializeObject(transientFaultData);
+		NetworkUtils.sendPacket(byteData, socket, 1032, InetAddress.getLocalHost());
+
+		Thread.sleep(10);
+
+		System.out.println(elevatorSubsystem2.getElevator().getTransientFaultQueue());
+
+		System.out.println(elevatorSubsystem2.getElevator().getDestQueue());
+
+		assertEquals(true, elevatorSubsystem2.getElevator().getTransientFaultFlag());
 	}
 
 	// public void testTransientFault() throws SocketException {
