@@ -232,9 +232,10 @@ public class Elevator implements Runnable {
 
 					System.out.println(
 							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
-
+				
 					// Check for Timer fault
 					if (this.hardFaultQueue.poll() == 1) {
+						
 						System.out.println("\nTiming event fault\n");
 						setIsStuck();
 					} else {
