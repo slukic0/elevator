@@ -36,6 +36,10 @@ public class Floor implements Runnable {
 		this.floorReceiveSocket = new DatagramSocket(Constants.FLOOR_RECEIVE_PORT);
 	}
 
+	public Floor(int port) throws SocketException {
+		this.floorReceiveSocket = new DatagramSocket(port);
+	}
+
 	public void sendMessageToScheduler(FloorData data) {
 
 		new Thread(() -> {
@@ -55,6 +59,13 @@ public class Floor implements Runnable {
 		}).start();
 	}
 	
+	/**
+	 * Checks the message received from the scheduler
+	 *
+	 * @param elevatorData		ElevatorData, the data receieved from the scheduler
+	 *
+	 * @return  false if evelatorData is null, else true
+	 */
 	public boolean checkMessage(ElevatorData elevatorData) {
 		if (elevatorData == null) {
 			return false;
@@ -84,6 +95,9 @@ public class Floor implements Runnable {
 		}
 	}
 
+	/**
+	 * Main method to run Floor
+	 */
 	public static void main(String[] args) throws SocketException, IOException {
 		Floor floor = new Floor();
 		Thread fThread = new Thread(floor);

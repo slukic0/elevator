@@ -1,5 +1,8 @@
 package elevatorImpl;
 
+/**
+ * Enum Class for the different Scheduler States
+ */
 public enum SchedulerStates {
 	WOKRING,
 	IDLE,

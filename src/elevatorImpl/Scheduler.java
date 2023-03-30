@@ -56,8 +56,29 @@ public class Scheduler implements Runnable {
 		this.state = SchedulerStates.IDLE;
 	}
 
+	/**
+	 * Constructor created for test
+	 * @param elevatorPort
+	 * @param floorPort
+	 * @throws SocketException
+	 */
+	public Scheduler(int elevatorPort, int floorPort) throws SocketException{
+		this.schedulerElevatorSendReceiveSocket = new DatagramSocket(elevatorPort);
+		this.schedulerFloorSendReceiveSocket = new DatagramSocket(floorPort);
+
+		this.elevatorMap = new HashMap<>();
+
+		this.elevatorQueueMap = new HashMap<>();
+
+		this.state = SchedulerStates.IDLE;
+	}
+
 	public DatagramSocket getFloorSocket() {
 		return this.schedulerFloorSendReceiveSocket;
+	}
+
+	public void setElevatorMap(HashMap<Integer, ElevatorStatus> elevatorMap) {
+		this.elevatorMap = elevatorMap;
 	}
 
 	/*
@@ -368,10 +389,15 @@ public class Scheduler implements Runnable {
 		}).start();
 	}
 
+	/**
+	 * Main method to run Scheduler
+	 */
 	public static void main(String[] args) throws SocketException {
 		Scheduler scheduler = new Scheduler();
 		Thread sThread = new Thread(scheduler);
 		sThread.start();
 		System.out.println("Scheduler starting...");
 	}
+
+
 }

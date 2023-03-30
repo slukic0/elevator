@@ -1,4 +1,3 @@
-
 package elevatorTests;
 import messages.ElevatorData;
 import messages.FloorData;
@@ -8,15 +7,11 @@ import org.junit.jupiter.api.*;
 
 import elevatorImpl.*;
 
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.lang.module.FindException;
 import java.net.SocketException;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 
 
 /**
@@ -30,44 +25,56 @@ public class SchedulerTest {
     public static Floor floor;
     public static Scheduler scheduler;
     public static Elevator elevator;
+	public static ElevatorSubsystem elevatorSubsystem;
     public static FloorData floorData;
     public static ElevatorData elevatorData;
-    public static ElevatorSubsystem elevatorSubsystem;
+	public static ElevatorData elevatorData2;
 	public static HashMap<Integer, Boolean> floorUpButtonsMap;
 	public static HashMap<Integer, Boolean> floorDownButtonsMap;
+	public static HashMap<Integer, ElevatorStatus> elevatorMap;
+	public static ElevatorStatus status;
+	public static ElevatorStatus status2;
+	public int[] elevatorArray;
+
 
     /**
      * Initializes the variables that will be used to test the methods in the Scheduler Class
+     * @throws SocketException
      */
-	@BeforeEach
-	public static void init(){
-
-        Queue<Object> schedulerQueue = new LinkedList<>();
-		Queue<FloorData> floorQueue = new LinkedList<>();
-		Queue<ElevatorData> elevatorQueue = new LinkedList<>();
-
-        Floor[] floors = new Floor[] { floor };
-		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
-		elevatorSubsystems.add(elevatorSubsystem);
+	@BeforeAll
+	public static void init() throws SocketException{
 		
-		try {
-			floor = new Floor();
-			scheduler = new Scheduler();
-	        elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        floorData = new FloorData(1, 2, LocalTime.now());
+		floor = new Floor(1025);
+		scheduler = new Scheduler(1026, 1027);
+		// elevatorSubsystem = new ElevatorSubsystem(1, 1, 1028);
+        // floorData = new FloorData(1, 2, true, LocalTime.now(), 1, 1);
+		elevatorData = new ElevatorData(ElevatorStates.IDLE, null, 0, 0, null, 0);
+        elevatorData2 = new ElevatorData(ElevatorStates.GOING_DOWN, null, 2, 0, null, 0);
+        status = new ElevatorStatus(null, 0, elevatorData);
+        status2 = new ElevatorStatus(null, 0, elevatorData2);
 
-    }
-	
-	
-	@Test 
-	public void findElevatorForMove() {
-		
-	}
-	
-	
+    }	
 
+	@Test
+	public void testFindClosestElevator() throws SocketException{
+		scheduler = new Scheduler(1026, 1027);
+		elevatorMap = new HashMap<Integer, ElevatorStatus>(){};
+		int closestElevator = 0;
+
+		// Check if function grabs the closest IDLE elevator
+		elevatorMap.put(1, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.IDLE, null, 5, 5, null, 1)));
+		elevatorMap.put(2, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_UP, null, 2, 5, null, 2)));
+		scheduler.setElevatorMap(elevatorMap);
+
+		closestElevator = scheduler.findClosestElevator(7, false);
+		assertEquals(1, closestElevator);
+
+		elevatorMap.put(3, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_DOWN, null, 8, 3, null, 3)));
+
+		closestElevator = scheduler.findClosestElevator(4, true);
+		assertEquals(2, closestElevator);
+
+		closestElevator = scheduler.findClosestElevator(4, false);
+		assertEquals(3, closestElevator);
+	} 	
 }

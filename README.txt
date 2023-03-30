@@ -4,10 +4,10 @@ Stefan Lukic 101156711
 Nicolas Tanouchev 101143947
 Pranav Hari 101144482
 
-Milestone 3
+Milestone 4
 
 Files contained:
-src/elevatorImpl: Elevator.java, Floor.java,  Message.java, Main.java
+src/elevatorImpl:
   Constants.java: Constants file
   Elevator.java: Contains client class for Elevator object
   ElevatorStates.java: Enum states class for elevator states
@@ -27,12 +27,12 @@ src/messages:
   ElevatorData: Message structure used to send data about an elevator
   FloorData: Message structure used to send data about a floor button
   
-src/elevatorTests: SchedulerTests.java, ElevatorTests.java, FloorTests.java, events.txt
-  SchedulerTests: Contains tests for Scheduler class
-  ElevatorTests: Contains tests for Elevator class
-  FloorTests: Contains tests for Floor class
+src/elevatorTests:
   ElevatorSubsystemTests: Contains tests for ElevatorSubsystem class
-  events: text file containing data log
+  ElevatorTests: Contains tests for Elevator class
+  events.txt: text file containing data log
+  FloorTests: Contains tests for Floor class
+  SchedulerTests: Contains tests for Scheduler class
 
 src/diagrams:
   M1_sequence.png - Sequence diagram
@@ -50,6 +50,12 @@ To run:
 3. Run the main method found in Floor.java
 
 Task Breakdown for Iteration 3:
-Iteration 3 code implementation, debugging and testing: Filip Lukic, Stefan Lukic, Nicolas Tanouchev
+Iteration 3 code implementation, debugging and testing: Filip Lukic, Stefan Lukic, Nicolas Tanouchev, Christopher Semaan
 Unit testing: Pranav Hari
 UML Diagrams: Christopher Semaan
+
+Task Breakdown for Iteration 4:
+Iteration 4 code implementation (Implement and handle hard and transient faults): Nicolas Tanouchev, Christopher Semaan
+Iteration 4 code implementation (Elevator algorithm and interrupts): Filip Lukic, Stefan Lukic,
+Unit testing: Pranav Hari
+UML Diagrams: 

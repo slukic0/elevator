@@ -23,17 +23,17 @@ public class Elevator implements Runnable {
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
 	private boolean isStuck;
+	private boolean exitFlag;
 
 	/**
-	 * Creates an elevator with shared synchronized message queues, the elevator
-	 * number and its current floor
+	 * Creates an elevator ties to an Elevator Subsystem with the elevator number
+	 * and its current floor
 	 * 
-	 * @param receiveQueue   the synchronized message queue to receive information
-	 *                       from the Scheduler
-	 * @param subsystemQueue the synchronized message queue to send information to
-	 *                       the Scheduler
-	 * @param elevatorNumber the elevator number
-	 * @param currentFloor   the elevator's current floor
+	 * @param elevatorSubsystem the synchronized message queue to receive
+	 *                          information
+	 *                          from the Scheduler
+	 * @param elevatorNumber    the elevator number
+	 * @param currentFloor      the elevator's current floor
 	 */
 	public Elevator(ElevatorSubsystem elevatorSubsystem, int elevatorNumber, int currentFloor) {
 		this.elevatorSubsystem = elevatorSubsystem;
@@ -45,6 +45,7 @@ public class Elevator implements Runnable {
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
+		this.exitFlag = false;
 	}
 
 	/**
@@ -92,6 +93,14 @@ public class Elevator implements Runnable {
 		return this.currentFloor;
 	}
 
+	public void setFlag() {
+		this.exitFlag = true;
+	}
+
+	public boolean getFlag() {
+		return this.exitFlag;
+	}
+
 	/**
 	 * Sets the elevator's current floor
 	 * 
@@ -114,12 +123,18 @@ public class Elevator implements Runnable {
 		return this.hardFaultQueue;
 	}
 
+	/**
+	 * Gets the elevator's transient fault queue
+	 * 
+	 * @return transientFaultQueue the elevator's transient fault queue
+	 */
 	public Queue<Integer> getTransientFaultQueue() {
 		return this.transientFaultQueue;
 	}
 
 	/**
-	 * Process information from floor related to elevator
+	 * Process information from floor related to elevator, including
+	 * starting and destination floors, and faults
 	 * 
 	 * @param data FloorData, message from floor
 	 */
@@ -138,6 +153,14 @@ public class Elevator implements Runnable {
 			this.transientFaultQueue.offer(0);
 			this.transientFaultQueue.offer(data.getTransientFault());
 		}
+	}
+
+	public void setIsStuck() {
+		this.isStuck = true;
+	}
+
+	public boolean getIsStuck() {
+		return this.isStuck;
 	}
 
 	/**
@@ -213,7 +236,7 @@ public class Elevator implements Runnable {
 					// Check for Timer fault
 					if (this.hardFaultQueue.poll() == 1) {
 						System.out.println("\nTiming event fault\n");
-						isStuck = true;
+						setIsStuck();
 					} else {
 						this.state = ElevatorStates.ARRIVED;
 					}
@@ -231,7 +254,7 @@ public class Elevator implements Runnable {
 						System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
 						// Handle transient fault
 						try {
-							Thread.sleep(1000);
+							Thread.sleep(2000);
 							System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door has been fixed\n");
 						} catch (InterruptedException e) {
 							e.printStackTrace();
@@ -259,8 +282,9 @@ public class Elevator implements Runnable {
 			}
 		}
 		elevatorSubsystem.sendSchedulerMessage(
-			new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
-					ELEVATOR_NUMBER, true));
+				new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+						ELEVATOR_NUMBER, true));
+		setFlag();
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }

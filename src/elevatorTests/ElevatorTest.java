@@ -2,6 +2,7 @@
 package elevatorTests;
 import messages.ElevatorData;
 import messages.FloorData;
+import util.NetworkUtils;
 
 import org.junit.jupiter.api.*;
 
@@ -10,9 +11,16 @@ import elevatorImpl.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
+
+import javax.print.attribute.standard.DateTimeAtCompleted;
 
 
 /**
@@ -29,6 +37,8 @@ public class ElevatorTest {
     public static ElevatorSubsystem elevatorSubsystem;
     public static FloorData floorData;
     public static ElevatorData elevatorData;
+	public static DatagramSocket socket;
+	
 
     /**
      * Initializes the variables that will be used to test the methods in the Elevator Class
@@ -36,18 +46,15 @@ public class ElevatorTest {
      */
 	@BeforeAll
 	public static void init() throws SocketException{
-		System.out.println("INIT CALLED!!!!!!!!!!!");
-		ArrayList<ElevatorSubsystem> elevatorSubsystems = new ArrayList<>(){};
-		elevatorSubsystems.add(elevatorSubsystem);
-		floor = new Floor();
-		scheduler = new Scheduler();
-		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-        floorData = new FloorData(2, 3, LocalTime.now());
+		scheduler = new Scheduler(1025, 1026);
+		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
+        floorData = new FloorData(2, 3, LocalTime.now(), 1, 0);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
-    }
+	}
 	
 	/**
      * Method to test sending a message in Elevator class
+	 * @throws SocketException
      */
 	@Test
     public void testSendMessage(){
@@ -58,13 +65,35 @@ public class ElevatorTest {
     }
 
 	@Test
-	public void testProcessPacketData() {
+	public void testProcessPacketData() throws SocketException {
 		
 		elevatorSubsystem.getElevator().processPacketData(floorData);
 		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
 		System.out.println(elevatorSubsystem.getElevator().getDestQueue());
 		assertEquals(elevatorSubsystem.getElevator().getDestQueue().peek(), floorData.getDestinationFloor());
 	}
+
+	@Test
+	public void testHardFault() throws UnknownHostException, IOException {
+		socket = new DatagramSocket();
+
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+				1028);
+
+		Thread eThread1 = new Thread(elevatorSubsystem1);
+		eThread1.setName("1");
+
+		eThread1.start();
+
+		byte[] byteData = NetworkUtils.serializeObject(floorData);
+		NetworkUtils.sendPacket(byteData, socket, 1028, InetAddress.getLocalHost());
+
+		assertEquals(true, elevatorSubsystem1.getElevator().getFlag());
+	}
+
+	// public void testTransientFault() throws SocketException {
+		
+	// }
 	
 	// @Test
 	// public void testElevatorDestinationFloor() {
