@@ -5,12 +5,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.time.LocalTime;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Map;
 
 import messages.ElevatorData;
@@ -97,7 +94,7 @@ public class Scheduler implements Runnable {
 			// Iterate to find closest elevator, record distance and elevator number
 			elevatorMessage = elevator.getValue().getLatestMessage();
 			if (elevatorMessage.getState() == ElevatorStates.GOING_UP
-					&& elevatorMessage.getCurrentFloor() < requestFloor) {
+					&& elevatorMessage.getCurrentFloor() <= requestFloor) {
 				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
 					diff = requestFloor - elevatorMessage.getCurrentFloor();
 					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
@@ -122,7 +119,7 @@ public class Scheduler implements Runnable {
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
 			elevatorMessage = elevator.getValue().getLatestMessage();
 			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
-					&& elevatorMessage.getCurrentFloor() > requestFloor) {
+					&& elevatorMessage.getCurrentFloor() >= requestFloor) {
 				// Iterate to find closest elevator, record distance and elevator number
 				if (Math.abs(elevatorMessage.getCurrentFloor() - requestFloor) < diff) {
 					diff = Math.abs(elevatorMessage.getCurrentFloor() - requestFloor);
@@ -152,7 +149,7 @@ public class Scheduler implements Runnable {
 					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
 				}
 			}
-			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
+			else if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
 					|| elevatorMessage.getState() == ElevatorStates.GOING_UP) {
 				if (Math.abs(elevatorMessage.getMovingToFloor() - elevatorMessage.getCurrentFloor())
 						+ Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
@@ -300,14 +297,14 @@ public class Scheduler implements Runnable {
 					elevatorMap.get(elevatorNumber).getLatestMessage().setState(newState);
 
 				} else {
+					latestData = elevatorMap.get(elevatorNumber).getLatestMessage();
 					boolean elevatorGoingUp = latestData.getCurrentFloor() < latestData.getMovingToFloor();
-					boolean newGoingUp = startFloor < destFloor;
 
-					if (elevatorGoingUp == newGoingUp) { // both going up or both going down
-						if (startFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
-								&& newGoingUp) { // Interrupt needed going down
+					if (elevatorGoingUp == goingUp) { // both going up or both going down
+						if (startFloor < latestData.getMovingToFloor()
+								&& goingUp && latestData.getCurrentFloor() <= startFloor) { // Interrupt needed going down
 							// BOTH UP, new start is before old dest
-							if (destFloor < elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
+							if (destFloor < latestData.getMovingToFloor()) {
 								// New destination is before old destination
 								// Insert new dest infront of old dest
 								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
@@ -327,10 +324,10 @@ public class Scheduler implements Runnable {
 								System.out.println("Up new dest after old");
 							}
 
-						} else if (startFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()
-								&& !newGoingUp) { // Interrupt needed going down
+						} else if (startFloor > latestData.getMovingToFloor()
+								&& !goingUp && latestData.getCurrentFloor() >= startFloor) { // Interrupt needed going down
 							// BOTH DOWN, new start is before old dest
-							if (destFloor > elevatorMap.get(elevatorNumber).getLatestMessage().getMovingToFloor()) {
+							if (destFloor > latestData.getMovingToFloor()) {
 								// New destination is before old destination
 								// Insert new dest infront of old dest
 								elevatorQueueMap.get(elevatorNumber).offerFirst(destFloor);
@@ -351,7 +348,7 @@ public class Scheduler implements Runnable {
 							}
 						}
 
-					} else {
+					} else { //  Elevator is going one way, floor is going the other way
 						// Not on the way, so add at end
 						elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
 						elevatorQueueMap.get(elevatorNumber).addLast(destFloor);

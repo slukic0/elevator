@@ -228,19 +228,20 @@ public class Elevator implements Runnable {
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
+					}if (this.hardFaultQueue.poll() == 1) {
+						
+						System.out.println("\nTiming event fault\n");
+						setIsStuck();
+						break;
+					} else {
+						this.state = ElevatorStates.ARRIVED;
 					}
 
 					System.out.println(
 							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
 				
 					// Check for Timer fault
-					if (this.hardFaultQueue.poll() == 1) {
-						
-						System.out.println("\nTiming event fault\n");
-						setIsStuck();
-					} else {
-						this.state = ElevatorStates.ARRIVED;
-					}
+					
 					break;
 
 				case ARRIVED:
