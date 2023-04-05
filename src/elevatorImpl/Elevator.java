@@ -19,11 +19,11 @@ public class Elevator implements Runnable {
 	private int destinationFloor;
 	private ElevatorSubsystem elevatorSubsystem;
 	private ElevatorStates state;
-	private ElevatorStates prevDirection;
 	private Queue<Integer> hardFaultQueue;
 	private Queue<Integer> transientFaultQueue;
 	private boolean isStuck;
 	private boolean exitFlag;
+	private Thread elevatorThread;
 
 	/**
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number
@@ -36,12 +36,12 @@ public class Elevator implements Runnable {
 	 * @param currentFloor      the elevator's current floor
 	 */
 	public Elevator(ElevatorSubsystem elevatorSubsystem, int elevatorNumber, int currentFloor) {
+		this.elevatorThread = Thread.currentThread();
 		this.elevatorSubsystem = elevatorSubsystem;
 		this.ELEVATOR_NUMBER = elevatorNumber;
 		this.currentFloor = currentFloor;
 		this.destinationFloor = currentFloor;
 		this.state = ElevatorStates.IDLE;
-		this.prevDirection = ElevatorStates.IDLE;
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
@@ -73,15 +73,6 @@ public class Elevator implements Runnable {
 	 */
 	public void setState(ElevatorStates state) {
 		this.state = state;
-	}
-
-	/**
-	 * Getter returns previous direction
-	 * 
-	 * @return ElevatorStates, previous direction of elevator
-	 */
-	public ElevatorStates getPrevDirection() {
-		return prevDirection;
 	}
 
 	/**
@@ -140,18 +131,22 @@ public class Elevator implements Runnable {
 	 */
 	public void processPacketData(ElevatorCommandData data) {
 		// this.destFloorQueue.offer(data.getDestinationFloor());
-		System.out.println("Set new desintation to " + data.getDestinationFloor());
+		System.out.println("Set new destination to " + data.getDestinationFloor());
 		synchronized (this) {
 			this.destinationFloor = data.getDestinationFloor();
-			if (this.state == ElevatorStates.IDLE) {
-				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-				this.wake();
-			}
 
 			this.hardFaultQueue.offer(0);
 			this.hardFaultQueue.offer(data.getHardFault());
 			this.transientFaultQueue.offer(0);
 			this.transientFaultQueue.offer(data.getTransientFault());
+
+			if (this.state == ElevatorStates.IDLE) {
+				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+				this.wake();
+			} else {
+				System.out.println("processPacketData interrupt");
+				elevatorThread.interrupt();
+			}
 		}
 	}
 
@@ -186,17 +181,15 @@ public class Elevator implements Runnable {
 	 * Runs the elevator's thread
 	 */
 	public void run() {
-		ElevatorStates currState = ElevatorStates.IDLE; // Use to store state before sending data
 		while (!isStuck) {
 			switch (state) {
 				case IDLE: {
-					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " has no work, asking for work...");
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " IDLE...");
 
 					// tell the scheduler we have arrived and are IDLE (looking for work)
 					elevatorSubsystem.sendSchedulerMessage(
-							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+							new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 									ELEVATOR_NUMBER));
-					prevDirection = currState;
 
 					pause();
 					break;
@@ -204,8 +197,8 @@ public class Elevator implements Runnable {
 				case GOING_DOWN:
 				case GOING_UP:
 					// Move the elevator
-					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " Moving to floor " + destinationFloor);
-					elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " moving to floor " + destinationFloor);
+					elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor,
 							destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor),
 							ELEVATOR_NUMBER));
 
@@ -214,22 +207,29 @@ public class Elevator implements Runnable {
 							Thread.sleep(2000);
 
 							synchronized (this) {
+								if (Thread.interrupted()) {
+									throw new InterruptedException();
+								}
 								if (destinationFloor - currentFloor > 0) {
 									currentFloor++;
 								} else if (destinationFloor - currentFloor < 0) {
 									currentFloor--;
 								}
-							}
 
-							elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, prevDirection, currentFloor,
+							}
+							elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor,
 									destinationFloor,
 									LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor)),
 									ELEVATOR_NUMBER));
 						} catch (InterruptedException e) {
-							e.printStackTrace();
+							System.out.println("Interrupted");
+							elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor,
+									destinationFloor,
+									LocalTime.now().plusSeconds(2 * (destinationFloor - currentFloor)),
+									ELEVATOR_NUMBER));
 						}
-					}if (this.hardFaultQueue.poll() == 1) {
-						
+					}
+					if (this.hardFaultQueue.poll() == 1) {
 						System.out.println("\nTiming event fault\n");
 						setIsStuck();
 						break;
@@ -239,15 +239,17 @@ public class Elevator implements Runnable {
 
 					System.out.println(
 							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
-				
+
 					// Check for Timer fault
-					
+
 					break;
 
 				case ARRIVED:
+					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " ARRIVED...");
+
 					// wait for a bit
 					try {
-						Thread.sleep(500);
+						Thread.sleep(2000); // TODO remove IDLE
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -269,11 +271,10 @@ public class Elevator implements Runnable {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					currState = state;
 
 					// Tell the floor we have arrived
 					elevatorSubsystem.sendSchedulerMessage(
-							new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+							new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 									ELEVATOR_NUMBER));
 
 					this.state = ElevatorStates.IDLE;
@@ -284,7 +285,7 @@ public class Elevator implements Runnable {
 			}
 		}
 		elevatorSubsystem.sendSchedulerMessage(
-				new ElevatorData(state, prevDirection, currentFloor, destinationFloor, LocalTime.now(),
+				new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 						ELEVATOR_NUMBER, true));
 		setFlag();
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");

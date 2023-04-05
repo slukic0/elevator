@@ -11,17 +11,15 @@ public class ElevatorData implements Serializable {
 	 */
 	private static final long serialVersionUID = 7724275007090309156L;
 	private ElevatorStates state;
-	private ElevatorStates prevDirection;
 	private int currentFloor;
 	private int movingToFloor;
 	private LocalTime arrivalTime;
 	private int ELEVATOR_NUMBER;
 	private boolean hardFault;
 
-	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor,
+	public ElevatorData(ElevatorStates state, int currentFloor, int movingToFloor,
 			LocalTime arrivalTime, int elevatorNumber) {
 		this.state = state;
-		this.prevDirection = prevDirection;
 		this.currentFloor = currentFloor;
 		this.movingToFloor = movingToFloor;
 		this.arrivalTime = arrivalTime;
@@ -29,10 +27,9 @@ public class ElevatorData implements Serializable {
 		this.hardFault = false;
 	}
 
-	public ElevatorData(ElevatorStates state, ElevatorStates prevDirection, int currentFloor, int movingToFloor,
+	public ElevatorData(ElevatorStates state, int currentFloor, int movingToFloor,
 			LocalTime arrivalTime, int elevatorNumber, boolean hardFault) {
 		this.state = state;
-		this.prevDirection = prevDirection;
 		this.currentFloor = currentFloor;
 		this.movingToFloor = movingToFloor;
 		this.arrivalTime = arrivalTime;
@@ -46,10 +43,6 @@ public class ElevatorData implements Serializable {
 
 	public void setState(ElevatorStates state) {
 		this.state = state;
-	}
-
-	public ElevatorStates getPrevDirection() {
-		return prevDirection;
 	}
 
 	public int getCurrentFloor() {
