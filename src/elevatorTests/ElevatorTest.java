@@ -49,7 +49,7 @@ public class ElevatorTest {
 		scheduler = new Scheduler(1025, 1026);
 		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
         floorData = new FloorData(2, 3, LocalTime.now(), 1, 0);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(), 1);
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 1, 2, LocalTime.now(), 1);
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public class ElevatorTest {
     }
 
 	@Test
-	public void testProcessPacketData() throws SocketException {
+	public void testProcessPacketData() throws SocketException { // TODO Elevator Command Data
 		
 		elevatorSubsystem.getElevator().processPacketData(floorData);
 		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);

@@ -48,8 +48,8 @@ public class SchedulerTest {
 		scheduler = new Scheduler(1026, 1027);
 		// elevatorSubsystem = new ElevatorSubsystem(1, 1, 1028);
         // floorData = new FloorData(1, 2, true, LocalTime.now(), 1, 1);
-		elevatorData = new ElevatorData(ElevatorStates.IDLE, null, 0, 0, null, 0);
-        elevatorData2 = new ElevatorData(ElevatorStates.GOING_DOWN, null, 2, 0, null, 0);
+		elevatorData = new ElevatorData(ElevatorStates.IDLE, 0, 0, null, 0);
+        elevatorData2 = new ElevatorData(ElevatorStates.GOING_DOWN, 2, 0, null, 0);
         status = new ElevatorStatus(null, 0, elevatorData);
         status2 = new ElevatorStatus(null, 0, elevatorData2);
 
@@ -62,14 +62,14 @@ public class SchedulerTest {
 		int closestElevator = 0;
 
 		// Check if function grabs the closest IDLE elevator
-		elevatorMap.put(1, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.IDLE, null, 5, 5, null, 1)));
-		elevatorMap.put(2, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_UP, null, 2, 5, null, 2)));
+		elevatorMap.put(1, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.IDLE, 5, 5, null, 1)));
+		elevatorMap.put(2, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_UP, 2, 5, null, 2)));
 		scheduler.setElevatorMap(elevatorMap);
 
 		closestElevator = scheduler.findClosestElevator(7, false);
 		assertEquals(1, closestElevator);
 
-		elevatorMap.put(3, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_DOWN, null, 8, 3, null, 3)));
+		elevatorMap.put(3, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.GOING_DOWN, 8, 3, null, 3)));
 
 		closestElevator = scheduler.findClosestElevator(4, true);
 		assertEquals(2, closestElevator);

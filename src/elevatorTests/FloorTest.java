@@ -48,7 +48,7 @@ public class FloorTest {
 	public static void init() throws SocketException{
 		
 		floor = new Floor(1028);
-        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, ElevatorStates.GOING_DOWN, 1, 2, LocalTime.now(),1);
+        elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 1, 2, LocalTime.now(),1);
 	}
 	
 	@Test
