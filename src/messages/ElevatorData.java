@@ -60,6 +60,10 @@ public class ElevatorData implements Serializable {
 		return movingToFloor;
 	}
 
+	public void setMovingToFloor(int movingToFloor) {
+		this.movingToFloor = movingToFloor;
+	}
+
 	public LocalTime getArrivalTime() {
 		return arrivalTime;
 	}
