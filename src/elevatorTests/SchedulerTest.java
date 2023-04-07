@@ -1,6 +1,7 @@
 package elevatorTests;
 import messages.ElevatorData;
 import messages.FloorData;
+import util.NetworkUtils;
 
 import org.junit.Test;
 import org.junit.jupiter.api.*;
@@ -10,8 +11,15 @@ import elevatorImpl.*;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.time.LocalTime;
 import java.util.HashMap;
+
+import javax.xml.crypto.Data;
 
 
 /**
@@ -35,6 +43,7 @@ public class SchedulerTest {
 	public static ElevatorStatus status;
 	public static ElevatorStatus status2;
 	public int[] elevatorArray;
+	public DatagramSocket socket;
 
 
     /**
@@ -76,5 +85,19 @@ public class SchedulerTest {
 
 		closestElevator = scheduler.findClosestElevator(4, false);
 		assertEquals(3, closestElevator);
-	} 	
+	}
+	
+	@Test
+	public void testHardFault() throws IOException {
+		Scheduler scheduler = new Scheduler();
+		elevatorMap = new HashMap<Integer, ElevatorStatus>(){};
+		elevatorMap.put(1, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.IDLE, 5, 5, LocalTime.now(), 1, true)));
+		scheduler.setElevatorMap(elevatorMap);
+
+		elevatorData = new ElevatorData(ElevatorStates.IDLE, 5, 5, LocalTime.now(), 1, true);
+
+		scheduler.checkHardFault(elevatorData);
+
+		assertEquals(null, scheduler.getElevatorMap().get(1));
+	}
 }

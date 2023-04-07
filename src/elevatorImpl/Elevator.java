@@ -24,6 +24,7 @@ public class Elevator implements Runnable {
 	private boolean isStuck;
 	private boolean exitFlag;
 	private Thread elevatorThread;
+	private boolean transFlag;
 
 	/**
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number
@@ -46,6 +47,7 @@ public class Elevator implements Runnable {
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
 		this.exitFlag = false;
+		this.transFlag = false;
 	}
 
 	/**
@@ -92,6 +94,14 @@ public class Elevator implements Runnable {
 		return this.exitFlag;
 	}
 
+	public void setTransFlag() {
+		this.exitFlag = true;
+	}
+
+	public boolean getTransFlag() {
+		return this.exitFlag;
+	}
+
 	/**
 	 * Sets the elevator's current floor
 	 * 
@@ -135,9 +145,9 @@ public class Elevator implements Runnable {
 		synchronized (this) {
 			this.destinationFloor = data.getDestinationFloor();
 
-			this.hardFaultQueue.offer(0);
+			// this.hardFaultQueue.offer(0);
 			this.hardFaultQueue.offer(data.getHardFault());
-			this.transientFaultQueue.offer(0);
+			// this.transientFaultQueue.offer(0);
 			this.transientFaultQueue.offer(data.getTransientFault());
 
 			if (this.state == ElevatorStates.IDLE) {
@@ -256,6 +266,7 @@ public class Elevator implements Runnable {
 
 					if (this.transientFaultQueue.poll() == 1) {
 						System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
+						this.setTransFlag();
 						// Handle transient fault
 						try {
 							Thread.sleep(2000);

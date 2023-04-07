@@ -79,6 +79,19 @@ public class Scheduler implements Runnable {
 		this.elevatorMap = elevatorMap;
 	}
 
+	public HashMap<Integer, ElevatorStatus> getElevatorMap() {
+		return this.elevatorMap;
+	}
+
+	public void checkHardFault(ElevatorData elevatorMessage){
+		if (elevatorMessage.getHardFault()) {
+			// Remove elevator from system if unrecoverable fault occurs
+			System.out.println("Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
+			elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+			elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+		}
+	}
+
 	/*
 	 * Checks all up-moving elevators if a floor request is on its way
 	 * e.g. If elevator x is moving from floor 2 to floor 5 and a request to go up
@@ -250,13 +263,18 @@ public class Scheduler implements Runnable {
 				// 		+ elevatorMessage.getState());
 				elevatorMap.put(elevatorNumber, new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
-				if (elevatorMessage.getHardFault()) {
-					// Remove elevator from system if unrecoverable fault occurs
-					System.out.println("Removing elevator " + elevatorNumber
-							+ " from system due to timing fault");
-					elevatorQueueMap.remove(elevatorNumber);
-					elevatorMap.remove(elevatorNumber);
-				}
+				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
+						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
+
+				
+				// if (elevatorMessage.getHardFault()) {
+				// 	// Remove elevator from system if unrecoverable fault occurs
+				// 	System.out.println("Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
+				// 	elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+				// 	elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+				// }
+
+				checkHardFault(elevatorMessage);
 
 				if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
 					System.out.println(elevatorNumber + " arrived at " + elevatorMessage.getCurrentFloor());

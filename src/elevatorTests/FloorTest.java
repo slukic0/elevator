@@ -47,7 +47,7 @@ public class FloorTest {
 	@BeforeAll
 	public static void init() throws SocketException{
 		
-		floor = new Floor(1028);
+		floor = new Floor(1030);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 1, 2, LocalTime.now(),1);
 	}
 	
@@ -62,22 +62,5 @@ public class FloorTest {
 		boolean result = floor.checkMessage(elevatorData);
 		assertTrue(result);
 	}
-
-	// Tests UDP - redundant
-	// /**
-    //  * Method to test sending a message in Floor class
-	//  * @throws IOException
-    //  */
-	// @Test
-    // public void testSendMessage() throws IOException{
-	// 	floor.sendMessageToScheduler(floorData);
-	// 	DatagramPacket packet = NetworkUtils.receivePacket(scheduler.getFloorSocket());
-	// 	FloorData floorMessage = (FloorData) NetworkUtils.deserializeObject(packet);
-	// 	assertEquals(floorData.getDestinationFloor(), floorMessage.getDestinationFloor());
-	// 	assertEquals(floorData.getGoingUp(), floorMessage.getGoingUp());
-	// 	assertEquals(floorData.getStartingFloor(), floorMessage.getStartingFloor());
-	// 	assertTrue(floorData.getTime().compareTo(floorMessage.getTime()) < 2);
-    // }
-	
 
 }

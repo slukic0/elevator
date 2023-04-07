@@ -1,5 +1,6 @@
 
 package elevatorTests;
+import messages.ElevatorCommandData;
 import messages.ElevatorData;
 import messages.FloorData;
 import util.NetworkUtils;
@@ -20,8 +21,6 @@ import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import javax.print.attribute.standard.DateTimeAtCompleted;
-
 
 /**
  * Class for testing the methods in the Elevator Class
@@ -35,9 +34,11 @@ public class ElevatorTest {
     public static Elevator elevator;
     public static Scheduler scheduler;
     public static ElevatorSubsystem elevatorSubsystem;
-    public static FloorData floorData;
+    public static ElevatorCommandData floorData;
+	public static ElevatorCommandData transFaultData;
     public static ElevatorData elevatorData;
 	public static DatagramSocket socket;
+	public static ElevatorCommandData processData;
 	
 
     /**
@@ -48,7 +49,9 @@ public class ElevatorTest {
 	public static void init() throws SocketException{
 		scheduler = new Scheduler(1025, 1026);
 		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
-        floorData = new FloorData(2, 3, LocalTime.now(), 1, 0);
+        floorData = new ElevatorCommandData(3,1,0);
+		processData = new ElevatorCommandData(2 , 1, 1);
+		transFaultData = new ElevatorCommandData(3,0,1);
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 1, 2, LocalTime.now(), 1);
 	}
 	
@@ -65,16 +68,16 @@ public class ElevatorTest {
     }
 
 	@Test
-	public void testProcessPacketData() throws SocketException { // TODO Elevator Command Data
+	public void testProcessPacketDataHardFault() throws SocketException {
 		
-		elevatorSubsystem.getElevator().processPacketData(floorData);
-		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.PROCESSING);
-		System.out.println(elevatorSubsystem.getElevator().getDestQueue());
-		assertEquals(elevatorSubsystem.getElevator().getDestQueue().peek(), floorData.getDestinationFloor());
+		elevatorSubsystem.getElevator().processPacketData(processData);
+		assertEquals(elevatorSubsystem.getElevator().getState(), ElevatorStates.GOING_UP);
+		assertEquals(1, elevatorSubsystem.getElevator().getHardFaultQueue().peek());
+		assertEquals(1, elevatorSubsystem.getElevator().getTransientFaultQueue().peek());
 	}
 
-	@Test
-	public void testHardFault() throws UnknownHostException, IOException {
+	@Test 
+	public void testHardFault() throws IOException {
 		socket = new DatagramSocket();
 
 		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
@@ -85,53 +88,43 @@ public class ElevatorTest {
 
 		eThread1.start();
 
+		System.out.println(elevatorSubsystem1.getElevator().getHardFaultQueue());
+
 		byte[] byteData = NetworkUtils.serializeObject(floorData);
 		NetworkUtils.sendPacket(byteData, socket, 1028, InetAddress.getLocalHost());
+
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		assertEquals(true, elevatorSubsystem1.getElevator().getFlag());
 	}
 
-	// public void testTransientFault() throws SocketException {
-		
-	// }
-	
-	// @Test
-	// public void testElevatorDestinationFloor() {
-	//   try {
-	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
-	// 		assertEquals(elevatorData.getMovingToFloor(), elevatorSubsystem.getElevator().getDestinationFloor());
-	// 	} catch (SocketException e) {
-	// 		// TODO Auto-generated catch block
-	// 		e.printStackTrace();
-	// 	}
-	// }
-	
-	// @Test
-	// public void testElevatorStartingFloor() {
-	//   try {
-	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
-	// 		assertEquals(elevatorData.getCurrentFloor(), elevatorSubsystem.getElevator().getCurrentFloor());
-	// 	} catch (SocketException e) {
-	// 		// TODO Auto-generated catch block
-	// 		e.printStackTrace();
-	// 	}
-	// }
-	
-	// @Test
-	// public void testElevatorPrevDirectionFloor() {
-	//   try {
-	// 		elevatorSubsystem = new ElevatorSubsystem(1, 1, Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-	// 		elevatorSubsystem.sendSchedulerMessage(elevatorData);
-	// 		assertEquals(elevatorData.getPrevDirection(), elevatorSubsystem.getElevator().getPrevDirection());
-	// 	} catch (SocketException e) {
-	// 		// TODO Auto-generated catch block
-	// 		e.printStackTrace();
-	// 	}
-	// }
-	
+	@Test
+	public void testTransientFault() throws IOException {
+		socket = new DatagramSocket();
 
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+				1029);
 
+		Thread eThread2 = new Thread(elevatorSubsystem2);
+		eThread2.setName("1");
+		eThread2.start();
+
+		byte[] byteData = NetworkUtils.serializeObject(transFaultData);
+		NetworkUtils.sendPacket(byteData, socket, 1029, InetAddress.getLocalHost());
+
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		assertEquals(true, elevatorSubsystem2.getElevator().getTransFlag());
+	}
 
 }
