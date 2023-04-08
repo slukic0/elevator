@@ -25,6 +25,7 @@ public class Elevator implements Runnable {
 	private boolean exitFlag;
 	private Thread elevatorThread;
 	private boolean transFlag;
+	private String textBufferString = "                                  ";
 
 	/**
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number
@@ -141,6 +142,7 @@ public class Elevator implements Runnable {
 	 */
 	public void processPacketData(ElevatorCommandData data) {
 		// this.destFloorQueue.offer(data.getDestinationFloor());
+		System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 		System.out.println("Set new destination to " + data.getDestinationFloor());
 		synchronized (this) {
 			this.destinationFloor = data.getDestinationFloor();
@@ -154,7 +156,7 @@ public class Elevator implements Runnable {
 				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 				this.wake();
 			} else {
-				System.out.println("processPacketData interrupt");
+				//System.out.println("processPacketData interrupt");
 				elevatorThread.interrupt();
 			}
 		}
@@ -183,7 +185,8 @@ public class Elevator implements Runnable {
 	 * Triggers notify thread
 	 */
 	private synchronized void wake() {
-		System.out.println("Waking elevator");
+		//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+		//System.out.println("Waking elevator " + this.ELEVATOR_NUMBER);
 		this.notify();
 	}
 
@@ -194,7 +197,8 @@ public class Elevator implements Runnable {
 		while (!isStuck) {
 			switch (state) {
 				case IDLE: {
-					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " IDLE...");
+					//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+					//System.out.println("Elevator " + this.ELEVATOR_NUMBER + " IDLE...");
 
 					// tell the scheduler we have arrived and are IDLE (looking for work)
 					elevatorSubsystem.sendSchedulerMessage(
@@ -207,6 +211,7 @@ public class Elevator implements Runnable {
 				case GOING_DOWN:
 				case GOING_UP:
 					// Move the elevator
+					System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " moving to floor " + destinationFloor);
 					elevatorSubsystem.sendSchedulerMessage(new ElevatorData(state, currentFloor,
 							destinationFloor, LocalTime.now().plusSeconds(2 * destinationFloor - currentFloor),
@@ -240,13 +245,15 @@ public class Elevator implements Runnable {
 						}
 					}
 					if (this.hardFaultQueue.poll() == 1) {
-						System.out.println("\nTiming event fault\n");
+						System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+						System.out.println("Elevator " + ELEVATOR_NUMBER + ": Timing event fault\n");
 						setIsStuck();
 						break;
 					} else {
 						this.state = ElevatorStates.ARRIVED;
 					}
 
+					System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 					System.out.println(
 							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
 
@@ -255,7 +262,7 @@ public class Elevator implements Runnable {
 					break;
 
 				case ARRIVED:
-					System.out.println("Elevator " + this.ELEVATOR_NUMBER + " ARRIVED...");
+					//System.out.println("Elevator " + this.ELEVATOR_NUMBER + " ARRIVED...");
 
 					// wait for a bit
 					try {
@@ -265,12 +272,14 @@ public class Elevator implements Runnable {
 					}
 
 					if (this.transientFaultQueue.poll() == 1) {
-						System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
+						System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+						System.out.println("Elevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
 						this.setTransFlag();
 						// Handle transient fault
 						try {
 							Thread.sleep(2000);
-							System.out.println("\nElevator " + ELEVATOR_NUMBER + ": Door has been fixed\n");
+							System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+							System.out.println("Elevator " + ELEVATOR_NUMBER + ": Door has been fixed\n");
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -299,6 +308,7 @@ public class Elevator implements Runnable {
 				new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 						ELEVATOR_NUMBER, true));
 		setFlag();
+		System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 		System.err.println("Elevator " + ELEVATOR_NUMBER + " shutdown");
 	}
 }

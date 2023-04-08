@@ -72,7 +72,7 @@ public class ElevatorSubsystem implements Runnable {
 			try {
 				DatagramPacket elevatorCommandMessage = NetworkUtils.receivePacket(elevatorSendReceiveSocket);
 				ElevatorCommandData message = (ElevatorCommandData) NetworkUtils.deserializeObject(elevatorCommandMessage);
-				System.out.println("Elevator "+ Thread.currentThread().getName() +" Got Message: " + message.toString());
+				//System.out.println("Elevator "+ Thread.currentThread().getName() +" Got Message: " + message.toString());
 				elevator.processPacketData(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -88,13 +88,23 @@ public class ElevatorSubsystem implements Runnable {
 				Constants.ELEVATOR_SYS_RECEIVE_PORT1);
 		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT2);
+		ElevatorSubsystem elevatorSubsystem3 = new ElevatorSubsystem(3, Constants.STARTING_FLOOR,
+				Constants.ELEVATOR_SYS_RECEIVE_PORT3);
+		ElevatorSubsystem elevatorSubsystem4 = new ElevatorSubsystem(4, Constants.STARTING_FLOOR,
+				Constants.ELEVATOR_SYS_RECEIVE_PORT4);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
 		eThread1.setName("1");
 		Thread eThread2 = new Thread(elevatorSubsystem2);
 		eThread2.setName("2");
+		Thread eThread3 = new Thread(elevatorSubsystem3);
+		eThread3.setName("3");
+		Thread eThread4 = new Thread(elevatorSubsystem4);
+		eThread4.setName("4");
 
 		eThread1.start();
 		eThread2.start();
+		eThread3.start();
+		eThread4.start();
 	}
 }

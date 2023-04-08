@@ -12,6 +12,8 @@ public class Constants {
 	public static final int FLOOR_RECEIVE_PORT = 3;
 	public static final int ELEVATOR_SYS_RECEIVE_PORT1 = 4;
 	public static final int ELEVATOR_SYS_RECEIVE_PORT2 = 5;
+	public static final int ELEVATOR_SYS_RECEIVE_PORT3 = 6;
+	public static final int ELEVATOR_SYS_RECEIVE_PORT4 = 7;
 
 	public static final String SCHEDULER_ADDRESS = "127.0.0.1";
 	public static final String FLOOR_ADDRESS = "127.0.0.1";
