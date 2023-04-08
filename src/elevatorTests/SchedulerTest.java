@@ -89,7 +89,7 @@ public class SchedulerTest {
 	
 	@Test
 	public void testHardFault() throws IOException {
-		Scheduler scheduler = new Scheduler();
+		Scheduler scheduler = new Scheduler(1028, 1029);
 		elevatorMap = new HashMap<Integer, ElevatorStatus>(){};
 		elevatorMap.put(1, new ElevatorStatus(null, 0, new ElevatorData(ElevatorStates.IDLE, 5, 5, LocalTime.now(), 1, true)));
 		scheduler.setElevatorMap(elevatorMap);
