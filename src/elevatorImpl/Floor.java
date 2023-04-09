@@ -23,23 +23,30 @@ public class Floor implements Runnable {
 	private DatagramSocket floorReceiveSocket;
 
 	/**
-	 * Creates a floor with shared synchronized message queues and the floor number
+	 * Creates a floor with a receive socket
 	 * 
-	 * @param receiveQueue   the synchronized message queue to receive information
-	 *                       from the Scheduler
-	 * @param schedulerQueue the synchronized message queue to send information to
-	 *                       the Scheduler
-	 * @param floorNumber    the floor's number
 	 * @throws SocketException
 	 */
 	public Floor() throws SocketException {
 		this.floorReceiveSocket = new DatagramSocket(Constants.FLOOR_RECEIVE_PORT);
 	}
 
+	/**
+	 * Creates a floor with a receive socket using a desired port number
+	 * 
+	 * @param port,			int, the port number for the Datagram Socket
+	 * 
+	 * @throws SocketException
+	 */
 	public Floor(int port) throws SocketException {
 		this.floorReceiveSocket = new DatagramSocket(port);
 	}
 
+	/**
+	 * Sends a FloorData message to the scheduler
+	 * 
+	 * @param data,			FloorData, the FloorData to send to the scheduler
+	 */
 	public void sendMessageToScheduler(FloorData data) {
 
 		new Thread(() -> {
@@ -62,7 +69,7 @@ public class Floor implements Runnable {
 	/**
 	 * Checks the message received from the scheduler
 	 *
-	 * @param elevatorData		ElevatorData, the data receieved from the scheduler
+	 * @param elevatorData,		ElevatorData, the data received from the scheduler
 	 *
 	 * @return  false if evelatorData is null, else true
 	 */
