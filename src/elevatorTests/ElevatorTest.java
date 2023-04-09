@@ -47,7 +47,6 @@ public class ElevatorTest {
      */
 	@BeforeAll
 	public static void init() throws SocketException{
-		scheduler = new Scheduler(1025, 1026);
 		elevatorSubsystem = new ElevatorSubsystem(1, 1, 1027);
         floorData = new ElevatorCommandData(3,1,0);
 		processData = new ElevatorCommandData(2 , 1, 1);
@@ -56,7 +55,7 @@ public class ElevatorTest {
 	}
 	
 	/**
-     * Method to test sending a message in Elevator class
+     * Tests the sendSchedulerMessage method in the Elevator class
 	 * @throws SocketException
      */
 	@Test
@@ -67,6 +66,10 @@ public class ElevatorTest {
 		assertTrue(value);
     }
 
+	/**
+	 * Test to check if received packet data is correct
+	 * @throws SocketException
+	 */
 	@Test
 	public void testProcessPacketDataHardFault() throws SocketException {
 		
@@ -76,6 +79,10 @@ public class ElevatorTest {
 		assertEquals(1, elevatorSubsystem.getElevator().getTransientFaultQueue().peek());
 	}
 
+	/**
+	 * Test hard fault handling
+	 * @throws IOException
+	 */
 	@Test 
 	public void testHardFault() throws IOException {
 		socket = new DatagramSocket();
@@ -103,6 +110,10 @@ public class ElevatorTest {
 		assertEquals(true, elevatorSubsystem1.getElevator().getFlag());
 	}
 
+	/**
+	 * Test transient fault handling
+	 * @throws IOException
+	 */
 	@Test
 	public void testTransientFault() throws IOException {
 		socket = new DatagramSocket();

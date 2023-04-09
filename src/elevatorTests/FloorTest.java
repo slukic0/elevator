@@ -41,7 +41,7 @@ public class FloorTest {
 	public static DatagramSocket datagramSocket;
 
 	/**
-	 * Initializes the variables that will be used to test the methods in the Scheduler Class
+	 * Initializes the variables that will be used to test the methods in the Floor Class
 	 * @throws SocketException
 	 */
 	@BeforeAll
@@ -51,12 +51,19 @@ public class FloorTest {
         elevatorData = new ElevatorData(ElevatorStates.GOING_UP, 1, 2, LocalTime.now(),1);
 	}
 	
+	/**
+	 * Test if an invalid message was sent by the scheduler
+	 * @throws SocketException
+	 */
 	@Test
 	public void testInvalidMessage() throws SocketException {
 		boolean result = floor.checkMessage(null);
 		assertFalse(result);
 	}
 	
+	/**
+	 * Test if a valid message was sent by the scheduler
+	 */
 	@Test
 	public void testValidMessage() {
 		boolean result = floor.checkMessage(elevatorData);

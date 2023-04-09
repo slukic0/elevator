@@ -54,7 +54,6 @@ public class SchedulerTest {
 	public static void init() throws SocketException{
 		
 		floor = new Floor(1025);
-		scheduler = new Scheduler(1026, 1027);
 		// elevatorSubsystem = new ElevatorSubsystem(1, 1, 1028);
         // floorData = new FloorData(1, 2, true, LocalTime.now(), 1, 1);
 		elevatorData = new ElevatorData(ElevatorStates.IDLE, 0, 0, null, 0);
@@ -64,6 +63,10 @@ public class SchedulerTest {
 
     }	
 
+	/**
+	 * Test for the algorithm - findClosestElevator method
+	 * @throws SocketException
+	 */
 	@Test
 	public void testFindClosestElevator() throws SocketException{
 		scheduler = new Scheduler(1026, 1027);
@@ -87,6 +90,9 @@ public class SchedulerTest {
 		assertEquals(3, closestElevator);
 	}
 	
+	/*
+	 * Test if the scheduler receives a hard fault 
+	 */
 	@Test
 	public void testHardFault() throws IOException {
 		Scheduler scheduler = new Scheduler(1028, 1029);
