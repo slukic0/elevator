@@ -82,10 +82,11 @@ public class Scheduler implements Runnable {
 		return this.elevatorMap;
 	}
 
-	public void checkHardFault(ElevatorData elevatorMessage){
+	public void checkHardFault(ElevatorData elevatorMessage) {
 		if (elevatorMessage.getHardFault()) {
 			// Remove elevator from system if unrecoverable fault occurs
-			System.out.println("Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
+			System.out.println(
+					"Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
 			elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
 			elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
 		}
@@ -155,7 +156,7 @@ public class Scheduler implements Runnable {
 		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
 			elevatorMessage = elevator.getValue().getLatestMessage();
-			if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+			if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
 				// Iterate to find closest elevator, record distance and elevator number
 				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
 					diff = Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
@@ -256,21 +257,23 @@ public class Scheduler implements Runnable {
 
 			// Update the status of the received elevator data
 			synchronized (this) {
-				// System.out.println("Got E Message: Num " + elevatorMessage.getELEVATOR_NUMBER() + ", Cur "
-				// 		+ elevatorMessage.getCurrentFloor() + ", Dest " + elevatorMessage.getMovingToFloor()
-				// 		+ ", State "
-				// 		+ elevatorMessage.getState());
+				// System.out.println("Got E Message: Num " +
+				// elevatorMessage.getELEVATOR_NUMBER() + ", Cur "
+				// + elevatorMessage.getCurrentFloor() + ", Dest " +
+				// elevatorMessage.getMovingToFloor()
+				// + ", State "
+				// + elevatorMessage.getState());
 				elevatorMap.put(elevatorNumber, new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
 				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
-				
 				// if (elevatorMessage.getHardFault()) {
-				// 	// Remove elevator from system if unrecoverable fault occurs
-				// 	System.out.println("Removing elevator " + elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
-				// 	elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
-				// 	elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+				// // Remove elevator from system if unrecoverable fault occurs
+				// System.out.println("Removing elevator " +
+				// elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
+				// elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
+				// elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
 				// }
 
 				checkHardFault(elevatorMessage);
@@ -289,7 +292,7 @@ public class Scheduler implements Runnable {
 					// inform the floor of the arrival
 					NetworkUtils.sendPacket(elevatorPacket.getData(), schedulerFloorSendReceiveSocket,
 							Constants.FLOOR_RECEIVE_PORT, InetAddress.getByName(Constants.FLOOR_ADDRESS));
-				} else if (elevatorMessage.getState() == ElevatorStates.IDLE) {
+
 					System.out.println(elevatorNumber + " IDLE, getting next floor");
 
 					if (elevatorQueueMap.get(elevatorNumber) != null
@@ -339,7 +342,7 @@ public class Scheduler implements Runnable {
 				// check if we need to interupt the elevator
 				ElevatorData latestData = elevatorMap.get(elevatorNumber).getLatestMessage();
 
-				if (latestData.getState() == ElevatorStates.IDLE) { // free elevator
+				if (latestData.getState() == ElevatorStates.ARRIVED) { // free elevator
 					Deque<Integer> queue = elevatorQueueMap.get(elevatorNumber);
 					if (queue == null) {
 						// create new queue
@@ -351,7 +354,7 @@ public class Scheduler implements Runnable {
 						queue.offerLast(startFloor);
 						queue.offerLast(destFloor);
 					}
-					// set elevator to NOT IDLE
+					// set elevator to NOT ARRIVED
 					ElevatorStates newState = startFloor > elevatorMap.get(elevatorNumber).getLatestMessage()
 							.getCurrentFloor() ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 					elevatorMap.get(elevatorNumber).getLatestMessage().setState(newState);

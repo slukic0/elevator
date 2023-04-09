@@ -41,7 +41,7 @@ public class Elevator implements Runnable {
 		this.ELEVATOR_NUMBER = elevatorNumber;
 		this.currentFloor = currentFloor;
 		this.destinationFloor = currentFloor;
-		this.state = ElevatorStates.IDLE;
+		this.state = ElevatorStates.ARRIVED;
 		this.hardFaultQueue = new LinkedList<Integer>();
 		this.transientFaultQueue = new LinkedList<Integer>();
 		this.isStuck = false;
@@ -150,7 +150,7 @@ public class Elevator implements Runnable {
 			// this.transientFaultQueue.offer(0);
 			this.transientFaultQueue.offer(data.getTransientFault());
 
-			if (this.state == ElevatorStates.IDLE) {
+			if (this.state == ElevatorStates.ARRIVED) {
 				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 				this.wake();
 			} else {
@@ -194,18 +194,6 @@ public class Elevator implements Runnable {
 	public void run() {
 		while (!isStuck) {
 			switch (state) {
-				case IDLE: {
-					//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
-					//System.out.println("Elevator " + this.ELEVATOR_NUMBER + " IDLE...");
-
-					// tell the scheduler we have arrived and are IDLE (looking for work)
-					elevatorSubsystem.sendSchedulerMessage(
-							new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
-									ELEVATOR_NUMBER));
-
-					pause();
-					break;
-				}
 				case GOING_DOWN:
 				case GOING_UP:
 					// Move the elevator
@@ -264,7 +252,7 @@ public class Elevator implements Runnable {
 
 					// wait for a bit
 					try {
-						Thread.sleep(2000); // TODO remove IDLE
+						Thread.sleep(2000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -295,8 +283,7 @@ public class Elevator implements Runnable {
 							new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 									ELEVATOR_NUMBER));
 
-					this.state = ElevatorStates.IDLE;
-
+					pause();
 					break;
 				default:
 					throw new IllegalArgumentException("Unexpected value: " + state);
