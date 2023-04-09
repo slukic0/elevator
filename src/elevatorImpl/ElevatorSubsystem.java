@@ -110,14 +110,5 @@ public class ElevatorSubsystem implements Runnable {
 		eThread2.start();
 		eThread3.start();
 		eThread4.start();
-
-		elevatorSubsystem1.sendSchedulerMessage(new ElevatorData(ElevatorStates.ARRIVED, Constants.STARTING_FLOOR_1,
-				Constants.STARTING_FLOOR_1, LocalTime.now(), 1));
-		elevatorSubsystem1.sendSchedulerMessage(new ElevatorData(ElevatorStates.ARRIVED, Constants.STARTING_FLOOR_2,
-				Constants.STARTING_FLOOR_2, LocalTime.now(), 2));
-		elevatorSubsystem1.sendSchedulerMessage(new ElevatorData(ElevatorStates.ARRIVED, Constants.STARTING_FLOOR_3,
-				Constants.STARTING_FLOOR_3, LocalTime.now(), 3));
-		elevatorSubsystem1.sendSchedulerMessage(new ElevatorData(ElevatorStates.ARRIVED, Constants.STARTING_FLOOR_4,
-				Constants.STARTING_FLOOR_4, LocalTime.now(), 4));
 	}
 }

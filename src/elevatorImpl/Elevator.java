@@ -257,7 +257,7 @@ public class Elevator implements Runnable {
 						e.printStackTrace();
 					}
 
-					if (this.transientFaultQueue.poll() == 1) {
+					if (this.transientFaultQueue.peek() != null &&  this.transientFaultQueue.poll() == 1) {
 						System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 						System.out.println("Elevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
 						this.setTransFlag();
