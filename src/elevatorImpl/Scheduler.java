@@ -30,7 +30,6 @@ public class Scheduler implements Runnable {
 	public HashMap<Integer, Deque<Integer>> elevatorQueueMap;
 
 	private final int NUMBER_OF_FLOORS = Constants.NUMBER_OF_FLOORS;
-	private final int STARTING_FLOOR = Constants.STARTING_FLOOR;
 
 	private SchedulerStates state;
 

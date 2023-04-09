@@ -85,13 +85,13 @@ public class ElevatorSubsystem implements Runnable {
 	 * Creates 4 Elevators
 	 */
 	public static void main(String[] args) throws SocketException {
-		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR_1,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT1);
-		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(2, Constants.STARTING_FLOOR_2,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT2);
-		ElevatorSubsystem elevatorSubsystem3 = new ElevatorSubsystem(3, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem3 = new ElevatorSubsystem(3, Constants.STARTING_FLOOR_3,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT3);
-		ElevatorSubsystem elevatorSubsystem4 = new ElevatorSubsystem(4, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem4 = new ElevatorSubsystem(4, Constants.STARTING_FLOOR_4,
 				Constants.ELEVATOR_SYS_RECEIVE_PORT4);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
