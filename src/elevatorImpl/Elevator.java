@@ -31,10 +31,8 @@ public class Elevator implements Runnable {
 	 * Creates an elevator ties to an Elevator Subsystem with the elevator number
 	 * and its current floor
 	 * 
-	 * @param elevatorSubsystem the synchronized message queue to receive
-	 *                          information
-	 *                          from the Scheduler
-	 * @param elevatorNumber    the elevator number
+	 * @param elevatorSubsystem the subsystem associated with this elevator
+	 * @param elevatorNumber    the elevator number, must be unique
 	 * @param currentFloor      the elevator's current floor
 	 */
 	public Elevator(ElevatorSubsystem elevatorSubsystem, int elevatorNumber, int currentFloor) {
@@ -171,7 +169,7 @@ public class Elevator implements Runnable {
 	}
 
 	/**
-	 * Triggers synchronized wait function
+	 * Tell the elevator thread to wait
 	 */
 	private synchronized void pause() {
 		try {
@@ -182,7 +180,7 @@ public class Elevator implements Runnable {
 	}
 
 	/**
-	 * Triggers notify thread
+	 * Notify the elevator thread
 	 */
 	private synchronized void wake() {
 		//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));

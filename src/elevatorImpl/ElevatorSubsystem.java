@@ -16,12 +16,12 @@ public class ElevatorSubsystem implements Runnable {
 	private DatagramSocket elevatorSendReceiveSocket;;
 
 	/**
-	 * Creates Elevator Subsystem object
+	 * Elevator Subsystem Constructor
+	 * Creates a new elevator subsystem and an associated elevator
 	 * 
-	 * @param receiveQueue          Queue for information received from floor
-	 * @param schedulerReceiveQueue Queue for message send to scheduler
-	 * @param elevatorNumber        Associated elevator number
-	 * @param currentFloor          Associated elevator's current floor
+	 * @param elevatorNumber Associated elevator number
+	 * @param currentFloor   Associated elevator's current floor
+	 * @param receivePort    port to receive messages on
 	 * @throws SocketException thrown if socket cannot be created
 	 */
 	public ElevatorSubsystem(int elevatorNumber, int currentFloor, int receivePort) throws SocketException {
@@ -82,6 +82,7 @@ public class ElevatorSubsystem implements Runnable {
 
 	/**
 	 * Main method to run Elevator Subsystem
+	 * Creates 4 Elevators
 	 */
 	public static void main(String[] args) throws SocketException {
 		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
