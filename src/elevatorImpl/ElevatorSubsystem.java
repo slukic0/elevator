@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.time.LocalTime;
 
 import messages.ElevatorCommandData;
 import messages.ElevatorData;
@@ -71,8 +72,10 @@ public class ElevatorSubsystem implements Runnable {
 		while (true) {
 			try {
 				DatagramPacket elevatorCommandMessage = NetworkUtils.receivePacket(elevatorSendReceiveSocket);
-				ElevatorCommandData message = (ElevatorCommandData) NetworkUtils.deserializeObject(elevatorCommandMessage);
-				//System.out.println("Elevator "+ Thread.currentThread().getName() +" Got Message: " + message.toString());
+				ElevatorCommandData message = (ElevatorCommandData) NetworkUtils
+						.deserializeObject(elevatorCommandMessage);
+				// System.out.println("Elevator "+ Thread.currentThread().getName() +" Got
+				// Message: " + message.toString());
 				elevator.processPacketData(message);
 			} catch (IOException e) {
 				e.printStackTrace();
