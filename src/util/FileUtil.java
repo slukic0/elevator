@@ -10,6 +10,13 @@ import java.util.ArrayList;
 import messages.FloorData;
 
 public class FileUtil {
+	/**
+	 * method to read each line in events file
+	 * @param myClass
+	 * @param filePath relative path to events
+	 * @return array with each line
+	 * @throws IOException
+	 */
 	public static String[] readFile(Class<?> myClass, String filePath) throws IOException {
 		if (myClass == null)
 			throw new IllegalArgumentException();
@@ -30,6 +37,11 @@ public class FileUtil {
 		return lines.toArray(new String[lines.size()]);
 	}
 
+	/**
+	 * Method to parse each string into variables
+	 * @param lines array of strings
+	 * @return floor data of with floor data variables
+	 */
 	public static FloorData[] parseStringInput(String[] lines) {
 		ArrayList<FloorData> data = new ArrayList<>();
 		for (String s : lines) {
