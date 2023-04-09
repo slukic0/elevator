@@ -138,25 +138,23 @@ public class Elevator implements Runnable {
 	 * 
 	 * @param data FloorData, message from floor
 	 */
-	public void processPacketData(ElevatorCommandData data) {
-		// this.destFloorQueue.offer(data.getDestinationFloor());
+	public synchronized void processPacketData(ElevatorCommandData data) {
 		System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 		System.out.println("Set new destination to " + data.getDestinationFloor());
-		synchronized (this) {
-			this.destinationFloor = data.getDestinationFloor();
 
-			// this.hardFaultQueue.offer(0);
-			this.hardFaultQueue.offer(data.getHardFault());
-			// this.transientFaultQueue.offer(0);
-			this.transientFaultQueue.offer(data.getTransientFault());
+		this.destinationFloor = data.getDestinationFloor();
 
-			if (this.state == ElevatorStates.ARRIVED) {
-				this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
-				this.wake();
-			} else {
-				//System.out.println("processPacketData interrupt");
-				elevatorThread.interrupt();
-			}
+		// this.hardFaultQueue.offer(0);
+		this.hardFaultQueue.offer(data.getHardFault());
+		// this.transientFaultQueue.offer(0);
+		this.transientFaultQueue.offer(data.getTransientFault());
+
+		if (this.state == ElevatorStates.ARRIVED || this.state == ElevatorStates.IDLE) {
+			this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
+			this.wake();
+		} else {
+			System.out.println("processPacketData interrupt");
+			elevatorThread.interrupt();
 		}
 	}
 
@@ -173,6 +171,8 @@ public class Elevator implements Runnable {
 	 */
 	private synchronized void pause() {
 		try {
+			System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+			System.out.println("Elevator " + this.ELEVATOR_NUMBER + " sleeping");
 			this.wait();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -183,8 +183,8 @@ public class Elevator implements Runnable {
 	 * Notify the elevator thread
 	 */
 	private synchronized void wake() {
-		//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
-		//System.out.println("Waking elevator " + this.ELEVATOR_NUMBER);
+		System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+		System.out.println("Elevator " + this.ELEVATOR_NUMBER + " waking");
 		this.notify();
 	}
 
@@ -193,7 +193,13 @@ public class Elevator implements Runnable {
 	 */
 	public void run() {
 		while (!isStuck) {
+			System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+			System.out.println("Elevator " + this.ELEVATOR_NUMBER + " " + state.toString());
 			switch (state) {
+				case IDLE:
+					pause();
+					break;
+
 				case GOING_DOWN:
 				case GOING_UP:
 					// Move the elevator
@@ -205,9 +211,8 @@ public class Elevator implements Runnable {
 
 					while (currentFloor != destinationFloor) {
 						try {
-							Thread.sleep(2000);
-
 							synchronized (this) {
+								Thread.sleep(2000);
 								if (Thread.interrupted()) {
 									throw new InterruptedException();
 								}
@@ -230,6 +235,7 @@ public class Elevator implements Runnable {
 									ELEVATOR_NUMBER));
 						}
 					}
+					// Check for Timer fault
 					if (this.hardFaultQueue.poll() == 1) {
 						System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 						System.out.println("Elevator " + ELEVATOR_NUMBER + ": Timing event fault\n");
@@ -243,12 +249,10 @@ public class Elevator implements Runnable {
 					System.out.println(
 							"Elevator " + ELEVATOR_NUMBER + " has arrived at floor " + currentFloor);
 
-					// Check for Timer fault
-
 					break;
 
 				case ARRIVED:
-					//System.out.println("Elevator " + this.ELEVATOR_NUMBER + " ARRIVED...");
+					// System.out.println("Elevator " + this.ELEVATOR_NUMBER + " ARRIVED...");
 
 					// wait for a bit
 					try {
@@ -257,7 +261,7 @@ public class Elevator implements Runnable {
 						e.printStackTrace();
 					}
 
-					if (this.transientFaultQueue.peek() != null &&  this.transientFaultQueue.poll() == 1) {
+					if (this.transientFaultQueue.peek() != null && this.transientFaultQueue.poll() == 1) {
 						System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 						System.out.println("Elevator " + ELEVATOR_NUMBER + ": Door stuck fault\n");
 						this.setTransFlag();
@@ -275,7 +279,6 @@ public class Elevator implements Runnable {
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 					}
 
 					// Tell the floor we have arrived
@@ -283,8 +286,14 @@ public class Elevator implements Runnable {
 							new ElevatorData(state, currentFloor, destinationFloor, LocalTime.now(),
 									ELEVATOR_NUMBER));
 
-					pause();
+					synchronized (this) {
+						if (this.state == ElevatorStates.ARRIVED) {
+							// we haven't gotten any new packets yet, so we we will sleep
+							this.state = ElevatorStates.IDLE;
+						}
+					}
 					break;
+
 				default:
 					throw new IllegalArgumentException("Unexpected value: " + state);
 			}
