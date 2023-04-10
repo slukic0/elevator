@@ -78,6 +78,10 @@ public class Scheduler implements Runnable {
 		this.elevatorMap = elevatorMap;
 	}
 
+	public void setElevatorQueueMap(HashMap<Integer, Deque<Integer>> elevatorQueueMap) {
+		this.elevatorQueueMap = elevatorQueueMap;
+	}
+
 	public HashMap<Integer, ElevatorStatus> getElevatorMap() {
 		return this.elevatorMap;
 	}
