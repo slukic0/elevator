@@ -268,24 +268,10 @@ public class Scheduler implements Runnable {
 
 			// Update the status of the received elevator data
 			synchronized (this) {
-				// System.out.println("Got E Message: Num " +
-				// elevatorMessage.getELEVATOR_NUMBER() + ", Cur "
-				// + elevatorMessage.getCurrentFloor() + ", Dest " +
-				// elevatorMessage.getMovingToFloor()
-				// + ", State "
-				// + elevatorMessage.getState());
 				elevatorMap.put(elevatorNumber, new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
 
 				elevatorMap.put(elevatorMessage.getELEVATOR_NUMBER(),
 						new ElevatorStatus(senderAddress, senderPort, elevatorMessage));
-
-				// if (elevatorMessage.getHardFault()) {
-				// // Remove elevator from system if unrecoverable fault occurs
-				// System.out.println("Removing elevator " +
-				// elevatorMessage.getELEVATOR_NUMBER() + " from system due to timing fault");
-				// elevatorQueueMap.remove(elevatorMessage.getELEVATOR_NUMBER());
-				// elevatorMap.remove(elevatorMessage.getELEVATOR_NUMBER());
-				// }
 
 				checkHardFault(elevatorMessage);
 
