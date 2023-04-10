@@ -172,8 +172,8 @@ public class Elevator implements Runnable {
 	 */
 	private synchronized void pause() {
 		try {
-			System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
-			System.out.println("Elevator " + this.ELEVATOR_NUMBER + " sleeping");
+			//System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
+			//System.out.println("Elevator " + this.ELEVATOR_NUMBER + " sleeping");
 			this.wait();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
