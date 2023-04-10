@@ -1,0 +1,20 @@
+// Enter Events in the following format: time|startingFloor|destinationFloor|HardFault|TransientFault
+// Example: 12:43:47.0|0|3|0|0
+// Example: 12:43:47.0|4|2|0|0
+
+00:00:00.0|4|7|0|1
+00:00:01.0|8|3|1|0
+00:00:03.0|22|11|0|0
+00:00:06.0|2|15|0|0
+00:00:07.0|6|9|0|0
+00:00:10.0|4|12|0|0
+00:00:11.0|14|1|0|0
+00:00:15.0|5|10|0|0
+00:00:19.0|17|20|0|0
+00:00:22.0|21|19|0|0
+00:00:23.0|3|8|0|0
+
+// Floor 4 to floor 6 at 0s
+// Floor 9 to floor 4 at 1s
+// Floor 2 to floor 4 at 2s
+// etc

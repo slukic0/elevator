@@ -7,9 +7,16 @@ import java.io.InputStreamReader;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-import elevator.FloorData;
+import messages.FloorData;
 
 public class FileUtil {
+	/**
+	 * method to read each line in events file
+	 * @param myClass
+	 * @param filePath relative path to events
+	 * @return array with each line
+	 * @throws IOException
+	 */
 	public static String[] readFile(Class<?> myClass, String filePath) throws IOException {
 		if (myClass == null)
 			throw new IllegalArgumentException();
@@ -30,18 +37,25 @@ public class FileUtil {
 		return lines.toArray(new String[lines.size()]);
 	}
 
+	/**
+	 * Method to parse each string into variables
+	 * @param lines array of strings
+	 * @return floor data of with floor data variables
+	 */
 	public static FloorData[] parseStringInput(String[] lines) {
 		ArrayList<FloorData> data = new ArrayList<>();
 		for (String s : lines) {
-			// time|floor|button
-			// Example: 12:43:47.0|0|UP
+			// time|startingFloor|destinationFloor|Hard|Transient
+			// Example: 12:43:47.0|1|3
 			String[] event = s.split("\\|");
 
-			int floor = Integer.parseInt(event[1]);
-			boolean up = event[2].equals("UP") ? true : false;
+			int startingFloor = Integer.parseInt(event[1]);
+			int destinationFloor = Integer.parseInt(event[2]);
 			LocalTime time = LocalTime.parse(event[0]);
+			int hardFault = Integer.parseInt(event[3]);
+			int transientFault = Integer.parseInt(event[4]);
 
-			data.add(new FloorData(floor, up, time));
+			data.add(new FloorData(startingFloor, destinationFloor, time, hardFault, transientFault));
 		}
 
 		return data.toArray(new FloorData[data.size()]);

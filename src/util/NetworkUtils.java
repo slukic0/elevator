@@ -1,6 +1,10 @@
 package util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -17,12 +21,12 @@ public class NetworkUtils {
 	 *
 	 * @param msg    byte array message
 	 * @param socket socket to use to send the packet
-	 * @param port   what port to send the packet to
+	 * @param destPort   what port to send the packet to
 	 * @throws IOException thrown if packet cannot be sent
 	 */
-	public static void sendPacket(byte[] msg, DatagramSocket socket, int port) throws IOException {
+	public static void sendPacket(byte[] msg, DatagramSocket socket, int destPort) throws IOException {
 		try {
-			sendPacket(msg, socket, port, InetAddress.getLocalHost());
+			sendPacket(msg, socket, destPort, InetAddress.getLocalHost());
 		} catch (UnknownHostException e1) {
 			System.err.println("ERROR: unable to get local host address!");
 			throw e1;
@@ -32,15 +36,16 @@ public class NetworkUtils {
 	/**
 	 * Send a UDP packet containing a byte array and print logging information.
 	 *
-	 * @param msg     byte array message
-	 * @param socket  socket to use to send the packet
-	 * @param port    what port to send the packet to
-	 * @param address the destination IP address
+	 * @param msg      byte array message
+	 * @param socket   socket to use to send the packet
+	 * @param destPort what port to send the packet to
+	 * @param address  the destination IP address
 	 * @throws IOException thrown if packet cannot be sent
 	 */
-	public static void sendPacket(byte[] msg, DatagramSocket socket, int port, InetAddress address) throws IOException {
+	public static void sendPacket(byte[] msg, DatagramSocket socket, int destPort, InetAddress address)
+			throws IOException {
 		DatagramPacket packet;
-		packet = new DatagramPacket(msg, msg.length, address, port);
+		packet = new DatagramPacket(msg, msg.length, address, destPort);
 
 		try {
 			socket.send(packet);
@@ -58,7 +63,7 @@ public class NetworkUtils {
 	 * @throws IOException thrown if the socket cannot receive a packet
 	 */
 	public static DatagramPacket receivePacket(DatagramSocket socket) throws IOException {
-		byte[] data = new byte[100];
+		byte[] data = new byte[2084];
 		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
 
 		try {
@@ -101,6 +106,32 @@ public class NetworkUtils {
 			byte[] msg, int sendPort) throws IOException {
 		sendPacket(msg, sendSocket, sendPort);
 		return receivePacket(receieveSocket);
+	}
+
+	public static byte[] serializeObject(Object obj) {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ObjectOutputStream os;
+		try {
+			os = new ObjectOutputStream(outputStream);
+			os.writeObject(obj);
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return Arrays.copyOf(outputStream.toByteArray(), outputStream.toByteArray().length);
+	}
+
+	public static Object deserializeObject(DatagramPacket packet) {
+		byte[] data = packet.getData();
+		ByteArrayInputStream in = new ByteArrayInputStream(data);
+		
+		try {
+			ObjectInputStream is = new ObjectInputStream(in);
+			return (Object) is.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			System.err.println("ERROR: unable to deserialize packet " + packet.toString());
+			throw new Error("Failed to Deserialize packet " + packet.toString());
+		}
 	}
 
 	/**
