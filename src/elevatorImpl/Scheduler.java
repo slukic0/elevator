@@ -101,7 +101,7 @@ public class Scheduler implements Runnable {
 	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
 	public int[] checkUpElevatorsEnRoute(int requestFloor) {
-		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int minDiff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
 		int elevatorId = -1;
 		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
@@ -109,13 +109,13 @@ public class Scheduler implements Runnable {
 			elevatorMessage = elevator.getValue().getLatestMessage();
 			if (elevatorMessage.getState() == ElevatorStates.GOING_UP
 					&& elevatorMessage.getCurrentFloor() <= requestFloor) {
-				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
-					diff = requestFloor - elevatorMessage.getCurrentFloor();
+				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < minDiff) {
+					minDiff = requestFloor - elevatorMessage.getCurrentFloor();
 					elevatorId = elevator.getValue().getLatestMessage().getELEVATOR_NUMBER();
 				}
 			}
 		}
-		return new int[] { elevatorId, diff };
+		return new int[] { elevatorId, minDiff };
 	}
 
 	/*
@@ -127,7 +127,7 @@ public class Scheduler implements Runnable {
 	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
 	public int[] checkDownElevatorsEnRoute(int requestFloor) {
-		int diff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
+		int minDiff = Integer.MAX_VALUE; // Track distance for elevators in motion, lowest is best
 		int elevatorId = -1;
 		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
@@ -135,44 +135,51 @@ public class Scheduler implements Runnable {
 			if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
 					&& elevatorMessage.getCurrentFloor() >= requestFloor) {
 				// Iterate to find closest elevator, record distance and elevator number
-				if (Math.abs(elevatorMessage.getCurrentFloor() - requestFloor) < diff) {
-					diff = Math.abs(elevatorMessage.getCurrentFloor() - requestFloor);
+				if (Math.abs(elevatorMessage.getCurrentFloor() - requestFloor) < minDiff) {
+					minDiff = Math.abs(elevatorMessage.getCurrentFloor() - requestFloor);
 					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
 				}
 			}
 		}
-		return new int[] { elevatorId, diff };
+		return new int[] { elevatorId, minDiff };
 	}
 
 	/**
-	 * Check free elevators to find closest to the request floor
+	 * Check all elevators to find closest to the request floor
 	 * 
 	 * @param requestFloor
 	 * @return int[], [id of elevator, distance in floors of closet elevator found]
 	 */
 	public int[] checkAllElevators(int requestFloor) {
-		int diff = Integer.MAX_VALUE;
+		int minDiff = Integer.MAX_VALUE;
 		int elevatorId = -1;
 		ElevatorData elevatorMessage;
 		for (Map.Entry<Integer, ElevatorStatus> elevator : elevatorMap.entrySet()) {
 			elevatorMessage = elevator.getValue().getLatestMessage();
 			if (elevatorMessage.getState() == ElevatorStates.ARRIVED) {
 				// Iterate to find closest elevator, record distance and elevator number
-				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
-					diff = Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
+				if (Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < minDiff) {
+					minDiff = Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
 					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
 				}
 			} else if (elevatorMessage.getState() == ElevatorStates.GOING_DOWN
 					|| elevatorMessage.getState() == ElevatorStates.GOING_UP) {
-				if (Math.abs(elevatorMessage.getMovingToFloor() - elevatorMessage.getCurrentFloor())
-						+ Math.abs(requestFloor - elevatorMessage.getCurrentFloor()) < diff) {
-					diff = Math.abs(elevatorMessage.getMovingToFloor() - elevatorMessage.getCurrentFloor())
-							+ Math.abs(requestFloor - elevatorMessage.getCurrentFloor());
+
+				int elevatorNumber = elevator.getKey();
+				int currentFloorDifference = Math
+						// Distance from current floor to final destination
+						.abs(elevatorQueueMap.get(elevatorNumber).peekLast() - elevatorMessage.getCurrentFloor())
+						// Trying to take the total number of destinations into account 
+						+ elevatorQueueMap.get(elevatorNumber).size()
+						// Distance from final destination to new request
+						+ Math.abs(requestFloor - elevatorQueueMap.get(elevatorNumber).peekLast());
+				if (currentFloorDifference < minDiff) { 
+					minDiff = currentFloorDifference;
 					elevatorId = elevatorMessage.getELEVATOR_NUMBER();
 				}
 			}
 		}
-		return new int[] { elevatorId, diff };
+		return new int[] { elevatorId, minDiff };
 	}
 
 	public ElevatorCommandData getElevatorMoveCommand(int destFloor, int hardFault, int transientFault) {
@@ -371,11 +378,9 @@ public class Scheduler implements Runnable {
 							// BOTH UP, new start is before old dest
 							if (destFloor < latestData.getMovingToFloor()) {
 								// New destination is before old destination
-								System.out.println("Up new dest before old");
 								newMovingToFloor = moveNewDestInfrontOfOld(elevatorNumber, startFloor, destFloor);
 							} else {
 								// BOTH UP, new Dest is after old dest
-								System.out.println("Up new dest after old");
 								newMovingToFloor = moveNewDestAfterfOld(elevatorNumber, startFloor, destFloor);
 							}
 
@@ -385,11 +390,9 @@ public class Scheduler implements Runnable {
 							// BOTH DOWN, new start is before old dest
 							if (destFloor > latestData.getMovingToFloor()) {
 								// New destination is before old destination
-								System.out.println("Up new dest before old");
 								newMovingToFloor = moveNewDestInfrontOfOld(elevatorNumber, startFloor, destFloor);
 							} else {
 								// BOTH DOWN, new Dest is after old dest
-								System.out.println("Down new dest after old");
 								newMovingToFloor = moveNewDestAfterfOld(elevatorNumber, startFloor, destFloor);
 							}
 						}
@@ -398,7 +401,6 @@ public class Scheduler implements Runnable {
 						// Not on the way, so add at end
 						elevatorQueueMap.get(elevatorNumber).addLast(startFloor);
 						elevatorQueueMap.get(elevatorNumber).addLast(destFloor);
-						System.out.println("else case no interrupt");
 					}
 				}
 				ElevatorCommandData message = getElevatorMoveCommand(elevatorQueueMap.get(elevatorNumber).peekFirst(),

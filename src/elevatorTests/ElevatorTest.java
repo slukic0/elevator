@@ -87,7 +87,7 @@ public class ElevatorTest {
 	public void testHardFault() throws IOException {
 		socket = new DatagramSocket();
 
-		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem1 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR_1,
 				1028);
 
 		Thread eThread1 = new Thread(elevatorSubsystem1);
@@ -118,7 +118,7 @@ public class ElevatorTest {
 	public void testTransientFault() throws IOException {
 		socket = new DatagramSocket();
 
-		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR,
+		ElevatorSubsystem elevatorSubsystem2 = new ElevatorSubsystem(1, Constants.STARTING_FLOOR_1,
 				1029);
 
 		Thread eThread2 = new Thread(elevatorSubsystem2);
