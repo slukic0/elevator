@@ -153,6 +153,7 @@ public class Elevator implements Runnable {
 			this.state = destinationFloor > this.currentFloor ? ElevatorStates.GOING_UP : ElevatorStates.GOING_DOWN;
 			this.wake();
 		} else {
+			System.out.print(textBufferString.repeat(ELEVATOR_NUMBER - 1));
 			System.out.println("processPacketData interrupt");
 			elevatorThread.interrupt();
 		}
